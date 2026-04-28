@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/ampoulex-bd71e/cloud-run-source-deploy/ampoulex:latest', '.']
+images:
+- 'us-central1-docker.pkg.dev/ampoulex-bd71e/cloud-run-source-deploy/ampoulex:latest'
+options:
+  logging: CLOUD_LOGGING_ONLY

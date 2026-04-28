@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}BOM - {{ product.name }}{% endblock %}
+{% block page_title %}Bill of Materials{% endblock %}
+{% block breadcrumb_active %}Products{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-sitemap"></i> BOM for {{ product.name }}
+        </h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                Define how much raw material is needed to produce 1 unit of this product.
+                <br><strong>Example:</strong> 1cc Ampoule = 0.095 meters of glass tubing
+            </div>
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Raw Material</th>
+                        <th>Quantity Required per Unit</th>
+                        <th>Unit</th>
+                        <th>Waste %</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="bom-items">
+                    {% for bom_item in bom_items %}
+                    <tr>
+                        <td>
+                            <select name="material_id[]" class="form-control" required>
+                                {% for material in materials %}
+                                <option value="{{ material.id }}" {{ 'selected' if bom_item.raw_material_id == material.id else '' }}>
+                                    {{ material.name }} ({{ material.unit }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" step="0.001" name="quantity_required[]" class="form-control" 
+                                   value="{{ bom_item.quantity_required }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="unit[]" class="form-control" value="{{ bom_item.unit }}" readonly>
+                        </td>
+                        <td>
+                            <input type="number" step="0.1" name="waste_percentage[]" class="form-control" 
+                                   value="{{ bom_item.waste_percentage }}">
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td>
+                            <select name="material_id[]" class="form-control" required>
+                                {% for material in materials %}
+                                <option value="{{ material.id }}">{{ material.name }} ({{ material.unit }})</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" step="0.001" name="quantity_required[]" class="form-control" required>
+                        </td>
+                        <td>
+                            <input type="text" name="unit[]" class="form-control" value="meters">
+                        </td>
+                        <td>
+                            <input type="number" step="0.1" name="waste_percentage[]" class="form-control" value="5">
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <button type="button" class="btn btn-secondary btn-sm" onclick="addBOMRow()">
+                <i class="fas fa-plus"></i> Add Material
+            </button>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save BOM
+            </button>
+            <a href="{{ url_for('main.products') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function addBOMRow() {
+    const tbody = document.getElementById('bom-items');
+    const row = tbody.rows[0].cloneNode(true);
+    row.querySelectorAll('input').forEach(input => input.value = '');
+    tbody.appendChild(row);
+}
+</script>
+{% endblock %}

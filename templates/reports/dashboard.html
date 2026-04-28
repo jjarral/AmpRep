@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% block title %}Reports Dashboard{% endblock %}
+{% block page_title %}Reports Dashboard{% endblock %}
+{% block breadcrumb_active %}Reports{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Report Statistics -->
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ total_reports }}</h3>
+                <p>Total Reports Generated</p>
+            </div>
+            <div class="icon"><i class="fas fa-file-alt"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Available Reports -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-chart-bar"></i> Generate Reports</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Inquiries Report -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0"><i class="fas fa-envelope"></i> Inquiries Report</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('main.generate_excel_report', module='inquiries') }}">
+                                    <div class="form-group">
+                                        <label>From Date</label>
+                                        <input type="date" name="date_from" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>To Date</label>
+                                        <input type="date" name="date_to" class="form-control" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-block">
+                                        <i class="fas fa-file-excel"></i> Export to Excel
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('main.generate_pdf_report', module='inquiries') }}" class="mt-2">
+                                    <div class="form-group">
+                                        <input type="hidden" name="date_from" value="{{ request.form.get('date_from', '') }}">
+                                        <input type="hidden" name="date_to" value="{{ request.form.get('date_to', '') }}">
+                                    </div>
+                                    <button type="submit" class="btn btn-danger btn-block">
+                                        <i class="fas fa-file-pdf"></i> Export to PDF
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Orders Report -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="card-title mb-0"><i class="fas fa-shopping-cart"></i> Orders Report</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('main.generate_excel_report', module='orders') }}">
+                                    <div class="form-group">
+                                        <label>From Date</label>
+                                        <input type="date" name="date_from" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>To Date</label>
+                                        <input type="date" name="date_to" class="form-control" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-block">
+                                        <i class="fas fa-file-excel"></i> Export to Excel
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('main.generate_pdf_report', module='orders') }}" class="mt-2">
+                                    <div class="form-group">
+                                        <input type="hidden" name="date_from" value="{{ request.form.get('date_from', '') }}">
+                                        <input type="hidden" name="date_to" value="{{ request.form.get('date_to', '') }}">
+                                    </div>
+                                    <button type="submit" class="btn btn-danger btn-block">
+                                        <i class="fas fa-file-pdf"></i> Export to PDF
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customers Report -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="card-title mb-0"><i class="fas fa-users"></i> Customers Report</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('main.generate_excel_report', module='customers') }}">
+                                    <button type="submit" class="btn btn-success btn-block">
+                                        <i class="fas fa-file-excel"></i> Export to Excel
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('main.generate_pdf_report', module='customers') }}" class="mt-2">
+                                    <button type="submit" class="btn btn-danger btn-block">
+                                        <i class="fas fa-file-pdf"></i> Export to PDF
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Products Report -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-warning text-white">
+                                <h5 class="card-title mb-0"><i class="fas fa-box"></i> Products Report</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('main.generate_excel_report', module='products') }}">
+                                    <button type="submit" class="btn btn-success btn-block">
+                                        <i class="fas fa-file-excel"></i> Export to Excel
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('main.generate_pdf_report', module='products') }}" class="mt-2">
+                                    <button type="submit" class="btn btn-danger btn-block">
+                                        <i class="fas fa-file-pdf"></i> Export to PDF
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expenses Report -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="card-title mb-0"><i class="fas fa-receipt"></i> Expenses Report</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('main.generate_excel_report', module='expenses') }}">
+                                    <div class="form-group">
+                                        <label>From Date</label>
+                                        <input type="date" name="date_from" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>To Date</label>
+                                        <input type="date" name="date_to" class="form-control" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-block">
+                                        <i class="fas fa-file-excel"></i> Export to Excel
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('main.generate_pdf_report', module='expenses') }}" class="mt-2">
+                                    <div class="form-group">
+                                        <input type="hidden" name="date_from" value="{{ request.form.get('date_from', '') }}">
+                                        <input type="hidden" name="date_to" value="{{ request.form.get('date_to', '') }}">
+                                    </div>
+                                    <button type="submit" class="btn btn-danger btn-block">
+                                        <i class="fas fa-file-pdf"></i> Export to PDF
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payroll Report -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-purple text-white" style="background-color: #6f42c1;">
+                                <h5 class="card-title mb-0"><i class="fas fa-money-bill-wave"></i> Payroll Report</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('main.generate_excel_report', module='payroll') }}">
+                                    <button type="submit" class="btn btn-success btn-block">
+                                        <i class="fas fa-file-excel"></i> Export to Excel
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('main.generate_pdf_report', module='payroll') }}" class="mt-2">
+                                    <button type="submit" class="btn btn-danger btn-block">
+                                        <i class="fas fa-file-pdf"></i> Export to PDF
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Reports -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-history"></i> Recently Generated Reports</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Report Name</th>
+                                <th>Type</th>
+                                <th>Module</th>
+                                <th>Generated By</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in recent_reports %}
+                            <tr>
+                                <td>{{ report.file_path.split('/')[-1] }}</td>
+                                <td>
+                                    {% if report.report_type == 'excel' %}
+                                    <span class="badge badge-success">Excel</span>
+                                    {% elif report.report_type == 'pdf' %}
+                                    <span class="badge badge-danger">PDF</span>
+                                    {% else %}
+                                    <span class="badge badge-secondary">Text</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ report.module|title }}</td>
+                                <td>{{ report.generated_by }}</td>
+                                <td>{{ report.generated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <a href="{{ url_for('static', filename=report.file_path.replace('static/', '')) }}" 
+                                       class="btn btn-sm btn-primary" download>
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No reports generated yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

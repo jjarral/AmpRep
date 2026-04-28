@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Attendance History{% endblock %}
+{% block page_title %}Attendance History{% endblock %}
+{% block breadcrumb_active %}Attendance History{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <form method="GET" class="form-inline">
+            <div class="form-group mr-3">
+                <label class="mr-2">Employee:</label>
+                <select name="employee_id" class="form-control form-control-sm">
+                    <option value="">All Employees</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.id }}" {{ 'selected' if selected_employee == emp.id else '' }}>{{ emp.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group mr-3">
+                <label class="mr-2">From:</label>
+                <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+            </div>
+            <div class="form-group mr-3">
+                <label class="mr-2">To:</label>
+                <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+        </form>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Date</th><th>Employee</th><th>Check In</th><th>Check Out</th>
+                    <th>Hours Worked</th><th>Overtime</th><th>Status</th><th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance_records %}
+                <tr>
+                    <td>{{ record.date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ record.employee.name }}</td>
+                    <td>{{ record.check_in.strftime('%H:%M') if record.check_in else '-' }}</td>
+                    <td>{{ record.check_out.strftime('%H:%M') if record.check_out else '-' }}</td>
+                    <td>{{ "%.1f"|format(record.hours_worked) }} hrs</td>
+                    <td>{{ "%.1f"|format(record.overtime_hours) }} hrs</td>
+                    <td><span class="badge badge-{{ 'success' if record.status == 'present' else 'danger' if record.status == 'absent' else 'warning' }}">{{ record.status }}</span></td>
+                    <td>{{ record.notes or '-' }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4">No attendance records found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

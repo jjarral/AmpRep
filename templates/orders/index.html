@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}Orders{% endblock %}
+{% block page_title %}Orders{% endblock %}
+{% block breadcrumb_active %}Orders{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title">
+                    <i class="fas fa-shopping-cart"></i> Order Management
+                </h3>
+            </div>
+            <div class="col text-right">
+                <div class="btn-group">
+                    <!-- <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Export
+                    </button> -->
+                    <a href="{{ url_for('main.add_order') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> New Order
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Filters -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    </div>
+                    <input type="text" id="searchOrder" class="form-control form-control-sm" placeholder="Search Order #">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select id="filterStatus" class="form-control form-control-sm">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="filterPayment" class="form-control form-control-sm">
+                    <option value="">All Payment Status</option>
+                    <option value="unpaid">Unpaid</option>
+                    <option value="partial">Partial</option>
+                    <option value="paid">Paid</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <div class="input-group">
+                    <input type="date" id="filterDate" class="form-control form-control-sm">
+                    <div class="input-group-append">
+                        <button class="btn btn-sm btn-primary" onclick="applyFilters()">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="ordersTable">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Items</th>
+                        <th>Total (PKR)</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>
+                            <strong>{{ order.order_number }}</strong>
+                            {% if order.inquiry_id %}
+                            <br><small class="text-muted">From: {{ order.inquiry.inquiry_number if order.inquiry else 'N/A' }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ order.customer_name_snapshot or 'N/A' }}</strong>
+                            {% if order.customer_business_snapshot %}
+                            <br><small class="text-muted">{{ order.customer_business_snapshot }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ order.created_at.strftime('%Y-%m-%d') }}
+                            <br><small class="text-muted">{{ order.created_at.strftime('%H:%M') }}</small>
+                        </td>
+                        <td>
+                            {% if order.order_items %}
+                            <span class="badge badge-info">{{ order.order_items|length }} item(s)</span>
+                            {% else %}
+                            <span class="badge badge-secondary">0 items</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>PKR {{ "%.2f"|format(order.total_amount) }}</strong>
+                            {% if order.paid_amount > 0 %}
+                            <br><small class="text-success">Paid: PKR {{ "%.2f"|format(order.paid_amount) }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ 
+                                'warning' if order.status == 'pending' else 
+                                'info' if order.status == 'processing' else 
+                                'success' if order.status == 'completed' else 
+                                'danger'
+                            }}">
+                                {{ order.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ 
+                                'danger' if order.payment_status == 'unpaid' else 
+                                'warning' if order.payment_status == 'partial' else 
+                                'success'
+                            }}">
+                                {{ order.payment_status|title }}
+                            </span>
+                            {% if order.payment_method %}
+                            <br><small class="text-muted">{{ order.payment_method|title }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('main.view_order', id=order.id) }}" class="btn btn-info" title="View Order">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('main.edit_order', id=order.id) }}" class="btn btn-warning" title="Edit Order">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('main.order_invoice', id=order.id) }}" class="btn btn-success" title="View Invoice" target="_blank">
+                                    <i class="fas fa-file-invoice"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <p>No orders found. Create your first order!</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Search functionality
+document.getElementById('searchOrder').addEventListener('input', function() {
+    filterTable();
+});
+
+document.getElementById('filterStatus').addEventListener('change', function() {
+    filterTable();
+});
+
+document.getElementById('filterPayment').addEventListener('change', function() {
+    filterTable();
+});
+
+function filterTable() {
+    const searchTerm = document.getElementById('searchOrder').value.toLowerCase();
+    const statusFilter = document.getElementById('filterStatus').value;
+    const paymentFilter = document.getElementById('filterPayment').value;
+    const rows = document.querySelectorAll('#ordersTable tbody tr');
+    
+    rows.forEach(row => {
+        const orderNum = row.cells[0].textContent.toLowerCase();
+        const status = row.cells[5].textContent.trim().toLowerCase();
+        const payment = row.cells[6].textContent.trim().toLowerCase();
+        
+        const matchesSearch = orderNum.includes(searchTerm);
+        const matchesStatus = !statusFilter || status.includes(statusFilter);
+        const matchesPayment = !paymentFilter || payment.includes(paymentFilter);
+        
+        row.style.display = (matchesSearch && matchesStatus && matchesPayment) ? '' : 'none';
+    });
+}
+
+function applyFilters() {
+    filterTable();
+}
+
+function exportToExcel() {
+    alert('Export to Excel feature - Use the Excel report button in Reports section');
+}
+</script>
+{% endblock %}

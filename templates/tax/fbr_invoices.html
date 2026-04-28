@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}FBR Invoices{% endblock %}
+{% block page_title %}FBR Invoices{% endblock %}
+{% block breadcrumb_active %}FBR Invoices{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <a href="?status=all" class="btn btn-sm {% if current_status == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %}">All</a>
+            <a href="?status=generated" class="btn btn-sm {% if current_status == 'generated' %}btn-warning{% else %}btn-outline-secondary{% endif %}">Generated</a>
+            <a href="?status=submitted" class="btn btn-sm {% if current_status == 'submitted' %}btn-info{% else %}btn-outline-secondary{% endif %}">Submitted</a>
+            <a href="?status=verified" class="btn btn-sm {% if current_status == 'verified' %}btn-success{% else %}btn-outline-secondary{% endif %}">Verified</a>
+        </div>
+        <a href="{{ url_for('main.tax_returns') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-file-contract mr-1"></i>View Tax Returns
+        </a>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-3">
+        <div class="small-box bg-info">
+            <div class="inner"><h3>{{ invoices|length }}</h3><p>Total Invoices</p></div>
+            <div class="icon"><i class="fas fa-file-invoice"></i></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>PKR {{ "{:,.0f}".format(invoices | sum(attribute='total_amount')) }}</h3>
+                <p>Total Invoice Value</p>
+            </div>
+            <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>PKR {{ "{:,.0f}".format(invoices | sum(attribute='gst_amount')) }}</h3>
+                <p>Total GST Collected (17%)</p>
+            </div>
+            <div class="icon"><i class="fas fa-percentage"></i></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>{{ invoices | selectattr('status', 'equalto', 'generated') | list | length }}</h3>
+                <p>Pending Submission</p>
+            </div>
+            <div class="icon"><i class="fas fa-clock"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-file-invoice mr-2"></i>FBR Invoice Register</h3>
+    </div>
+    <div class="card-body p-0">
+        {% if invoices %}
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>FBR #</th>
+                        <th>Order</th>
+                        <th>Date</th>
+                        <th class="text-right">Taxable Amt (PKR)</th>
+                        <th class="text-right">GST 17% (PKR)</th>
+                        <th class="text-right">Total (PKR)</th>
+                        <th>Status</th>
+                        <th>Submitted On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inv in invoices %}
+                    <tr>
+                        <td><strong class="text-primary">{{ inv.invoice_number }}</strong></td>
+                        <td>{{ inv.fbr_invoice_number or '—' }}</td>
+                        <td>
+                            <a href="{{ url_for('main.view_order', id=inv.order_id) }}">#{{ inv.order_id }}</a>
+                        </td>
+                        <td>{{ inv.invoice_date.strftime('%d %b %Y') if inv.invoice_date else '—' }}</td>
+                        <td class="text-right">{{ "{:,.0f}".format(inv.taxable_amount) }}</td>
+                        <td class="text-right text-warning font-weight-bold">{{ "{:,.0f}".format(inv.gst_amount) }}</td>
+                        <td class="text-right font-weight-bold">{{ "{:,.0f}".format(inv.total_amount) }}</td>
+                        <td>
+                            {% if inv.status == 'verified' %}
+                                <span class="badge badge-success">Verified</span>
+                            {% elif inv.status == 'submitted' %}
+                                <span class="badge badge-info">Submitted</span>
+                            {% else %}
+                                <span class="badge badge-warning">Generated</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">
+                            {{ inv.submitted_date.strftime('%d %b %Y') if inv.submitted_date else '—' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="thead-light font-weight-bold">
+                    <tr>
+                        <th colspan="4">Totals ({{ invoices|length }} invoices)</th>
+                        <th class="text-right">{{ "{:,.0f}".format(invoices | sum(attribute='taxable_amount')) }}</th>
+                        <th class="text-right text-warning">{{ "{:,.0f}".format(invoices | sum(attribute='gst_amount')) }}</th>
+                        <th class="text-right">{{ "{:,.0f}".format(invoices | sum(attribute='total_amount')) }}</th>
+                        <th colspan="2"></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-file-invoice fa-3x mb-3 d-block"></i>
+            <p>No FBR invoices found. They are auto-generated when sales orders are processed.</p>
+            <a href="{{ url_for('main.orders') }}" class="btn btn-primary mt-2">
+                <i class="fas fa-file-invoice mr-1"></i>Go to Sales Orders
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header"><h3 class="card-title"><i class="fas fa-info-circle mr-2"></i>FBR Compliance Notes</h3></div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <h6><i class="fas fa-percentage text-warning mr-1"></i>GST Rate: 17%</h6>
+                <p class="text-muted small">17% GST is applied on all taxable supplies as per FBR regulations for pharmaceutical packaging manufacturers.</p>
+            </div>
+            <div class="col-md-4">
+                <h6><i class="fas fa-sync text-info mr-1"></i>Auto Generation</h6>
+                <p class="text-muted small">FBR invoices are automatically created from confirmed sales orders. Navigate to Orders to trigger generation per order.</p>
+            </div>
+            <div class="col-md-4">
+                <h6><i class="fas fa-calendar-check text-danger mr-1"></i>Filing Deadline</h6>
+                <p class="text-muted small">Monthly GST returns must be filed by the 15th of the following month via the FBR IRIS portal (iris.fbr.gov.pk).</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

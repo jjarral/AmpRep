@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Stock Transfers{% endblock %}
+{% block page_title %}Stock Transfers{% endblock %}
+{% block breadcrumb_active %}Stock Transfers{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-exchange-alt"></i> Stock Transfers</h3>
+            </div>
+            <div class="col text-right">
+                <a href="{{ url_for('main.add_stock_transfer') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New Transfer
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Transfer #</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transfer in transfers %}
+                <tr>
+                    <td><strong>{{ transfer.transfer_number }}</strong></td>
+                    <td>{{ transfer.from_warehouse.name }}</td>
+                    <td>{{ transfer.to_warehouse.name }}</td>
+                    <td>{{ transfer.transfer_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ transfer.items|length }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if transfer.status == 'completed' else 'info' if transfer.status == 'in_transit' else 'warning' }}">
+                            {{ transfer.status|title }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('main.view_stock_transfer', id=transfer.id) }}" class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

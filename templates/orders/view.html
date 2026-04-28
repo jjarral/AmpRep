@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% block title %}Order {{ order.order_number }}{% endblock %}
+{% block page_title %}Order {{ order.order_number }}{% endblock %}
+{% block breadcrumb_active %}Orders{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title">Order Details</h3>
+            </div>
+            <div class="col text-right">
+                <a href="{{ url_for('main.edit_order', id=order.id) }}" class="btn btn-sm btn-warning">
+                    <i class="fas fa-edit"></i> Edit Order
+                </a>
+                <a href="{{ url_for('main.order_invoice', id=order.id) }}" class="btn btn-sm btn-success">
+                    <i class="fas fa-file-invoice"></i> View Invoice
+                </a>
+                <a href="{{ url_for('main.orders') }}" class="btn btn-sm btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Customer Information -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h5>Customer Information</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="20%">Name:</th>
+                            <td>{{ order.customer_name_snapshot or 'N/A' }}</td>
+                            <th width="20%">Business:</th>
+                            <td>{{ order.customer_business_snapshot or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td>{{ order.customer_email_snapshot or 'N/A' }}</td>
+                            <th>Phone:</th>
+                            <td>{{ order.customer_phone_snapshot or 'N/A' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Information -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h5>Order Information</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="20%">Order #:</th>
+                            <td><strong>{{ order.order_number }}</strong></td>
+                            <th width="20%">Date:</th>
+                            <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                <span class="badge badge-{{ 
+                                    'warning' if order.status == 'pending' else 
+                                    'info' if order.status == 'processing' else 
+                                    'success' if order.status == 'completed' else 
+                                    'danger'
+                                }}">
+                                    {{ order.status }}
+                                </span>
+                            </td>
+                            <th>Payment Status:</th>
+                            <td>
+                                <span class="badge badge-{{ 
+                                    'danger' if order.payment_status == 'unpaid' else 
+                                    'warning' if order.payment_status == 'partial' else 
+                                    'success'
+                                }}">
+                                    {{ order.payment_status }}
+                                </span>
+                                {% if order.payment_method %}
+                                <br><small class="text-muted">{{ order.payment_method }}</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Status Timeline -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h5>Order Status Timeline</h5>
+                <div class="timeline">
+                    <div class="timeline-item {{ 'active' if order.created_at else '' }}">
+                        <div class="timeline-marker bg-primary"></div>
+                        <div class="timeline-content">
+                            <h6>Order Created</h6>
+                            <p>{{ order.created_at.strftime('%Y-%m-%d %H:%M') if order.created_at else 'Pending' }}</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item {{ 'active' if order.payment_date else '' }}">
+                        <div class="timeline-marker bg-success"></div>
+                        <div class="timeline-content">
+                            <h6>Payment {{ order.payment_status|title }}</h6>
+                            <p>{{ order.payment_date.strftime('%Y-%m-%d %H:%M') if order.payment_date else 'Pending' }}</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item {{ 'active' if order.status == 'completed' else '' }}">
+                        <div class="timeline-marker bg-info"></div>
+                        <div class="timeline-content">
+                            <h6>Order Completed</h6>
+                            <p>{{ order.updated_at.strftime('%Y-%m-%d %H:%M') if order.updated_at and order.status == 'completed' else 'Pending' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Items -->
+        <div class="row">
+            <div class="col-md-12">
+                <h5>Order Items</h5>
+                {% if order.order_items %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Product</th>
+                                <th>Specification</th>
+                                <th>Color</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.order_items %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td><strong>{{ item.product.name if item.product else 'Product' }}</strong></td>
+                                <td>{{ item.product.specification if item.product else '-' }}</td>
+                                <td>
+                                    {% if item.product %}
+                                    <span class="badge badge-{{ 'info' if item.product.color == 'Transparent' else 'warning' }}">
+                                        {{ item.product.color }}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.quantity }}</td>
+                                <td>PKR {{ "%.2f"|format(item.unit_price) }}</td>
+                                <td><strong>PKR {{ "%.2f"|format(item.subtotal) }}</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="bg-light">
+                            <tr>
+                                <th colspan="6" class="text-right">Subtotal:</th>
+                                <th>PKR {{ "%.2f"|format(order.total_amount - order.tax_amount) }}</th>
+                            </tr>
+                            <tr>
+                                <th colspan="6" class="text-right">Tax:</th>
+                                <th>PKR {{ "%.2f"|format(order.tax_amount) }}</th>
+                            </tr>
+                            <tr>
+                                <th colspan="6" class="text-right">Total:</th>
+                                <th class="text-primary">PKR {{ "%.2f"|format(order.total_amount) }}</th>
+                            </tr>
+                            <tr>
+                                <th colspan="6" class="text-right">Paid:</th>
+                                <th>PKR {{ "%.2f"|format(order.paid_amount) }}</th>
+                            </tr>
+                            <tr>
+                                <th colspan="6" class="text-right">Balance:</th>
+                                <th class="{{ 'text-danger' if order.total_amount - order.paid_amount > 0 else 'text-success' }}">
+                                    PKR {{ "%.2f"|format(order.total_amount - order.paid_amount) }}
+                                </th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> No items found in this order.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+.timeline-item {
+    display: flex;
+    margin-bottom: 20px;
+    position: relative;
+}
+.timeline-marker {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 15px;
+    flex-shrink: 0;
+    border: 3px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.timeline-marker.active {
+    opacity: 1;
+}
+.timeline-marker:not(.active) {
+    background: #e2e8f0 !important;
+    opacity: 0.5;
+}
+.timeline-content {
+    flex: 1;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+.timeline-content h6 {
+    margin: 0;
+    color: #1e3a8a;
+}
+.timeline-content p {
+    margin: 5px 0 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}

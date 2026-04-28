@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Certificate of Analysis - {{ batch.batch_number }}{% endblock %}
+{% block page_title %}Certificate of Analysis{% endblock %}
+{% block breadcrumb_active %}Quality Control{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-certificate"></i> Certificate of Analysis</h3>
+            </div>
+            <div class="col text-right">
+                <button onclick="window.print()" class="btn btn-primary">
+                    <i class="fas fa-print"></i> Print CoA
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- CoA Header -->
+        <div class="text-center mb-4">
+            <img src="/static/logo.png" alt="Ampoulex" style="max-height:90px; width:auto;" class="mb-2">
+            <h2 class="mb-0">AmpouleX (Pvt) Ltd</h2>
+            <p class="text-muted mb-0">Malik Arshad Farmhouse, Malik Akram Street, Darbar-e-Kareemi Stop<br>
+            G.T. Road, Wah Cantt, The. Taxila, Dist. RWP, Punjab, Pakistan<br>
+            Tel: 0340-5336238 | 0331-9980908</p>
+            <hr>
+            <h4>CERTIFICATE OF ANALYSIS</h4>
+        </div>
+        
+        <!-- Batch Info -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <strong>Batch Number:</strong> {{ batch.batch_number }}<br>
+                <strong>Product:</strong> {{ batch.product.name if batch.product else 'N/A' }}<br>
+                <strong>Manufacturing Date:</strong> {{ batch.start_date.strftime('%Y-%m-%d') if batch.start_date else 'N/A' }}
+            </div>
+            <div class="col-md-6">
+                <strong>Planned Quantity:</strong> {{ batch.planned_quantity }}<br>
+                <strong>Actual Quantity:</strong> {{ batch.actual_quantity or 'N/A' }}<br>
+                <strong>Yield:</strong> {{ "%.1f"|format(batch.yield_percentage) if batch.yield_percentage else 'N/A' }}%
+            </div>
+        </div>
+        
+        <!-- QC Results -->
+        <table class="table table-bordered">
+            <thead class="bg-light">
+                <tr>
+                    <th>Parameter</th>
+                    <th>Specification</th>
+                    <th>Test Result</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in qc_results %}
+                <tr>
+                    <td>{{ result.parameter.parameter_name }}</td>
+                    <td>
+                        {% if result.parameter.min_value and result.parameter.max_value %}
+                        {{ result.parameter.min_value }} - {{ result.parameter.max_value }} {{ result.parameter.unit or '' }}
+                        {% endif %}
+                    </td>
+                    <td>{{ result.tested_value if result.tested_value else 'N/A' }} {{ result.parameter.unit or '' }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if result.result == 'pass' else 'danger' if result.result == 'fail' else 'warning' }}">
+                            {{ result.result.title() }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Conclusion -->
+        <div class="mt-4">
+            <strong>Conclusion:</strong>
+            {% set all_pass = qc_results|selectattr('result', 'equalto', 'pass')|list|length == qc_results|length %}
+            {% if all_pass %}
+            <p class="text-success">The batch meets all quality specifications and is approved for release.</p>
+            {% else %}
+            <p class="text-danger">The batch does not meet all quality specifications. Review required.</p>
+            {% endif %}
+        </div>
+        
+        <!-- Signatures -->
+        <div class="row mt-5">
+            <div class="col-md-6">
+                <hr>
+                <p>QC Manager</p>
+                <p>Date: _______________</p>
+            </div>
+            <div class="col-md-6">
+                <hr>
+                <p>Production Manager</p>
+                <p>Date: _______________</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Material Batches{% endblock %}
+{% block page_title %}Material Batches{% endblock %}
+{% block breadcrumb_active %}Material Batches{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-boxes"></i> Material Batches (Expiry Tracking)</h3>
+    </div>
+    <div class="card-body">
+        {% if expired %}
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>{{ expired|length }} batch(es) expired!</strong>
+        </div>
+        {% endif %}
+        
+        {% if expiring_soon %}
+        <div class="alert alert-warning">
+            <i class="fas fa-clock"></i>
+            <strong>{{ expiring_soon|length }} batch(es) expiring within 30 days!</strong>
+        </div>
+        {% endif %}
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Batch #</th>
+                    <th>Material</th>
+                    <th>Supplier</th>
+                    <th>Received</th>
+                    <th>Remaining</th>
+                    <th>Mfg Date</th>
+                    <th>Expiry Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for batch in batches %}
+                <tr>
+                    <td><strong>{{ batch.batch_number }}</strong></td>
+                    <td>{{ batch.material.name }}</td>
+                    <td>{{ batch.supplier.name if batch.supplier else '-' }}</td>
+                    <td>{{ batch.received_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ batch.quantity_remaining }} {{ batch.material.unit }}</td>
+                    <td>{{ batch.manufacturing_date.strftime('%Y-%m-%d') if batch.manufacturing_date else '-' }}</td>
+                    <td class="{{ 'text-danger' if batch.expiry_date and batch.expiry_date < datetime.utcnow().date() else 'text-warning' if batch.expiry_date and batch.expiry_date <= datetime.utcnow().date() + timedelta(days=30) else '' }}">
+                        {{ batch.expiry_date.strftime('%Y-%m-%d') if batch.expiry_date else '-' }}
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ 'danger' if batch.status == 'expired' else 'success' if batch.status == 'active' else 'secondary' }}">
+                            {{ batch.status|title }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

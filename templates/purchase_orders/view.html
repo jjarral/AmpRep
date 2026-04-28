@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}PO {{ po.po_number }}{% endblock %}
+{% block page_title %}Purchase Order {{ po.po_number }}{% endblock %}
+{% block breadcrumb_active %}Purchase Orders{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-file-invoice"></i> {{ po.po_number }}</h3>
+            </div>
+            <div class="col text-right">
+                {% if po.status == 'draft' %}
+                <form action="{{ url_for('main.send_purchase_order', id=po.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-paper-plane"></i> Send to Supplier
+                    </button>
+                </form>
+                {% endif %}
+                {% if po.status == 'sent' %}
+                <a href="{{ url_for('main.receive_purchase_order', id=po.id) }}" class="btn btn-warning">
+                    <i class="fas fa-dolly"></i> Receive Goods
+                </a>
+                {% endif %}
+                <a href="{{ url_for('main.purchase_orders') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- PO Info -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <strong>Supplier:</strong><br>
+                {{ po.supplier.name }}
+            </div>
+            <div class="col-md-3">
+                <strong>Order Date:</strong><br>
+                {{ po.order_date.strftime('%Y-%m-%d') }}
+            </div>
+            <div class="col-md-3">
+                <strong>Expected Date:</strong><br>
+                {{ po.expected_date.strftime('%Y-%m-%d') if po.expected_date else '-' }}
+            </div>
+            <div class="col-md-3">
+                <strong>Status:</strong><br>
+                <span class="badge badge-{{ 'secondary' if po.status == 'draft' else 'info' if po.status == 'sent' else 'success' if po.status == 'received' else 'danger' }}">
+                    {{ po.status|title }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Material</th>
+                        <th>Ordered</th>
+                        <th>Received</th>
+                        <th>Unit Price</th>
+                        <th>Tax %</th>
+                        <th>Total (PKR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in po.items %}
+                    <tr>
+                        <td>{{ item.material.name }}</td>
+                        <td>{{ item.quantity_ordered }} {{ item.material.unit }}</td>
+                        <td>{{ item.quantity_received }} {{ item.material.unit }}</td>
+                        <td>PKR {{ "%.2f"|format(item.unit_price) }}</td>
+                        <td>{{ item.tax_rate }}%</td>
+                        <td>PKR {{ "%.2f"|format(item.total) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="5" class="text-right">Subtotal:</th>
+                        <th>PKR {{ "%.2f"|format(po.total_amount) }}</th>
+                    </tr>
+                    <tr>
+                        <th colspan="5" class="text-right">Tax:</th>
+                        <th>PKR {{ "%.2f"|format(po.tax_amount) }}</th>
+                    </tr>
+                    <tr>
+                        <th colspan="5" class="text-right">Grand Total:</th>
+                        <th>PKR {{ "%.2f"|format(po.grand_total) }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Goods Receipts -->
+        {% if po.goods_receipts %}
+        <div class="mt-4">
+            <h5><i class="fas fa-dolly"></i> Goods Receipts</h5>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>GRN #</th>
+                        <th>Date</th>
+                        <th>Received By</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for gr in po.goods_receipts %}
+                    <tr>
+                        <td><a href="{{ url_for('main.view_goods_receipt', id=gr.id) }}">{{ gr.grn_number }}</a></td>
+                        <td>{{ gr.receipt_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ gr.received_by or '-' }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if gr.status == 'accepted' else 'warning' if gr.status == 'partial' else 'danger' }}">
+                                {{ gr.status|title }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

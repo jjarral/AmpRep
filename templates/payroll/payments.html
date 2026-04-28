@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Payroll Payments{% endblock %}
+{% block page_title %}Payroll Payments{% endblock %}
+{% block breadcrumb_active %}Payments{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col"><h3 class="card-title">Payment Records</h3></div>
+            <div class="col text-right">
+                <a href="{{ url_for('main.process_payment') }}" class="btn btn-sm btn-primary"><i class="fas fa-money-bill-wave"></i> Process Payment</a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Employee</th><th>Period</th><th>Earnings</th><th>Deductions</th><th>Net Pay</th><th>Payment Method</th><th>Date</th><th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td><strong>{{ payment.employee.name }}</strong></td>
+                    <td>{{ payment.period_start.strftime('%Y-%m-%d') }} to {{ payment.period_end.strftime('%Y-%m-%d') }}</td>
+                    <td>PKR {{ "%.2f"|format(payment.total_earnings) }}</td>
+                    <td class="text-danger">PKR {{ "%.2f"|format(payment.total_deductions) }}</td>
+                    <td class="text-success font-weight-bold">PKR {{ "%.2f"|format(payment.net_pay) }}</td>
+                    <td>{{ payment.payment_method }}</td>
+                    <td>{{ payment.payment_date.strftime('%Y-%m-%d') if payment.payment_date else '-' }}</td>
+                    <td><span class="badge badge-{{ 'warning' if payment.status == 'pending' else 'success' if payment.status == 'paid' else 'secondary' }}">{{ payment.status }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4">No payment records found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

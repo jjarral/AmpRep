@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Add Raw Material{% endblock %}
+{% block page_title %}Add Raw Material{% endblock %}
+{% block breadcrumb_active %}Raw Materials{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-plus"></i> Add Raw Material</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Material Name *</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Material Type</label>
+                        <input type="text" name="material_type" class="form-control" placeholder="e.g., Amber, Transparent">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Specification</label>
+                        <input type="text" name="specification" class="form-control" placeholder="e.g., 5mm diameter">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Unit *</label>
+                        <select name="unit" class="form-control" required>
+                            <option value="">Select Unit</option>
+                            <option value="meters">Meters</option>
+                            <option value="kg">Kilograms</option>
+                            <option value="pieces">Pieces</option>
+                            <option value="liters">Liters</option>
+                            <option value="rolls">Rolls</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Current Stock *</label>
+                        <input type="number" step="0.01" name="current_stock" class="form-control" required value="0">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Reorder Level *</label>
+                        <input type="number" step="0.01" name="reorder_level" class="form-control" required value="100">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Cost per Unit</label>
+                        <input type="number" step="0.01" name="cost_per_unit" class="form-control" value="0">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Supplier</label>
+                <input type="text" name="supplier" class="form-control" placeholder="Supplier name">
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Add Material
+            </button>
+            <a href="{{ url_for('main.raw_materials') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

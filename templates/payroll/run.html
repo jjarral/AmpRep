@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+{% block title %}Run Payroll{% endblock %}
+{% block page_title %}Run Payroll{% endblock %}
+{% block breadcrumb_active %}Run Payroll{% endblock %}
+
+{% block content %}
+<style>
+  /* ── Sheet wrapper ── */
+  #payroll-sheet { overflow-x: auto; }
+
+  /* ── Grid table ── */
+  #payroll-table { border-collapse: separate; border-spacing: 0; min-width: 1200px; font-size: 13px; }
+  #payroll-table thead th {
+    position: sticky; top: 0; z-index: 10;
+    background: #2c3e50; color: #ecf0f1;
+    padding: 8px 10px; white-space: nowrap; border: 1px solid #1a252f;
+  }
+  #payroll-table tbody tr:hover { background: #eaf3fb; }
+  #payroll-table tbody tr.dept-header td {
+    background: #dde3ea; font-weight: 700; color: #2c3e50;
+    padding: 4px 10px; font-size: 11px; letter-spacing:.5px; text-transform: uppercase;
+  }
+  #payroll-table td {
+    padding: 0; border: 1px solid #dee2e6; vertical-align: middle; white-space: nowrap;
+  }
+  #payroll-table td.ro { background: #f8f9fa; color: #555; text-align: right; padding: 6px 10px; }
+  #payroll-table td.net { background: #e8f8ef; color: #155724; font-weight: 700; text-align: right; padding: 6px 10px; }
+  #payroll-table td.tax { background: #fef8e7; color: #856404; text-align: right; padding: 6px 10px; }
+
+  /* ── Editable cells ── */
+  .cell-input {
+    width: 100%; height: 100%; border: none; outline: none; background: transparent;
+    padding: 6px 10px; text-align: right; font-size: 13px; font-family: inherit;
+  }
+  .cell-input:focus { background: #fff9c4; }
+  .cell-select {
+    width: 100%; border: none; outline: none; background: transparent;
+    padding: 5px 8px; font-size: 12px; font-family: inherit; cursor: pointer;
+  }
+  .cell-select:focus { background: #fff9c4; }
+
+  /* ── Status badges ── */
+  .badge-draft     { background:#6c757d; color:#fff; }
+  .badge-pending   { background:#ffc107; color:#212529; }
+  .badge-processed { background:#198754; color:#fff; }
+  .badge-paid      { background:#0d6efd; color:#fff; }
+  .status-badge { font-size:11px; padding:3px 8px; border-radius:10px; }
+
+  /* ── Summary cards ── */
+  .summary-card { border-radius:8px; padding:14px 20px; }
+  .summary-card .label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; opacity:.75; }
+  .summary-card .value { font-size:20px; font-weight:700; }
+
+  /* ── Saving indicator ── */
+  #save-status { font-size:12px; }
+  .saving  { color:#e67e22; }
+  .saved   { color:#27ae60; }
+  .save-err{ color:#e74c3c; }
+
+  /* ── Skeleton loader ── */
+  .sk-row td { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; height:36px; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+</style>
+
+<!-- ── Toolbar ── -->
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <div class="d-flex align-items-center flex-wrap gap-2" style="gap:10px">
+      <strong class="mr-3">Payroll Period:</strong>
+      <input type="month" id="month-picker" class="form-control form-control-sm" style="width:160px"
+             value="{{ default_month }}" max="{{ default_month }}">
+      <button id="btn-load" class="btn btn-sm btn-primary">
+        <i class="fas fa-sync-alt mr-1"></i> Load Payroll
+      </button>
+      <button id="btn-process-all" class="btn btn-sm btn-success" disabled>
+        <i class="fas fa-check-double mr-1"></i> Process All
+      </button>
+      <span id="save-status" class="ml-3"></span>
+      <div class="ml-auto text-muted" id="period-label" style="font-size:12px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Summary cards ── -->
+<div class="row mb-3" id="summary-row" style="display:none!important">
+  <div class="col-md-3">
+    <div class="summary-card bg-primary text-white">
+      <div class="label">Total Gross</div>
+      <div class="value" id="s-gross">PKR 0</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="summary-card bg-danger text-white">
+      <div class="label">Total Deductions</div>
+      <div class="value" id="s-ded">PKR 0</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="summary-card bg-success text-white">
+      <div class="label">Total Net Pay</div>
+      <div class="value" id="s-net">PKR 0</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="summary-card bg-secondary text-white">
+      <div class="label">Employees</div>
+      <div class="value" id="s-emp">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Grid ── -->
+<div class="card">
+  <div id="payroll-sheet" class="card-body p-0">
+    <div id="empty-state" class="text-center text-muted py-5">
+      <i class="fas fa-calendar-alt fa-3x mb-3 d-block"></i>
+      Select a month and click <strong>Load Payroll</strong> to begin.
+    </div>
+    <table id="payroll-table" class="table mb-0" style="display:none">
+      <thead>
+        <tr>
+          <th style="width:28px">#</th>
+          <th>Employee</th>
+          <th>Dept</th>
+          <th style="width:100px">Basic (PKR)</th>
+          <th style="width:100px">Allowances</th>
+          <th style="width:90px">Overtime</th>
+          <th style="width:90px">Bonuses</th>
+          <th style="width:100px">Loan Ded.</th>
+          <th style="width:100px">Other Ded.</th>
+          <th style="width:100px">Tax (auto)</th>
+          <th style="width:110px">Net Pay</th>
+          <th style="width:130px">Method</th>
+          <th style="width:90px">Status</th>
+          <th style="width:50px"></th>
+        </tr>
+      </thead>
+      <tbody id="payroll-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const fmt = n => Number(n||0).toLocaleString('en-PK',{minimumFractionDigits:2,maximumFractionDigits:2});
+let rows = [];   // live data cache
+let saveTimer = null;
+let pendingSaves = 0;
+
+/* ── Save indicator ── */
+function setSaving(){ pendingSaves++; document.getElementById('save-status').innerHTML='<span class="saving"><i class="fas fa-circle-notch fa-spin mr-1"></i>Saving…</span>'; }
+function setSaved(){ pendingSaves=Math.max(0,pendingSaves-1); if(!pendingSaves) document.getElementById('save-status').innerHTML='<span class="saved"><i class="fas fa-check mr-1"></i>All saved</span>'; }
+function setSaveErr(){ document.getElementById('save-status').innerHTML='<span class="save-err"><i class="fas fa-exclamation-triangle mr-1"></i>Save error</span>'; }
+
+/* ── PATCH a single payment ── */
+async function patchRow(id, changes){
+  setSaving();
+  try {
+    const res = await fetch(`/api/payroll/payments/${id}`, {
+      method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(changes)
+    });
+    if(!res.ok) throw new Error(await res.text());
+    const updated = await res.json();
+    const idx = rows.findIndex(r=>r.id===id);
+    if(idx>=0){ rows[idx]=updated; refreshRowCalcs(id, updated); }
+    updateSummary();
+    setSaved();
+  } catch(e){ console.error(e); setSaveErr(); }
+}
+
+/* ── Refresh calculated cells in a rendered row ── */
+function refreshRowCalcs(id, r){
+  const tr = document.querySelector(`tr[data-id="${id}"]`);
+  if(!tr) return;
+  tr.querySelector('.tax-cell').textContent = fmt(r.income_tax);
+  tr.querySelector('.net-cell').textContent = 'PKR '+fmt(r.net_pay);
+  const badge = tr.querySelector('.status-badge');
+  badge.className = `status-badge badge badge-${r.status}`;
+  badge.textContent = r.status.charAt(0).toUpperCase()+r.status.slice(1);
+}
+
+/* ── Build a single row ── */
+function buildRow(r, idx){
+  const tr = document.createElement('tr');
+  tr.dataset.id = r.id;
+
+  function numInput(field, val, placeholder='0'){
+    const inp = document.createElement('input');
+    inp.type='number'; inp.min='0'; inp.step='0.01';
+    inp.className='cell-input'; inp.value=Number(val).toFixed(2); inp.placeholder=placeholder;
+    inp.addEventListener('blur', ()=>{ patchRow(r.id, {[field]: parseFloat(inp.value)||0}); });
+    inp.addEventListener('keydown', e=>{
+      if(e.key==='Tab'||e.key==='Enter'){ e.preventDefault(); moveCell(inp, e.shiftKey?-1:1); }
+      if(e.key==='Escape') inp.blur();
+    });
+    return inp;
+  }
+
+  function td(content, cls=''){
+    const cell = document.createElement('td');
+    if(cls) cell.className=cls;
+    if(content instanceof HTMLElement) cell.appendChild(content);
+    else cell.innerHTML=content;
+    return cell;
+  }
+
+  const methodSel = document.createElement('select');
+  methodSel.className='cell-select';
+  ['bank_transfer','cash','cheque'].forEach(m=>{
+    const o=document.createElement('option'); o.value=m; o.textContent=m.replace('_',' ');
+    if(r.payment_method===m) o.selected=true;
+    methodSel.appendChild(o);
+  });
+  methodSel.addEventListener('change',()=>patchRow(r.id,{payment_method:methodSel.value}));
+
+  const statusBadge = `<span class="status-badge badge badge-${r.status}">${r.status.charAt(0).toUpperCase()+r.status.slice(1)}</span>`;
+
+  const delBtn = document.createElement('button');
+  delBtn.className='btn btn-link text-danger btn-sm p-0'; delBtn.title='Remove draft';
+  delBtn.innerHTML='<i class="fas fa-times"></i>';
+  delBtn.style.display = (r.status==='processed'||r.status==='paid') ? 'none':'';
+  delBtn.addEventListener('click',()=>deleteRow(r.id, tr));
+
+  tr.appendChild(td(String(idx)));
+  tr.appendChild(td(`<strong>${r.employee_name}</strong>`));
+  tr.appendChild(td(r.department||'—'));
+  tr.appendChild(td('PKR '+fmt(r.base_salary),'ro'));
+  tr.appendChild(td(numInput('allowances', r.allowances)));
+  tr.appendChild(td(numInput('overtime_pay', r.overtime_pay)));
+  tr.appendChild(td(numInput('bonuses', r.bonuses)));
+  tr.appendChild(td(numInput('loan_deduction', r.loan_deduction)));
+  tr.appendChild(td(numInput('other_deductions', r.other_deductions)));
+  tr.appendChild(td(`<span class="tax-cell">${fmt(r.income_tax)}</span>`,'tax'));
+  tr.appendChild(td(`<span class="net-cell">PKR ${fmt(r.net_pay)}</span>`,'net'));
+  tr.appendChild(td(methodSel));
+  tr.appendChild(td(statusBadge));
+  const actionTd = td(''); actionTd.appendChild(delBtn); tr.appendChild(actionTd);
+
+  return tr;
+}
+
+/* ── Department header row ── */
+function deptRow(name){
+  const tr = document.createElement('tr');
+  tr.className='dept-header';
+  const td = document.createElement('td');
+  td.colSpan=14; td.textContent=name||'(No Department)';
+  tr.appendChild(td);
+  return tr;
+}
+
+/* ── Move focus between inputs (Tab navigation) ── */
+function moveCell(inp, dir){
+  const allInputs = [...document.querySelectorAll('#payroll-body .cell-input, #payroll-body .cell-select')];
+  const cur = allInputs.indexOf(inp);
+  const next = allInputs[cur+dir];
+  if(next){ next.focus(); if(next.select) next.select(); }
+}
+
+/* ── Update summary cards ── */
+function updateSummary(){
+  let gross=0, ded=0, net=0;
+  rows.forEach(r=>{ gross+=r.total_earnings||0; ded+=r.total_deductions||0; net+=r.net_pay||0; });
+  document.getElementById('s-gross').textContent='PKR '+fmt(gross);
+  document.getElementById('s-ded').textContent='PKR '+fmt(ded);
+  document.getElementById('s-net').textContent='PKR '+fmt(net);
+  document.getElementById('s-emp').textContent=rows.length;
+}
+
+/* ── Delete a draft row ── */
+async function deleteRow(id, tr){
+  if(!confirm('Remove this draft payroll record?')) return;
+  const res = await fetch(`/api/payroll/payments/${id}`,{method:'DELETE'});
+  if(res.ok){
+    rows = rows.filter(r=>r.id!==id);
+    tr.remove();
+    updateSummary();
+  }
+}
+
+/* ── Skeleton loader ── */
+function showSkeleton(){
+  const tbody = document.getElementById('payroll-body');
+  tbody.innerHTML='';
+  for(let i=0;i<6;i++){
+    const tr=document.createElement('tr'); tr.className='sk-row';
+    for(let j=0;j<14;j++){ const td=document.createElement('td'); tr.appendChild(td); }
+    tbody.appendChild(tr);
+  }
+  document.getElementById('payroll-table').style.display='';
+  document.getElementById('empty-state').style.display='none';
+}
+
+/* ── Main load ── */
+async function loadPayroll(){
+  const month = document.getElementById('month-picker').value;
+  if(!month){ alert('Please select a month.'); return; }
+
+  document.getElementById('btn-load').disabled=true;
+  document.getElementById('btn-process-all').disabled=true;
+  showSkeleton();
+
+  try {
+    const res = await fetch(`/api/payroll/run?month=${month}`);
+    if(!res.ok) throw new Error(await res.text());
+    rows = await res.json();
+
+    const tbody = document.getElementById('payroll-body');
+    tbody.innerHTML='';
+
+    let lastDept=null, idx=1;
+    rows.forEach(r=>{
+      if(r.department!==lastDept){ tbody.appendChild(deptRow(r.department)); lastDept=r.department; }
+      tbody.appendChild(buildRow(r, idx++));
+    });
+
+    if(!rows.length){
+      tbody.innerHTML='<tr><td colspan="14" class="text-center text-muted py-4">No active employees found.</td></tr>';
+    }
+
+    document.getElementById('summary-row').style.removeProperty('display');
+    updateSummary();
+
+    const d = new Date(month+'-01');
+    const label = d.toLocaleString('default',{month:'long',year:'numeric'});
+    document.getElementById('period-label').textContent=`Period: ${label}`;
+
+    const hasDraft = rows.some(r=>r.status==='draft'||r.status==='pending');
+    document.getElementById('btn-process-all').disabled=!hasDraft;
+
+  } catch(e){
+    document.getElementById('payroll-body').innerHTML=`<tr><td colspan="14" class="text-danger p-3">Error loading payroll: ${e.message}</td></tr>`;
+  }
+
+  document.getElementById('btn-load').disabled=false;
+}
+
+/* ── Process All ── */
+document.getElementById('btn-process-all').addEventListener('click', async ()=>{
+  const month = document.getElementById('month-picker').value;
+  if(!confirm(`Mark all draft/pending payments for ${month} as Processed?`)) return;
+  setSaving();
+  try {
+    const res = await fetch('/api/payroll/run/process-all',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({month})
+    });
+    if(!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    setSaved();
+    await loadPayroll();
+    alert(`${data.processed} payment(s) marked as Processed.`);
+  } catch(e){ setSaveErr(); alert('Error: '+e.message); }
+});
+
+document.getElementById('btn-load').addEventListener('click', loadPayroll);
+
+/* ── Auto-load on page open ── */
+loadPayroll();
+</script>
+{% endblock %}

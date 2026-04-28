@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Accounting{% endblock %}
+{% block page_title %}Accounting{% endblock %}
+{% block breadcrumb_active %}Accounting{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner"><h3>PKR {{ "%.2f"|format(petty_cash_balance) }}</h3><p>Petty Cash</p></div>
+            <div class="icon"><i class="fas fa-wallet"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-primary">
+            <div class="inner"><h3>PKR {{ "%.2f"|format(bank_balance) }}</h3><p>Bank Account</p></div>
+            <div class="icon"><i class="fas fa-university"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner"><h3>PKR {{ "%.2f"|format(receivables_balance) }}</h3><p>Accounts Receivable</p></div>
+            <div class="icon"><i class="fas fa-hand-holding-usd"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner"><h3>PKR {{ "%.2f"|format(payables_balance) }}</h3><p>Accounts Payable</p></div>
+            <div class="icon"><i class="fas fa-file-invoice-dollar"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col"><h3 class="card-title">Financial Summary</h3></div>
+                    <div class="col text-right">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown">
+                                <i class="fas fa-file-export"></i> Reports
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <!-- Excel Report -->
+                                <form method="POST" action="{{ url_for('main.generate_excel_report', module='accounting') }}" class="d-inline">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="fas fa-file-excel"></i> Export Excel
+                                    </button>
+                                </form>
+
+                                <!-- PDF Report -->
+                                <form method="POST" action="{{ url_for('main.generate_pdf_report', module='accounting') }}" class="d-inline ml-2">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-file-pdf"></i> Export PDF
+                                    </button>
+                                </form>
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item" data-toggle="modal" data-target="#reportModal" data-module="accounting">
+                                    <i class="fas fa-cog"></i> Custom Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Employee Loans</h5>
+                        <table class="table table-sm">
+                            <thead><tr><th>Employee</th><th>Department</th><th>Outstanding</th></tr></thead>
+                            <tbody>
+                                {% for loan in employee_loans %}
+                                <tr>
+                                    <td>{{ loan.name }}</td>
+                                    <td>{{ loan.department }}</td>
+                                    <td class="text-danger">PKR {{ "%.2f"|format(loan.outstanding_loan) }}</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="3" class="text-center text-muted">No outstanding loans</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Net Position</h5>
+                        <p class="text-primary"><strong>PKR {{ "%.2f"|format(petty_cash_balance + bank_balance + receivables_balance - payables_balance) }}</strong></p>
+                        <small class="text-muted">Assets - Liabilities</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

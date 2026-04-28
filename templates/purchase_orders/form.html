@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Add Purchase Order{% endblock %}
+{% block page_title %}Add Purchase Order{% endblock %}
+{% block breadcrumb_active %}Purchase Orders{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-file-invoice"></i> Create Purchase Order</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Supplier *</label>
+                        <select name="supplier_id" class="form-control" required>
+                            <option value="">Select Supplier</option>
+                            {% for supplier in suppliers %}
+                            <option value="{{ supplier.id }}">{{ supplier.name }} - {{ supplier.city }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Expected Delivery Date</label>
+                        <input type="date" name="expected_date" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PO Items -->
+            <div class="mb-4">
+                <h5><i class="fas fa-boxes"></i> Order Items</h5>
+                <table class="table table-bordered" id="poItemsTable">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Material</th>
+                            <th width="15%">Quantity</th>
+                            <th width="15%">Unit Price (PKR)</th>
+                            <th width="10%">Tax %</th>
+                            <th width="15%">Subtotal (PKR)</th>
+                            <th width="5%">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <select name="material_id[]" class="form-control" required>
+                                    <option value="">Select Material</option>
+                                    {% for material in materials %}
+                                    <option value="{{ material.id }}">{{ material.name }} ({{ material.unit }})</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td><input type="number" step="0.01" name="quantity[]" class="form-control" required></td>
+                            <td><input type="number" step="0.01" name="unit_price[]" class="form-control" required></td>
+                            <td><input type="number" step="0.1" name="tax_rate[]" class="form-control" value="17"></td>
+                            <td class="item-subtotal">PKR 0.00</td>
+                            <td>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addPOItem()">
+                    <i class="fas fa-plus"></i> Add Item
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea name="notes" class="form-control" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Create Purchase Order
+            </button>
+            <a href="{{ url_for('main.purchase_orders') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function addPOItem() {
+    const tbody = document.querySelector('#poItemsTable tbody');
+    const row = tbody.rows[0].cloneNode(true);
+    row.querySelectorAll('input').forEach(input => input.value = '');
+    row.querySelector('.item-subtotal').textContent = 'PKR 0.00';
+    tbody.appendChild(row);
+}
+
+// Calculate subtotals
+document.querySelectorAll('input[name="quantity[]"], input[name="unit_price[]"], input[name="tax_rate[]"]').forEach(input => {
+    input.addEventListener('input', function() {
+        const row = this.closest('tr');
+        const qty = parseFloat(row.querySelector('input[name="quantity[]"]').value) || 0;
+        const price = parseFloat(row.querySelector('input[name="unit_price[]"]').value) || 0;
+        const tax = parseFloat(row.querySelector('input[name="tax_rate[]"]').value) || 0;
+        const subtotal = qty * price * (1 + tax / 100);
+        row.querySelector('.item-subtotal').textContent = 'PKR ' + subtotal.toFixed(2);
+    });
+});
+</script>
+{% endblock %}

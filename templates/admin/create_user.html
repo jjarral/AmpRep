@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Create User — Ampoulex{% endblock %}
+{% block content %}
+<div class="container" style="max-width:520px;margin:60px auto;">
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center mb-4 gap-3">
+        <a href="{{ url_for('main.admin_users') }}" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+          <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Create New User</h5>
+          <p class="text-muted mb-0 small">All fields required</p>
+        </div>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ 'danger' if cat == 'error' else cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" required autofocus
+                 pattern="[a-zA-Z0-9_]+" title="Letters, numbers and underscores only">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password <small class="text-muted">(min 8 characters)</small></label>
+          <input type="password" name="password" class="form-control" minlength="8" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Role</label>
+          <select name="role" class="form-select" required>
+            <option value="user">User — Standard access</option>
+            <option value="manager">Manager — Elevated access</option>
+            <option value="admin">Admin — Full access</option>
+          </select>
+        </div>
+        <div class="mb-4 form-check">
+          <input type="checkbox" class="form-check-input" id="mustChange" name="must_change_password" checked>
+          <label class="form-check-label" for="mustChange">
+            Require password change on first login
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Create User</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

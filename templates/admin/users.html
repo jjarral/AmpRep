@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}User Management — Ampoulex{% endblock %}
+{% block content %}
+<div class="container-fluid px-4 py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="mb-0"><i class="fas fa-users-cog me-2"></i>User Management</h4>
+      <p class="text-muted mb-0">Create, manage and monitor system users</p>
+    </div>
+    <a href="{{ url_for('main.admin_create_user') }}" class="btn btn-primary">
+      <i class="fas fa-user-plus me-1"></i> New User
+    </a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ 'danger' if cat == 'error' else cat }} alert-dismissible fade show">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="card shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Last Login</th>
+            <th>Failed Attempts</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td>
+              <strong>{{ user.username }}</strong>
+              {% if user.must_change_password %}
+                <span class="badge bg-warning text-dark ms-1">Must Change PW</span>
+              {% endif %}
+            </td>
+            <td>{{ user.email }}</td>
+            <td>
+              <span class="badge {% if user.role == 'admin' %}bg-danger{% elif user.role == 'manager' %}bg-info{% else %}bg-secondary{% endif %}">
+                {{ user.role }}
+              </span>
+            </td>
+            <td>
+              {% if not user.is_active %}
+                <span class="badge bg-secondary">Inactive</span>
+              {% elif user.is_locked() %}
+                <span class="badge bg-danger">Locked</span>
+              {% else %}
+                <span class="badge bg-success">Active</span>
+              {% endif %}
+            </td>
+            <td class="text-muted small">
+              {{ user.last_login.strftime('%d %b %Y %H:%M') if user.last_login else '—' }}
+            </td>
+            <td>
+              {% if (user.failed_login_attempts or 0) > 0 %}
+                <span class="badge bg-warning text-dark">{{ user.failed_login_attempts }}</span>
+              {% else %}
+                <span class="text-muted">0</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex gap-1 flex-wrap">
+                {% if user.is_locked() %}
+                <form method="POST" action="{{ url_for('main.admin_unlock_user', user_id=user.id) }}">
+                  <button class="btn btn-sm btn-outline-success" title="Unlock">
+                    <i class="fas fa-unlock"></i>
+                  </button>
+                </form>
+                {% endif %}
+
+                {% if user.id != current_user.id %}
+                <form method="POST" action="{{ url_for('main.admin_toggle_user', user_id=user.id) }}">
+                  <button class="btn btn-sm {{ 'btn-outline-secondary' if user.is_active else 'btn-outline-success' }}"
+                          title="{{ 'Deactivate' if user.is_active else 'Activate' }}">
+                    <i class="fas {{ 'fa-user-slash' if user.is_active else 'fa-user-check' }}"></i>
+                  </button>
+                </form>
+                {% endif %}
+
+                <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
+                        data-bs-target="#resetModal{{ user.id }}" title="Reset Password">
+                  <i class="fas fa-key"></i>
+                </button>
+              </div>
+
+              <!-- Reset Password Modal -->
+              <div class="modal fade" id="resetModal{{ user.id }}" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h6 class="modal-title">Reset Password — {{ user.username }}</h6>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form method="POST" action="{{ url_for('main.admin_reset_password', user_id=user.id) }}">
+                      <div class="modal-body">
+                        <input type="password" name="new_password" class="form-control"
+                               placeholder="New password (min 8 chars)" minlength="8" required>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="submit" class="btn btn-warning btn-sm">Reset</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="text-center text-muted py-4">No users found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

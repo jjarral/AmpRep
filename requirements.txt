@@ -1,0 +1,17 @@
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-SocketIO==5.3.6
+psycopg2-binary==2.9.9
+python-dotenv==1.0.0
+gunicorn==21.2.0
+Werkzeug==3.0.1
+email-validator==2.1.0
+openpyxl==3.1.2
+reportlab==4.0.7
+python-barcode==0.15.1
+qrcode==7.4.2
+Pillow==10.1.0
+pandas==2.1.4
+eventlet==0.41.0
+setuptools>=68.0

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk Upload Expenses{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="fas fa-file-excel"></i> Bulk Upload Expenses</h2>
+                <div>
+                    <a href="{{ url_for('main.expenses') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Expenses
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Upload Form -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-upload"></i> Upload Excel File</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label">Select Excel File</label>
+                            <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required>
+                            <small class="text-muted">Supported formats: .xlsx, .xls</small>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Required Columns:</h6>
+                            <ul class="mb-0">
+                                <li><strong>category</strong> - Expense category (e.g., Utilities, Supplies)</li>
+                                <li><strong>amount</strong> - Amount in PKR (numeric)</li>
+                                <li><strong>date</strong> - Date in YYYY-MM-DD format</li>
+                            </ul>
+                            <hr>
+                            <h6>Optional Columns:</h6>
+                            <ul class="mb-0">
+                                <li>description, status, paid_by, payment_method, reference_number, approved_by</li>
+                            </ul>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-upload"></i> Upload & Process
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Download Template -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-download"></i> Download Template</h5>
+                </div>
+                <div class="card-body">
+                    <p>Download a sample Excel template with the correct column headers:</p>
+                    
+                    <a href="{{ url_for('main.download_expense_template') }}" class="btn btn-outline-primary w-100 mb-3">
+                        <i class="fas fa-file-excel"></i> Download Expense Template (.xlsx)
+                    </a>
+                    
+                    <div class="alert alert-warning">
+                        <small>
+                            <strong>Tip:</strong> Fill in your data in the template, then upload it using the form above.
+                        </small>
+                    </div>
+                    
+                    <h6>Sample Data Format:</h6>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>category</th>
+                                <th>amount</th>
+                                <th>date</th>
+                                <th>description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Utilities</td>
+                                <td>5000</td>
+                                <td>2026-03-01</td>
+                                <td>Electricity bill</td>
+                            </tr>
+                            <tr>
+                                <td>Supplies</td>
+                                <td>2500</td>
+                                <td>2026-03-05</td>
+                                <td>Office supplies</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

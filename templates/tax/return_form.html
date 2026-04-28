@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Generate Tax Return{% endblock %}
+{% block page_title %}Generate Tax Return{% endblock %}
+{% block breadcrumb_active %}Generate Return{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-file-signature mr-2"></i>Generate Monthly GST Return</h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('main.tax_returns') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i>Back
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    This will calculate total sales tax collected, input tax credits, and net GST payable for the selected month from your order records.
+                </div>
+
+                <form method="POST" action="{{ url_for('main.generate_tax_return') }}">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Return Period <span class="text-danger">*</span></label>
+                        <input type="month" name="return_period" class="form-control"
+                               max="{{ now.strftime('%Y-%m') if now is defined else '' }}"
+                               required placeholder="YYYY-MM">
+                        <small class="text-muted">Select the month for which you want to generate the GST return.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">Input Tax Credit (PKR)</label>
+                        <input type="number" name="input_tax" class="form-control" step="0.01" min="0" value="0"
+                               placeholder="Enter input tax credit from supplier invoices">
+                        <small class="text-muted">GST paid to suppliers that can be claimed as credit against output tax.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">Withholding Tax Collected (PKR)</label>
+                        <input type="number" name="withholding_tax" class="form-control" step="0.01" min="0" value="0"
+                               placeholder="Withholding tax deducted at source">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">Remarks</label>
+                        <textarea name="remarks" class="form-control" rows="3"
+                                  placeholder="Any notes or special circumstances for this return..."></textarea>
+                    </div>
+
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('main.tax_returns') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-calculator mr-1"></i>Calculate &amp; Generate
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3 class="card-title"><i class="fas fa-question-circle mr-2"></i>How It Works</h3></div>
+            <div class="card-body">
+                <ol class="text-muted small">
+                    <li class="mb-2">System fetches all <strong>completed/processing</strong> orders for the selected month.</li>
+                    <li class="mb-2">Calculates total <strong>output GST</strong> collected (17% of taxable sales).</li>
+                    <li class="mb-2">Subtracts your entered <strong>input tax credit</strong> to get net payable.</li>
+                    <li class="mb-2">Creates a draft return record — update status to <em>Filed</em> once submitted to FBR IRIS.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% block title %}Receipt Voucher {{ voucher.voucher_number }}{% endblock %}
+{% block page_title %}Receipt Voucher Details{% endblock %}
+{% block breadcrumb_active %}Receipt Vouchers{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    Receipt Voucher: {{ voucher.voucher_number }}
+                </h3>
+            </div>
+            <div class="col text-right">
+                <a href="{{ url_for('main.receipt_vouchers') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+                <button onclick="window.print()" class="btn btn-primary">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                {% if voucher.status == 'draft' %}
+                <a href="{{ url_for('main.edit_receipt_voucher', id=voucher.id) }}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <form action="{{ url_for('main.approve_receipt_voucher', id=voucher.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-success" onclick="return confirm('Approve this receipt?')">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <!-- Voucher Header -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5><i class="fas fa-info-circle"></i> Voucher Information</h5>
+                <table class="table table-borderless table-sm">
+                    <tr>
+                        <th width="40%">Voucher Number:</th>
+                        <td><strong>{{ voucher.voucher_number }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Date:</th>
+                        <td>{{ voucher.voucher_date }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            <span class="badge badge-{{ 
+                                'warning' if voucher.status == 'draft' else
+                                'success' if voucher.status == 'received' else
+                                'info'
+                            }}">
+                                {{ voucher.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Payment Method:</th>
+                        <td>
+                            <i class="fas fa-{{ 'money-bill' if voucher.payment_method == 'cash' else 'university' if voucher.payment_method == 'bank' else 'cheque' }}"></i>
+                            {{ voucher.payment_method }}
+                        </td>
+                    </tr>
+                    {% if voucher.payment_method in ['bank', 'cheque'] and voucher.bank_account %}
+                    <tr>
+                        <th>Bank Account:</th>
+                        <td>{{ voucher.bank_account.account_name }} ({{ voucher.bank_account.account_number }})</td>
+                    </tr>
+                    {% endif %}
+                    {% if voucher.cheque_number %}
+                    <tr>
+                        <th>Cheque Number:</th>
+                        <td>{{ voucher.cheque_number }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+            
+            <div class="col-md-6">
+                <h5><i class="fas fa-user"></i> Payer Information</h5>
+                <table class="table table-borderless table-sm">
+                    <tr>
+                        <th width="40%">Payer Name:</th>
+                        <td><strong>{{ voucher.payer_name }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Payer Type:</th>
+                        <td>
+                            <span class="badge badge-{{ 'info' if voucher.payer_type == 'customer' else 'secondary' }}">
+                                {{ voucher.payer_type or 'Other' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% if voucher.payer_id and voucher.payer_type == 'customer' %}
+                    <tr>
+                        <th>Customer:</th>
+                        <td>
+                            <a href="{{ url_for('main.edit_customer', id=voucher.payer_id) }}">
+                                View Customer
+                            </a>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% if voucher.received_by %}
+                    <tr>
+                        <th>Received By:</th>
+                        <td>{{ voucher.received_by }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if voucher.created_by %}
+                    <tr>
+                        <th>Created By:</th>
+                        <td>{{ voucher.created_by }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+        
+        <!-- Description -->
+        {% if voucher.description %}
+        <div class="mb-4">
+            <h5><i class="fas fa-sticky-note"></i> Description</h5>
+            <p class="bg-light p-3 rounded">{{ voucher.description }}</p>
+        </div>
+        {% endif %}
+        
+        <!-- Voucher Lines -->
+        <h5><i class="fas fa-list"></i> Receipt Lines</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Account</th>
+                        <th>Description</th>
+                        <th class="text-right">Amount (PKR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for line in voucher.lines %}
+                    <tr>
+                        <td>
+                            <strong>{{ line.account.account_code }}</strong><br>
+                            <small class="text-muted">{{ line.account.account_name }}</small>
+                        </td>
+                        <td>{{ line.description or '-' }}</td>
+                        <td class="text-right">{{ "%.2f"|format(line.amount) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="bg-light">
+                    <tr>
+                        <th colspan="2" class="text-right">TOTAL:</th>
+                        <th class="text-right">PKR {{ "%.2f"|format(voucher.total_amount) }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        
+        <!-- Audit Trail -->
+        <div class="mt-4">
+            <h5><i class="fas fa-history"></i> Audit Trail</h5>
+            <table class="table table-sm table-borderless">
+                <tr>
+                    <th width="30%">Created At:</th>
+                    <td>{{ voucher.created_at }}</td>
+                </tr>
+                {% if voucher.received_by %}
+                <tr>
+                    <th>Received At:</th>
+                    <td>{{ voucher.created_at }} by {{ voucher.received_by }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Print Styles -->
+<style>
+@media print {
+    .no-print, .card-header .btn, .nav, .sidebar, .main-footer {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .card-header {
+        border-bottom: 2px solid #000 !important;
+        padding-bottom: 10px !important;
+    }
+    body {
+        background: white !important;
+        font-size: 12px !important;
+    }
+    table {
+        font-size: 11px !important;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if supplier else 'Add' }} Supplier{% endblock %}
+{% block page_title %}{{ 'Edit' if supplier else 'Add' }} Supplier{% endblock %}
+{% block breadcrumb_active %}Suppliers{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-truck"></i> {{ 'Edit' if supplier else 'Add' }} Supplier</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Company Name *</label>
+                        <input type="text" name="name" class="form-control" value="{{ supplier.name if supplier else '' }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Contact Person</label>
+                        <input type="text" name="contact_person" class="form-control" value="{{ supplier.contact_person if supplier else '' }}">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ supplier.email if supplier else '' }}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" name="phone" class="form-control" value="{{ supplier.phone if supplier else '' }}">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <textarea name="address" class="form-control" rows="2">{{ supplier.address if supplier else '' }}</textarea>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" name="city" class="form-control" value="{{ supplier.city if supplier else '' }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Country</label>
+                        <input type="text" name="country" class="form-control" value="{{ supplier.country if supplier else 'Pakistan' }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Payment Terms</label>
+                        <select name="payment_terms" class="form-control">
+                            <option value="Cash" {{ 'selected' if supplier and supplier.payment_terms == 'Cash' else '' }}>Cash</option>
+                            <option value="15 days" {{ 'selected' if supplier and supplier.payment_terms == '15 days' else '' }}>15 days</option>
+                            <option value="30 days" {{ 'selected' if supplier and supplier.payment_terms == '30 days' else '' }}>30 days</option>
+                            <option value="60 days" {{ 'selected' if supplier and supplier.payment_terms == '60 days' else '' }}>60 days</option>
+                            <option value="90 days" {{ 'selected' if supplier and supplier.payment_terms == '90 days' else '' }}>90 days</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>CNIC</label>
+                        <input type="text" name="cnic" class="form-control" value="{{ supplier.cnic if supplier else '' }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>NTN</label>
+                        <input type="text" name="ntn" class="form-control" value="{{ supplier.ntn if supplier else '' }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Credit Limit (PKR)</label>
+                        <input type="number" step="0.01" name="credit_limit" class="form-control" value="{{ supplier.credit_limit if supplier else 0 }}">
+                    </div>
+                </div>
+            </div>
+            {% if supplier %}
+            <div class="form-group">
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" name="is_active" id="is_active" {{ 'checked' if supplier.is_active else '' }}>
+                    <label class="custom-control-label" for="is_active">Active Supplier</label>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> {{ 'Update' if supplier else 'Create' }} Supplier
+            </button>
+            <a href="{{ url_for('main.suppliers') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

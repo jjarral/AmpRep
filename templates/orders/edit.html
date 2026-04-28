@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Edit Order{% endblock %}
+{% block page_title %}Edit Order{% endblock %}
+{% block breadcrumb_active %}Orders{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-edit"></i> Edit Order - {{ order.order_number }}
+        </h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Order Status</label>
+                        <select name="status" class="form-control" required>
+                            <option value="pending" {{ 'selected' if order.status == 'pending' else '' }}>Pending</option>
+                            <option value="processing" {{ 'selected' if order.status == 'processing' else '' }}>Processing</option>
+                            <option value="completed" {{ 'selected' if order.status == 'completed' else '' }}>Completed</option>
+                            <option value="cancelled" {{ 'selected' if order.status == 'cancelled' else '' }}>Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Payment Status</label>
+                        <select name="payment_status" class="form-control" id="paymentStatus" required onchange="togglePaidAmount()">
+                            <option value="unpaid" {{ 'selected' if order.payment_status == 'unpaid' else '' }}>Unpaid</option>
+                            <option value="partial" {{ 'selected' if order.payment_status == 'partial' else '' }}>Partial Payment</option>
+                            <option value="paid" {{ 'selected' if order.payment_status == 'paid' else '' }}>Paid</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Payment Method</label>
+                        <select name="payment_method" class="form-control">
+                            <option value="">Select Method</option>
+                            <option value="cash" {{ 'selected' if order.payment_method == 'cash' else '' }}>Cash</option>
+                            <option value="bank_transfer" {{ 'selected' if order.payment_method == 'bank_transfer' else '' }}>Bank Transfer</option>
+                            <option value="cheque" {{ 'selected' if order.payment_method == 'cheque' else '' }}>Cheque</option>
+                            <option value="online" {{ 'selected' if order.payment_method == 'online' else '' }}>Online Payment</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group" id="paidAmountGroup" style="display: {% if order.payment_status == 'partial' %}block{% else %}none{% endif %};">
+                        <label>Paid Amount (PKR)</label>
+                        <input type="number" name="paid_amount" class="form-control" step="0.01" value="{{ order.paid_amount }}" min="0" max="{{ order.total_amount }}">
+                        <small class="text-muted">Total: PKR {{ "%.2f"|format(order.total_amount) }}</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle"></i> Order Summary</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Customer:</strong><br>
+                        {{ order.customer_name_snapshot or 'N/A' }}<br>
+                        {{ order.customer_business_snapshot or '' }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Order Total:</strong><br>
+                        <span class="text-primary">PKR {{ "%.2f"|format(order.total_amount) }}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Current Paid:</strong><br>
+                        <span class="text-success">PKR {{ "%.2f"|format(order.paid_amount) }}</span><br>
+                        <strong>Balance:</strong> PKR {{ "%.2f"|format(order.total_amount - order.paid_amount) }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Items -->
+            <div class="card bg-light">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Order Items</h5>
+                </div>
+                <div class="card-body">
+                    {% if order.order_items %}
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.order_items %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>
+                                    <strong>{{ item.product.name if item.product else 'Product' }}</strong>
+                                    {% if item.product %}
+                                    <br><small class="text-muted">{{ item.product.color }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.quantity }}</td>
+                                <td>PKR {{ "%.2f"|format(item.unit_price) }}</td>
+                                <td><strong>PKR {{ "%.2f"|format(item.subtotal) }}</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No items in this order.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Update Order
+            </button>
+            <a href="{{ url_for('main.view_order', id=order.id) }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function togglePaidAmount() {
+    const status = document.getElementById('paymentStatus').value;
+    const paidAmountGroup = document.getElementById('paidAmountGroup');
+    
+    if (status === 'partial') {
+        paidAmountGroup.style.display = 'block';
+    } else {
+        paidAmountGroup.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

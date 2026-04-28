@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if timesheet else 'Generate' }} Timesheet{% endblock %}
+{% block page_title %}{{ 'Edit' if timesheet else 'Generate' }} Timesheet{% endblock %}
+{% block breadcrumb_active %}Timesheets{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form method="POST">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label>Employee *</label>
+                    <select name="employee_id" class="form-control" {{ 'disabled' if timesheet else '' }} required>
+                        <option value="">Select Employee</option>
+                        {% for emp in employees %}
+                        <option value="{{ emp.id }}" {{ 'selected' if timesheet and timesheet.employee_id == emp.id else '' }}>{{ emp.name }} - {{ emp.role }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 form-group">
+                    <label>Period Type *</label>
+                    <select name="period_type" class="form-control" {{ 'disabled' if timesheet else '' }}>
+                        <option value="daily" {{ 'selected' if timesheet and timesheet.period_type == 'daily' else '' }}>Daily</option>
+                        <option value="weekly" {{ 'selected' if timesheet and timesheet.period_type == 'weekly' else '' }}>Weekly</option>
+                        <option value="bi-weekly" {{ 'selected' if timesheet and timesheet.period_type == 'bi-weekly' else '' }}>Bi-Weekly</option>
+                        <option value="monthly" {{ 'selected' if timesheet and timesheet.period_type == 'monthly' else '' }}>Monthly</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label>Period Start *</label>
+                    <input type="date" name="period_start" class="form-control" value="{{ timesheet.period_start.strftime('%Y-%m-%d') if timesheet else '' }}" {{ 'disabled' if timesheet else '' }} required>
+                </div>
+                <div class="col-md-6 form-group">
+                    <label>Period End *</label>
+                    <input type="date" name="period_end" class="form-control" value="{{ timesheet.period_end.strftime('%Y-%m-%d') if timesheet else '' }}" {{ 'disabled' if timesheet else '' }} required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 form-group">
+                    <label>Regular Hours</label>
+                    <input type="number" step="0.5" name="regular_hours" class="form-control" value="{{ timesheet.regular_hours if timesheet else '' }}">
+                </div>
+                <div class="col-md-4 form-group">
+                    <label>Overtime Hours</label>
+                    <input type="number" step="0.5" name="overtime_hours" class="form-control" value="{{ timesheet.overtime_hours if timesheet else '' }}">
+                </div>
+                <div class="col-md-4 form-group">
+                    <label>Total Hours</label>
+                    <input type="number" step="0.5" name="total_hours" class="form-control" value="{{ timesheet.total_hours if timesheet else '' }}" readonly>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 form-group">
+                    <label>Leave Days</label>
+                    <input type="number" step="0.5" name="leave_days" class="form-control" value="{{ timesheet.leave_days if timesheet else '' }}">
+                </div>
+                <div class="col-md-4 form-group">
+                    <label>Sick Days</label>
+                    <input type="number" step="0.5" name="sick_days" class="form-control" value="{{ timesheet.sick_days if timesheet else '' }}">
+                </div>
+                <div class="col-md-4 form-group">
+                    <label>Absent Days</label>
+                    <input type="number" step="0.5" name="absent_days" class="form-control" value="{{ timesheet.absent_days if timesheet else '' }}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea name="notes" class="form-control" rows="3">{{ timesheet.notes if timesheet else '' }}</textarea>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">{{ 'Update' if timesheet else 'Generate' }} Timesheet</button>
+            <a href="{{ url_for('main.timesheets') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "VjMCn-cEkvqx2zNDF8Vhy"
+uri = "file://static/logo.png"
+type = "image"
+title = "generated_image"

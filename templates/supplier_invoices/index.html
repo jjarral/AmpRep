@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Supplier Invoices{% endblock %}
+{% block page_title %}Supplier Invoices{% endblock %}
+{% block breadcrumb_active %}Supplier Invoices{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-file-invoice-dollar"></i> Supplier Invoices</h3>
+            </div>
+            <div class="col text-right">
+                <a href="{{ url_for('main.add_supplier_invoice') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Invoice
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Supplier</th>
+                    <th>PO #</th>
+                    <th>Invoice Date</th>
+                    <th>Due Date</th>
+                    <th>Amount (PKR)</th>
+                    <th>Paid (PKR)</th>
+                    <th>Balance (PKR)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in invoices %}
+                <tr>
+                    <td><strong>{{ invoice.invoice_number }}</strong></td>
+                    <td>{{ invoice.supplier.name }}</td>
+                    <td>{{ invoice.purchase_order.po_number if invoice.purchase_order else '-' }}</td>
+                    <td>{{ invoice.invoice_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ invoice.due_date.strftime('%Y-%m-%d') if invoice.due_date else '-' }}</td>
+                    <td>PKR {{ "%.2f"|format(invoice.total_amount) }}</td>
+                    <td>PKR {{ "%.2f"|format(invoice.paid_amount) }}</td>
+                    <td>PKR {{ "%.2f"|format(invoice.balance_amount) }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if invoice.status == 'paid' else 'warning' if invoice.status == 'partial' else 'danger' }}">
+                            {{ invoice.status|title }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

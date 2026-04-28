@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if product else 'Add' }} Product{% endblock %}
+{% block page_title %}{{ 'Edit' if product else 'Add' }} Product{% endblock %}
+{% block breadcrumb_active %}Products{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-box"></i> {{ 'Edit' if product else 'Add' }} Product</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <!-- Basic Info -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Product Name *</label>
+                        <input type="text" name="name" class="form-control" value="{{ product.name if product else '' }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Specification</label>
+                        <input type="text" name="specification" class="form-control" value="{{ product.specification if product else '' }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Type & Color -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Product Type</label>
+                        <select name="product_type" class="form-control">
+                            <option value="product" {{ 'selected' if product and product.product_type == 'product' else '' }}>Product</option>
+                            <option value="service" {{ 'selected' if product and product.product_type == 'service' else '' }}>Service</option>
+                            <option value="raw_material" {{ 'selected' if product and product.product_type == 'raw_material' else '' }}>Raw Material</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Color</label>
+                        <select name="color" class="form-control">
+                            <option value="">Select Color</option>
+                            <option value="Transparent" {{ 'selected' if product and product.color == 'Transparent' else '' }}>Transparent</option>
+                            <option value="Amber" {{ 'selected' if product and product.color == 'Amber' else '' }}>Amber</option>
+                            <option value="Custom" {{ 'selected' if product and product.color == 'Custom' else '' }}>Custom</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Material Type</label>
+                        <select name="material_type" class="form-control">
+                            <option value="">Select Material</option>
+                            <option value="Glass" {{ 'selected' if product and product.material_type == 'Glass' else '' }}>Glass</option>
+                            <option value="Plastic" {{ 'selected' if product and product.material_type == 'Plastic' else '' }}>Plastic</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ✅ AMPPOULE DIMENSIONS SECTION -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-ruler-combined"></i> Ampoule Dimensions (mm)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Body Diameter (mm)</label>
+                                <input type="number" step="0.01" name="body_diameter" class="form-control" value="{{ product.body_diameter if product else '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Overall Length (mm)</label>
+                                <input type="number" step="0.01" name="overall_length" class="form-control" value="{{ product.overall_length if product else '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Sealing Point (mm)</label>
+                                <input type="number" step="0.01" name="sealing_point" class="form-control" value="{{ product.sealing_point if product else '' }}">
+                                <small class="text-muted">Distance from base to sealing point</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Body Length (mm)</label>
+                                <input type="number" step="0.01" name="body_length" class="form-control" value="{{ product.body_length if product else '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Stem Diameter (mm)</label>
+                                <input type="number" step="0.01" name="stem_diameter" class="form-control" value="{{ product.stem_diameter if product else '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Wall Thickness (mm)</label>
+                                <input type="number" step="0.01" name="wall_thickness" class="form-control" value="{{ product.wall_thickness if product else '' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ✅ PRICING: Rate per 1000 Ampoules -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-tag"></i> Pricing (PKR per 1000 Ampoules)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Price per 1000 Units (PKR) *</label>
+                                <input type="number" step="0.01" name="base_price" class="form-control" value="{{ product.base_price if product else '' }}" required>
+                                <small class="text-muted">Enter price for 1000 ampoules. Unit price will be calculated automatically.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Calculated Unit Price (PKR)</label>
+                                <input type="text" class="form-control" id="unit_price_display" readonly value="{{ '%.2f'|format(product.unit_price) if product and product.base_price else '0.00' }}">
+                                <small class="text-muted">Auto-calculated: Base Price ÷ 1000</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stock & Inventory -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Current Stock (Units)</label>
+                        <input type="number" name="stock" class="form-control" value="{{ product.stock if product else '0' }}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Stock Value (PKR)</label>
+                        <input type="text" class="form-control" id="stock_value_display" readonly value="{{ '%.2f'|format(product.stock_value) if product else '0.00' }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- White Label / Painting Service Fields -->
+            {% if product and product.product_type == 'service' %}
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0"><i class="fas fa-palette"></i> White Label / Painting Service</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Paint/Ink Color</label>
+                                <input type="text" name="paint_color" class="form-control" value="{{ product.paint_color if product else '' }}" placeholder="e.g., White, Black, Custom">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Paint Type</label>
+                                <select name="paint_type" class="form-control">
+                                    <option value="">Select Paint Type</option>
+                                    <option value="Epoxy" {{ 'selected' if product and product.paint_type == 'Epoxy' else '' }}>Epoxy</option>
+                                    <option value="Acrylic" {{ 'selected' if product and product.paint_type == 'Acrylic' else '' }}>Acrylic</option>
+                                    <option value="UV-cured" {{ 'selected' if product and product.paint_type == 'UV-cured' else '' }}>UV-cured</option>
+                                    <option value="Water-based" {{ 'selected' if product and product.paint_type == 'Water-based' else '' }}>Water-based</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Printing Method</label>
+                                <select name="printing_method" class="form-control">
+                                    <option value="">Select Method</option>
+                                    <option value="Screen Print" {{ 'selected' if product and product.printing_method == 'Screen Print' else '' }}>Screen Print</option>
+                                    <option value="Pad Print" {{ 'selected' if product and product.printing_method == 'Pad Print' else '' }}>Pad Print</option>
+                                    <option value="Digital Print" {{ 'selected' if product and product.printing_method == 'Digital Print' else '' }}>Digital Print</option>
+                                    <option value="Hot Stamp" {{ 'selected' if product and product.printing_method == 'Hot Stamp' else '' }}>Hot Stamp</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> For white label services, the raw material used is ink/paint. Set pricing per 1000 ampoules for painting service.
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Additional Fields -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>USP Type</label>
+                        <select name="usp_type" class="form-control">
+                            <option value="">Select USP Type</option>
+                            <option value="USP Type I" {{ 'selected' if product and product.usp_type == 'USP Type I' else '' }}>USP Type I</option>
+                            <option value="USP Type II" {{ 'selected' if product and product.usp_type == 'USP Type II' else '' }}>USP Type II</option>
+                            <option value="USP Type III" {{ 'selected' if product and product.usp_type == 'USP Type III' else '' }}>USP Type III</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Shape Type</label>
+                        <select name="shape_type" class="form-control">
+                            <option value="">Select Shape</option>
+                            <option value="Round" {{ 'selected' if product and product.shape_type == 'Round' else '' }}>Round</option>
+                            <option value="Flat" {{ 'selected' if product and product.shape_type == 'Flat' else '' }}>Flat</option>
+                            <option value="Custom" {{ 'selected' if product and product.shape_type == 'Custom' else '' }}>Custom</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Use Case / Notes</label>
+                <textarea name="use_case" class="form-control" rows="3">{{ product.use_case if product else '' }}</textarea>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> {{ 'Update' if product else 'Create' }} Product
+            </button>
+            <a href="{{ url_for('main.products') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+// Auto-calculate unit price when base price changes
+document.querySelector('input[name="base_price"]').addEventListener('input', function() {
+    const basePrice = parseFloat(this.value) || 0;
+    const unitPrice = basePrice / 1000;
+    document.getElementById('unit_price_display').value = unitPrice.toFixed(2);
+    
+    // Also update stock value if stock field exists
+    const stock = parseInt(document.querySelector('input[name="stock"]').value) || 0;
+    const stockValue = stock * unitPrice;
+    document.getElementById('stock_value_display').value = stockValue.toFixed(2);
+});
+
+// Update stock value when stock changes
+document.querySelector('input[name="stock"]').addEventListener('input', function() {
+    const basePrice = parseFloat(document.querySelector('input[name="base_price"]').value) || 0;
+    const unitPrice = basePrice / 1000;
+    const stock = parseInt(this.value) || 0;
+    const stockValue = stock * unitPrice;
+    document.getElementById('stock_value_display').value = stockValue.toFixed(2);
+});
+</script>
+{% endblock %}

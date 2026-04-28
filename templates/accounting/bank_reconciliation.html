@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Bank Reconciliation{% endblock %}
+{% block page_title %}Bank Reconciliation{% endblock %}
+{% block breadcrumb_active %}Accounting{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-university"></i> Bank Reconciliation</h3>
+    </div>
+    <div class="card-body">
+        <!-- Bank Account Selection -->
+        <form method="GET" class="mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Select Bank Account</label>
+                        <select name="bank_account_id" class="form-control" onchange="this.form.submit()">
+                            <option value="">Select Account</option>
+                            {% for account in bank_accounts %}
+                            <option value="{{ account.id }}" {{ 'selected' if selected_account == account.id }}>
+                                {{ account.account_name }} ({{ account.account_number }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </form>
+        
+        {% if selected_account %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Reconciliation Date</th>
+                        <th>Statement Balance</th>
+                        <th>Book Balance</th>
+                        <th>Adjusted Balance</th>
+                        <th>Status</th>
+                        <th>Prepared By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rec in reconciliations %}
+                    <tr>
+                        <td>{{ rec.reconciliation_date }}</td>
+                        <td class="text-right">{{ "%.2f"|format(rec.statement_balance) }}</td>
+                        <td class="text-right">{{ "%.2f"|format(rec.book_balance) }}</td>
+                        <td class="text-right"><strong>{{ "%.2f"|format(rec.adjusted_balance) }}</strong></td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if rec.status == 'completed' else 'warning' }}">
+                                {{ rec.status }}
+                            </span>
+                        </td>
+                        <td>{{ rec.prepared_by or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Select a bank account to view reconciliations.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

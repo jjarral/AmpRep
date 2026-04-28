@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Product Labels - {{ product.name }}{% endblock %}
+{% block page_title %}Product Labels{% endblock %}
+{% block breadcrumb_active %}Products{% endblock %}
+
+{% block content %}
+<div class="card no-print">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-barcode"></i> Product Labels - {{ product.name }}</h3>
+            </div>
+            <div class="col text-right">
+                <button onclick="window.print()" class="btn btn-primary">
+                    <i class="fas fa-print"></i> Print Labels
+                </button>
+                <a href="{{ url_for('main.generate_product_barcode', id=product.id) }}" class="btn btn-success" target="_blank">
+                    <i class="fas fa-barcode"></i> Download Barcode
+                </a>
+                <a href="{{ url_for('main.generate_product_qrcode', id=product.id) }}" class="btn btn-info" target="_blank">
+                    <i class="fas fa-qrcode"></i> Download QR Code
+                </a>
+                <a href="{{ url_for('main.products') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Printable Labels -->
+<div class="card" id="label-content">
+    <div class="card-body">
+        <div class="text-center mb-4">
+            <h2>{{ product.name }}</h2>
+            <p class="text-muted">{{ product.specification or '' }} | {{ product.color }}</p>
+        </div>
+        
+        <div class="row">
+            <!-- Barcode Section -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-barcode"></i> Barcode</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <img src="{{ url_for('main.generate_product_barcode', id=product.id) }}" 
+                             alt="Barcode" 
+                             style="max-width: 300px;"
+                             onerror="this.src='https://via.placeholder.com/300x100?text=Barcode+Not+Available'">
+                        <p class="mt-2"><strong>Product ID:</strong> {{ product.id }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- QR Code Section -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-qrcode"></i> QR Code</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <img src="{{ url_for('main.generate_product_qrcode', id=product.id) }}" 
+                             alt="QR Code" 
+                             style="max-width: 300px;"
+                             onerror="this.src='https://via.placeholder.com/300x300?text=QR+Code+Not+Available'">
+                        <p class="mt-2">Scan for product details</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Details -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-info-circle"></i> Product Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Price per 1000:</strong><br>
+                        PKR {{ "%.2f"|format(product.base_price) }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Unit Price:</strong><br>
+                        PKR {{ "%.4f"|format(product.unit_price) }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Current Stock:</strong><br>
+                        {{ product.stock }} units
+                    </div>
+                    {% if product.body_diameter %}
+                    <div class="col-md-4">
+                        <strong>Body Diameter:</strong><br>
+                        {{ product.body_diameter }} mm
+                    </div>
+                    {% endif %}
+                    {% if product.overall_length %}
+                    <div class="col-md-4">
+                        <strong>Overall Length:</strong><br>
+                        {{ product.overall_length }} mm
+                    </div>
+                    {% endif %}
+                    {% if product.material_type %}
+                    <div class="col-md-4">
+                        <strong>Material:</strong><br>
+                        {{ product.material_type }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Label Template (for printing) -->
+        <div class="mt-4">
+            <h5><i class="fas fa-print"></i> Printable Labels</h5>
+            <div class="border p-4" style="background: #f8f9fa;">
+                <div class="row">
+                    {% for i in range(6) %}
+                    <div class="col-md-4 mb-3">
+                        <div class="border p-3 text-center" style="background: white; min-height: 150px;">
+                            <h6 class="mb-2">{{ product.name }}</h6>
+                            <p class="small mb-2">{{ product.color }} | {{ product.specification or '' }}</p>
+                            <img src="{{ url_for('main.generate_product_barcode', id=product.id) }}" 
+                                 alt="Barcode" 
+                                 style="max-width: 150px; height: 50px;"
+                                 onerror="this.style.display='none'">
+                            <p class="small mt-2 mb-0"><strong>ID:</strong> {{ product.id }}</p>
+                            <p class="small mb-0"><strong>Price:</strong> PKR {{ "%.2f"|format(product.base_price) }}/1000</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .no-print, .card-header, .btn, .nav, .sidebar, .main-footer {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    #label-content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    body {
+        background: white !important;
+    }
+}
+</style>
+{% endblock %}

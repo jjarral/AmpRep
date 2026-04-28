@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk Upload Products{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="fas fa-file-excel"></i> Bulk Upload Products</h2>
+                <div>
+                    <a href="{{ url_for('main.products') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Products
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-upload"></i> Upload Excel File</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label">Select Excel File</label>
+                            <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> Required Columns:</h6>
+                            <ul class="mb-0">
+                                <li><strong>name</strong> - Product name</li>
+                                <li><strong>base_price</strong> - Price per 1000 units (PKR)</li>
+                            </ul>
+                            <hr>
+                            <h6>Optional Columns:</h6>
+                            <ul class="mb-0">
+                                <li>specification, base_name, volume_cc, glass_type, neck_finish, sku, color, product_type, stock, is_active</li>
+                            </ul>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-upload"></i> Upload & Process
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-download"></i> Download Template</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('main.download_product_template') }}" class="btn btn-outline-primary w-100 mb-3">
+                        <i class="fas fa-file-excel"></i> Download Product Template (.xlsx)
+                    </a>
+                    
+                    <h6>Sample Data Format:</h6>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>name</th>
+                                <th>base_price</th>
+                                <th>volume_cc</th>
+                                <th>glass_type</th>
+                                <th>stock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>5cc Amber Ampoule</td>
+                                <td>150</td>
+                                <td>5</td>
+                                <td>Amber</td>
+                                <td>50000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

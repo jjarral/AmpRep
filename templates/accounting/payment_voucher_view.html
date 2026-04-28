@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Payment Voucher {{ voucher.voucher_number }}{% endblock %}
+{% block page_title %}Payment Voucher Details{% endblock %}
+{% block breadcrumb_active %}Payment Vouchers{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Payment Voucher: {{ voucher.voucher_number }}
+                </h3>
+            </div>
+            <div class="col text-right">
+                <a href="{{ url_for('main.payment_vouchers') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+                <button onclick="window.print()" class="btn btn-primary">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5><i class="fas fa-info-circle"></i> Voucher Information</h5>
+                <table class="table table-borderless table-sm">
+                    <tr><th width="40%">Voucher Number:</th><td><strong>{{ voucher.voucher_number }}</strong></td></tr>
+                    <tr><th>Date:</th><td>{{ voucher.voucher_date }}</td></tr>
+                    <tr><th>Status:</th>
+                        <td><span class="badge badge-{{ 'warning' if voucher.status == 'draft' else 'success' if voucher.status == 'paid' else 'info' }}">{{ voucher.status }}</span></td>
+                    </tr>
+                    <tr><th>Payment Method:</th><td>{{ voucher.payment_method }}</td></tr>
+                    {% if voucher.cheque_number %}
+                    <tr><th>Cheque Number:</th><td>{{ voucher.cheque_number }}</td></tr>
+                    {% endif %}
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h5><i class="fas fa-user"></i> Payee Information</h5>
+                <table class="table table-borderless table-sm">
+                    <tr><th width="40%">Payee Name:</th><td><strong>{{ voucher.payee_name }}</strong></td></tr>
+                    <tr><th>Payee Type:</th><td>{{ voucher.payee_type or 'Other' }}</td></tr>
+                    {% if voucher.paid_by %}
+                    <tr><th>Paid By:</th><td>{{ voucher.paid_by }}</td></tr>
+                    <tr><th>Paid At:</th><td>{{ voucher.paid_at }}</td></tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+        
+        {% if voucher.description %}
+        <div class="mb-4">
+            <h5><i class="fas fa-sticky-note"></i> Description</h5>
+            <p class="bg-light p-3 rounded">{{ voucher.description }}</p>
+        </div>
+        {% endif %}
+        
+        <h5><i class="fas fa-list"></i> Voucher Lines</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Account</th>
+                        <th>Description</th>
+                        <th class="text-right">Amount (PKR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for line in voucher.lines %}
+                    <tr>
+                        <td>
+                            <strong>{{ line.account.account_code }}</strong><br>
+                            <small class="text-muted">{{ line.account.account_name }}</small>
+                        </td>
+                        <td>{{ line.description or '-' }}</td>
+                        <td class="text-right">{{ "%.2f"|format(line.amount) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="bg-light">
+                    <tr>
+                        <th colspan="2" class="text-right">TOTAL:</th>
+                        <th class="text-right">PKR {{ "%.2f"|format(voucher.total_amount) }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .no-print, .card-header .btn, .nav, .sidebar, .main-footer {
+        display: none !important;
+    }
+    .card { border: none !important; box-shadow: none !important; }
+}
+</style>
+{% endblock %}

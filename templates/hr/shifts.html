@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Shift Management{% endblock %}
+{% block page_title %}Shift Management{% endblock %}
+{% block breadcrumb_active %}Shifts{% endblock %}
+
+{% block content %}
+<div class="row">
+  <!-- ── Left: Shift definitions ── -->
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-clock mr-1"></i> Shift Schedules</h3>
+        <div class="card-tools">
+          <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#addShiftModal">
+            <i class="fas fa-plus"></i> New Shift
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Name</th><th>Type</th><th>Time</th><th>Hours</th><th></th></tr></thead>
+          <tbody>
+            {% for s in shifts %}
+            <tr>
+              <td><strong>{{ s.name }}</strong>{% if s.description %}<br><small class="text-muted">{{ s.description }}</small>{% endif %}</td>
+              <td>
+                <span class="badge badge-{{ 'warning' if s.shift_type == 'day' else 'info' if s.shift_type == 'evening' else 'dark' }}">
+                  {{ s.shift_type.title() }}
+                </span>
+              </td>
+              <td>{{ s.start_time }} – {{ s.end_time }}</td>
+              <td>{{ s.duration_hours }}h</td>
+              <td>
+                <form method="POST" action="{{ url_for('main.delete_shift', id=s.id) }}"
+                      onsubmit="return confirm('Delete this shift?')" class="d-inline">
+                  <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-3">No shifts defined yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right: Employee assignments ── -->
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-users mr-1"></i> Employee Shift Roster</h3>
+        <div class="card-tools">
+          <button class="btn btn-sm btn-success" data-toggle="modal" data-target="#assignModal">
+            <i class="fas fa-user-plus"></i> Assign Shift
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Employee</th><th>Dept</th><th>Current Shift</th><th>Since</th><th></th></tr></thead>
+          <tbody>
+            {% set ns = namespace(shown=[]) %}
+            {% for emp in employees %}
+            {% set asgn = assigned_map.get(emp.id) %}
+            <tr>
+              <td><strong>{{ emp.name }}</strong></td>
+              <td><span class="badge badge-secondary">{{ emp.department or '—' }}</span></td>
+              <td>
+                {% if asgn %}
+                  <span class="badge badge-{{ 'warning' if asgn.shift.shift_type == 'day' else 'info' if asgn.shift.shift_type == 'evening' else 'dark' }}">
+                    {{ asgn.shift.name }}
+                  </span>
+                  <small class="text-muted ml-1">{{ asgn.shift.start_time }}–{{ asgn.shift.end_time }}</small>
+                {% else %}
+                  <span class="text-muted">Unassigned</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if asgn %}
+                  <small>{{ asgn.effective_from.strftime('%d %b %Y') }}</small>
+                {% else %}—{% endif %}
+              </td>
+              <td>
+                {% if asgn %}
+                <form method="POST" action="{{ url_for('main.unassign_shift', id=asgn.id) }}" class="d-inline"
+                      onsubmit="return confirm('Remove shift assignment?')">
+                  <button class="btn btn-sm btn-outline-danger" title="Unassign"><i class="fas fa-times"></i></button>
+                </form>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-3">No active employees.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Shift Modal -->
+<div class="modal fade" id="addShiftModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">New Shift</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
+      <form method="POST" action="{{ url_for('main.add_shift') }}">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Shift Name <span class="text-danger">*</span></label>
+          <input type="text" name="name" class="form-control" required placeholder="e.g. Morning Shift A">
+        </div>
+        <div class="row">
+          <div class="col-md-4">
+            <div class="form-group">
+              <label>Type</label>
+              <select name="shift_type" class="form-control">
+                <option value="day">Day</option>
+                <option value="evening">Evening</option>
+                <option value="night">Night</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label>Start Time <span class="text-danger">*</span></label>
+              <input type="time" name="start_time" class="form-control" required value="06:00">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label>End Time <span class="text-danger">*</span></label>
+              <input type="time" name="end_time" class="form-control" required value="14:00">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Duration (hours)</label>
+          <input type="number" name="duration_hours" class="form-control" value="8" min="1" max="24" step="0.5">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" name="description" class="form-control" placeholder="Optional notes">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Shift</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Assign Shift Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Assign Shift to Employee</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
+      <form method="POST" action="{{ url_for('main.assign_shift') }}">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Employee <span class="text-danger">*</span></label>
+          <select name="employee_id" class="form-control" required>
+            <option value="">— Select Employee —</option>
+            {% for emp in employees %}
+            <option value="{{ emp.id }}">{{ emp.name }} ({{ emp.department or 'No Dept' }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Shift <span class="text-danger">*</span></label>
+          <select name="shift_id" class="form-control" required>
+            <option value="">— Select Shift —</option>
+            {% for s in shifts %}
+            <option value="{{ s.id }}">{{ s.name }} ({{ s.start_time }}–{{ s.end_time }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Effective From <span class="text-danger">*</span></label>
+          <input type="date" name="effective_from" class="form-control" required
+                 value="{{ now.strftime('%Y-%m-%d') if now else '' }}">
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" name="notes" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-success">Assign</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

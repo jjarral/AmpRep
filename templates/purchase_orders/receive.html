@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Receive Goods - {{ po.po_number }}{% endblock %}
+{% block page_title %}Receive Goods{% endblock %}
+{% block breadcrumb_active %}Purchase Orders{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-dolly"></i> Receive Goods - {{ po.po_number }}</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Supplier</label>
+                        <input type="text" class="form-control" value="{{ po.supplier.name }}" readonly>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Warehouse</label>
+                        <select name="warehouse_id" class="form-control">
+                            <option value="">Select Warehouse</option>
+                            <!-- Add warehouse options from database -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receive Items -->
+            <table class="table table-bordered">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Material</th>
+                        <th>Ordered</th>
+                        <th>Receive Qty</th>
+                        <th>Accept Qty</th>
+                        <th>Batch #</th>
+                        <th>Expiry Date</th>
+                        <th>Rejection Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in po.items %}
+                    <tr>
+                        <td>{{ item.material.name }}</td>
+                        <td>{{ item.quantity_ordered }} {{ item.material.unit }}</td>
+                        <td>
+                            <input type="number" step="0.01" name="qty_{{ item.id }}" class="form-control" value="{{ item.quantity_ordered }}" max="{{ item.quantity_ordered }}">
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" name="accepted_{{ item.id }}" class="form-control" value="{{ item.quantity_ordered }}">
+                        </td>
+                        <td>
+                            <input type="text" name="batch_{{ item.id }}" class="form-control" placeholder="Batch #">
+                        </td>
+                        <td>
+                            <input type="date" name="expiry_{{ item.id }}" class="form-control">
+                        </td>
+                        <td>
+                            <input type="text" name="rejection_reason_{{ item.id }}" class="form-control" placeholder="If rejected">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-check"></i> Create Goods Receipt
+            </button>
+            <a href="{{ url_for('main.view_purchase_order', id=po.id) }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

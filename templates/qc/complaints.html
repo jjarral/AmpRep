@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Customer Complaints{% endblock %}
+{% block page_title %}Customer Complaints{% endblock %}
+{% block breadcrumb_active %}Quality Control{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Customer Complaints</h3>
+            </div>
+            <div class="col text-right">
+                <a href="{{ url_for('main.add_customer_complaint') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New Complaint
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Complaint #</th>
+                    <th>Customer</th>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th>Severity</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for complaint in complaints %}
+                <tr>
+                    <td><strong>{{ complaint.complaint_number }}</strong></td>
+                    <td>{{ complaint.customer_name or (complaint.customer.name if complaint.customer else 'N/A') }}</td>
+                    <td>{{ complaint.product.name if complaint.product else 'N/A' }}</td>
+                    <td>{{ complaint.complaint_type or '-' }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'danger' if complaint.severity == 'critical' else 'warning' if complaint.severity == 'high' else 'info' }}">
+                            {{ complaint.severity.title() }}
+                        </span>
+                    </td>
+                    <td>{{ complaint.complaint_date.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if complaint.status == 'resolved' else 'warning' if complaint.status == 'investigating' else 'danger' }}">
+                            {{ complaint.status.title() }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if complaint.status != 'resolved' %}
+                        <form action="{{ url_for('main.resolve_complaint', id=complaint.id) }}" method="POST" class="d-inline">
+                            <input type="text" name="resolution" class="form-control form-control-sm d-inline" placeholder="Resolution" style="width: 200px;" required>
+                            <button type="submit" class="btn btn-sm btn-success">Resolve</button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted">Resolved</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

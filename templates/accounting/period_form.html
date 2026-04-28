@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if period else 'New' }} Accounting Period{% endblock %}
+{% block page_title %}{{ 'Edit' if period else 'New' }} Accounting Period{% endblock %}
+{% block breadcrumb_active %}Accounting Periods{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-{{ 'edit' if period else 'plus' }}"></i> {{ 'Edit' if period else 'New' }} Accounting Period</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Period Name *</label>
+                        <input type="text" name="period_name" class="form-control" 
+                               value="{{ period.period_name if period else '' }}" 
+                               placeholder="e.g., March 2026" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Start Date *</label>
+                        <input type="date" name="start_date" class="form-control" 
+                               value="{{ period.start_date.strftime('%Y-%m-%d') if period else '' }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>End Date *</label>
+                        <input type="date" name="end_date" class="form-control" 
+                               value="{{ period.end_date.strftime('%Y-%m-%d') if period else '' }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select name="is_closed" class="form-control">
+                            <option value="False" {{ 'selected' if period and not period.is_closed }}>Open</option>
+                            <option value="True" {{ 'selected' if period and period.is_closed }}>Closed</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle"></i>
+                <strong>Note:</strong> Once a period is closed, no new journal entries can be posted to dates within that period.
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save
+            </button>
+            <a href="{{ url_for('main.accounting_periods') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

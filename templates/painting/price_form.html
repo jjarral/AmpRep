@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if price else 'Add' }} Painting Price{% endblock %}
+{% block page_title %}{{ 'Edit' if price else 'Add' }} Painting Price{% endblock %}
+{% block breadcrumb_active %}Painting{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-palette"></i> {{ 'Edit' if price else 'Add' }} Painting Price</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="form-group">
+                <label>Product *</label>
+                <select name="product_id" class="form-control" required {{ 'disabled' if price else '' }}>
+                    <option value="">Select Product</option>
+                    {% for product in products %}
+                    <option value="{{ product.id }}" {{ 'selected' if price and price.product_id == product.id else '' }}>
+                        {{ product.name }} - {{ product.color }} ({{ product.specification }})
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if price %}
+                <input type="hidden" name="product_id" value="{{ price.product_id }}">
+                {% endif %}
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Price Per Unit (PKR) *</label>
+                        <input type="number" step="0.01" name="price_per_unit" class="form-control" value="{{ price.price_per_unit if price else '0' }}" required>
+                        <small class="text-muted">Painting cost per ampoule</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Minimum Quantity</label>
+                        <input type="number" name="minimum_quantity" class="form-control" value="{{ price.minimum_quantity if price else '1000' }}">
+                        <small class="text-muted">Minimum order quantity</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Setup Charge (PKR)</label>
+                        <input type="number" step="0.01" name="setup_charge" class="form-control" value="{{ price.setup_charge if price else '0' }}">
+                        <small class="text-muted">One-time setup fee</small>
+                    </div>
+                </div>
+            </div>
+            {% if price %}
+            <div class="form-group">
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" name="is_active" id="is_active" {{ 'checked' if price.is_active else '' }}>
+                    <label class="custom-control-label" for="is_active">Active Price</label>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> {{ 'Update' if price else 'Create' }} Price
+            </button>
+            <a href="{{ url_for('main.painting_prices') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

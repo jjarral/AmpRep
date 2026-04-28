@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Inquiries{% endblock %}
+{% block page_title %}Inquiries{% endblock %}
+{% block breadcrumb_active %}Inquiries{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-envelope"></i> Inquiries</h3>
+            </div>
+            <div class="col text-right">
+                <a href="{{ url_for('main.add_inquiry') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New Inquiry
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Filters -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>Filter by Status</label>
+                    <select class="form-control" onchange="window.location.href='{{ 'main.inquiries' | safe }}?status='+this.value">
+                        <option value="all" {{ 'selected' if current_status == 'all' else '' }}>All Status</option>
+                        <option value="new" {{ 'selected' if current_status == 'new' else '' }}>New</option>
+                        <option value="followup" {{ 'selected' if current_status == 'followup' else '' }}>Follow-up</option>
+                        <option value="converted" {{ 'selected' if current_status == 'converted' else '' }}>Converted</option>
+                        <option value="cancelled" {{ 'selected' if current_status == 'cancelled' else '' }}>Cancelled</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>Show Deleted</label>
+                    <select class="form-control" onchange="window.location.href='{{ 'main.inquiries' | safe }}?show_deleted='+this.value+'&status={{ current_status }}'">
+                        <option value="false" {{ 'selected' if not show_deleted else '' }}>Hide Deleted</option>
+                        <option value="true" {{ 'selected' if show_deleted else '' }}>Show Deleted</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6 text-right">
+                <div class="form-group">
+                    <label>Generate Reports</label>
+                    <div class="btn-group">
+                        <!-- Excel Report -->
+                        <form method="POST" action="{{ url_for('main.generate_excel_report', module='inquiries') }}" class="d-inline">
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="fas fa-file-excel"></i> Export Excel
+                            </button>
+                        </form>
+
+                        <!-- PDF Report -->
+                        <form method="POST" action="{{ url_for('main.generate_pdf_report', module='inquiries') }}" class="d-inline ml-2">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fas fa-file-pdf"></i> Export PDF
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inquiries Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Inquiry #</th>
+                        <th>Customer</th>
+                        <th>Business</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inquiry in inquiries %}
+                    <tr>
+                        <td><strong>{{ inquiry.inquiry_number }}</strong></td>
+                        <td>{{ inquiry.customer_name }}</td>
+                        <td>{{ inquiry.business_name or '-' }}</td>
+                        <td>
+                            {% if inquiry.product %}
+                            {{ inquiry.product.name }}
+                            <br><small class="text-muted">{{ inquiry.product.color }}</small>
+                            {% else %}
+                            {{ inquiry.inquiry_items|length }} products
+                            {% endif %}
+                        </td>
+                        <td>{{ inquiry.quantity }}</td>
+                        <td>
+                            <span class="badge badge-{{ 
+                                'success' if inquiry.status == 'new' else 
+                                'warning' if inquiry.status == 'followup' else 
+                                'info' if inquiry.status == 'converted' else 
+                                'danger' if inquiry.status == 'cancelled' else 
+                                'secondary'
+                            }}">
+                                {{ inquiry.status|title }}
+                            </span>
+                        </td>
+                        <td>{{ inquiry.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('main.edit_inquiry', id=inquiry.id) }}" class="btn btn-info" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if inquiry.status != 'converted' and inquiry.status != 'cancelled' %}
+                                <a href="{{ url_for('main.process_invoice', id=inquiry.id) }}" class="btn btn-success" title="Convert to Order">
+                                    <i class="fas fa-file-invoice"></i>
+                                </a>
+                                {% endif %}
+                                {% if not inquiry.is_deleted %}
+                                <a href="{{ url_for('main.delete_inquiry', id=inquiry.id) }}" class="btn btn-danger" title="Delete" onclick="return confirm('Archive this inquiry?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                {% else %}
+                                <span class="badge badge-secondary">Deleted</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">No inquiries found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="row">
+            <div class="col-md-6">
+                <small class="text-muted">Total: {{ inquiries|length }} inquiry(s)</small>
+            </div>
+            <div class="col-md-6 text-right">
+                <small class="text-muted">
+                    <span class="badge badge-success">New: {{ inquiries|selectattr('status', 'equalto', 'new')|list|length }}</span>
+                    <span class="badge badge-warning">Follow-up: {{ inquiries|selectattr('status', 'equalto', 'followup')|list|length }}</span>
+                    <span class="badge badge-info">Converted: {{ inquiries|selectattr('status', 'equalto', 'converted')|list|length }}</span>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

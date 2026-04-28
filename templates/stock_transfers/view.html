@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Transfer {{ transfer.transfer_number }}{% endblock %}
+{% block page_title %}Stock Transfer{% endblock %}
+{% block breadcrumb_active %}Stock Transfers{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-exchange-alt"></i> {{ transfer.transfer_number }}</h3>
+            </div>
+            <div class="col text-right">
+                {% if transfer.status == 'pending' %}
+                <form action="{{ url_for('main.complete_stock_transfer', id=transfer.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Complete Transfer
+                    </button>
+                </form>
+                {% endif %}
+                <a href="{{ url_for('main.stock_transfers') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <strong>From:</strong><br>{{ transfer.from_warehouse.name }}
+            </div>
+            <div class="col-md-3">
+                <strong>To:</strong><br>{{ transfer.to_warehouse.name }}
+            </div>
+            <div class="col-md-3">
+                <strong>Date:</strong><br>{{ transfer.transfer_date.strftime('%Y-%m-%d') }}
+            </div>
+            <div class="col-md-3">
+                <strong>Status:</strong><br>
+                <span class="badge badge-{{ 'success' if transfer.status == 'completed' else 'info' if transfer.status == 'in_transit' else 'warning' }}">
+                    {{ transfer.status|title }}
+                </span>
+            </div>
+        </div>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Material</th>
+                    <th>Quantity</th>
+                    <th>Transferred</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in transfer.items %}
+                <tr>
+                    <td>{{ item.material.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.quantity_transferred }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

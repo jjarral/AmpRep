@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Profit & Loss Statement{% endblock %}
+{% block page_title %}Profit & Loss Statement{% endblock %}
+{% block breadcrumb_active %}Financials{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-chart-line"></i> Profit & Loss Statement</h3>
+            </div>
+            <div class="col text-right">
+                <form method="GET" class="form-inline">
+                    <div class="form-group mr-2">
+                        <input type="date" name="start_date" class="form-control form-control-sm" value="{{ start_date }}">
+                    </div>
+                    <div class="form-group mr-2">
+                        <input type="date" name="end_date" class="form-control form-control-sm" value="{{ end_date }}">
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- KPI Cards -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>PKR {{ "%.2f"|format(total_revenue) }}</h3>
+                        <p>Total Revenue</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>PKR {{ "%.2f"|format(gross_profit) }}</h3>
+                        <p>Gross Profit</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>PKR {{ "%.2f"|format(operating_profit) }}</h3>
+                        <p>Operating Profit</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-{{ 'success' if net_profit > 0 else 'danger' }}">
+                    <div class="inner">
+                        <h3>PKR {{ "%.2f"|format(net_profit) }}</h3>
+                        <p>Net Profit</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- P&L Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Description</th>
+                        <th class="text-right">Amount (PKR)</th>
+                        <th class="text-right">% of Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="table-success">
+                        <td><strong>Revenue</strong></td>
+                        <td class="text-right"><strong>{{ "%.2f"|format(total_revenue) }}</strong></td>
+                        <td class="text-right">100%</td>
+                    </tr>
+                    <tr>
+                        <td>Cost of Goods Sold (COGS)</td>
+                        <td class="text-right text-danger">- {{ "%.2f"|format(cogs) }}</td>
+                        <td class="text-right">{{ "%.1f"|format((cogs/total_revenue*100) if total_revenue > 0 else 0) }}%</td>
+                    </tr>
+                    <tr class="table-info">
+                        <td><strong>Gross Profit</strong></td>
+                        <td class="text-right"><strong>{{ "%.2f"|format(gross_profit) }}</strong></td>
+                        <td class="text-right">{{ "%.1f"|format((gross_profit/total_revenue*100) if total_revenue > 0 else 0) }}%</td>
+                    </tr>
+                    <tr>
+                        <td>Operating Expenses</td>
+                        <td class="text-right text-danger">- {{ "%.2f"|format(total_expenses) }}</td>
+                        <td class="text-right">{{ "%.1f"|format((total_expenses/total_revenue*100) if total_revenue > 0 else 0) }}%</td>
+                    </tr>
+                    <tr class="table-warning">
+                        <td><strong>Operating Profit</strong></td>
+                        <td class="text-right"><strong>{{ "%.2f"|format(operating_profit) }}</strong></td>
+                        <td class="text-right">{{ "%.1f"|format((operating_profit/total_revenue*100) if total_revenue > 0 else 0) }}%</td>
+                    </tr>
+                    <tr>
+                        <td>Payroll Expenses</td>
+                        <td class="text-right text-danger">- {{ "%.2f"|format(total_payroll) }}</td>
+                        <td class="text-right">{{ "%.1f"|format((total_payroll/total_revenue*100) if total_revenue > 0 else 0) }}%</td>
+                    </tr>
+                    <tr class="{{ 'table-success' if net_profit > 0 else 'table-danger' }}">
+                        <td><strong>Net Profit</strong></td>
+                        <td class="text-right"><strong>{{ "%.2f"|format(net_profit) }}</strong></td>
+                        <td class="text-right">{{ "%.1f"|format((net_profit/total_revenue*100) if total_revenue > 0 else 0) }}%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Charts -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Expense Breakdown by Category</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Revenue Trend (6 Months)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="revenueTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Expense Breakdown Chart
+const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+new Chart(expenseCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ expenses_by_category|map(attribute='0')|list|tojson }},
+        datasets: [{
+            data: {{ expenses_by_category|map(attribute='1')|list|tojson }},
+            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+
+// Revenue Trend Chart
+const revenueCtx = document.getElementById('revenueTrendChart').getContext('2d');
+new Chart(revenueCtx, {
+    type: 'line',
+    data: {
+        labels: {{ six_months|map(attribute='month')|list|tojson }},
+        datasets: [{
+            label: 'Revenue (PKR)',
+            data: {{ six_months|map(attribute='revenue')|list|tojson }},
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return 'PKR ' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

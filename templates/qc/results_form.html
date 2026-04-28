@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}QC Results - {{ batch.batch_number }}{% endblock %}
+{% block page_title %}QC Results{% endblock %}
+{% block breadcrumb_active %}Quality Control{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-clipboard-check"></i> QC Results - {{ batch.batch_number }}</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <strong>Product:</strong> {{ batch.product.name if batch.product else 'N/A' }}
+                </div>
+                <div class="col-md-6">
+                    <strong>Planned Quantity:</strong> {{ batch.planned_quantity }}
+                </div>
+            </div>
+            
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Specification</th>
+                        <th>Tested Value</th>
+                        <th>Result</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for param in parameters %}
+                    <tr>
+                        <td>{{ param.parameter_name }}</td>
+                        <td>
+                            {% if param.min_value and param.max_value %}
+                            {{ param.min_value }} - {{ param.max_value }} {{ param.unit or '' }}
+                            {% elif param.target_value %}
+                            {{ param.target_value }} {{ param.unit or '' }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" name="tested_value[]" class="form-control">
+                            <input type="hidden" name="parameter_id[]" value="{{ param.id }}">
+                        </td>
+                        <td>
+                            <select name="result[]" class="form-control">
+                                <option value="pass">Pass</option>
+                                <option value="fail">Fail</option>
+                                <option value="conditional">Conditional</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" name="remarks[]" class="form-control">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Save QC Results
+            </button>
+            <a href="{{ url_for('main.view_production_batch', id=batch.id) }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

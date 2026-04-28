@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Warehouses{% endblock %}
+{% block page_title %}Warehouses{% endblock %}
+{% block breadcrumb_active %}Warehouses{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-warehouse"></i> Warehouses</h3>
+            </div>
+            <div class="col text-right">
+                <a href="{{ url_for('main.add_warehouse') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Warehouse
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>City</th>
+                    <th>Manager</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for warehouse in warehouses %}
+                <tr>
+                    <td><strong>{{ warehouse.code }}</strong></td>
+                    <td>{{ warehouse.name }}</td>
+                    <td>{{ warehouse.city or '-' }}</td>
+                    <td>{{ warehouse.manager or '-' }}</td>
+                    <td>{{ warehouse.phone or '-' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.warehouse_stock', id=warehouse.id) }}" class="btn btn-sm btn-info">
+                            <i class="fas fa-boxes"></i> View Stock
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+.env
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+.env.production
+*.egg-info/
+dist/
+build/
+
+node_modules/
+*.db
+*.sqlite
+venv/
+.env
+instance/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Static files (generated)
+# ... (keep your existing Python, DB, IDE, OS rules) ...
+
+# Static files (Generated)
+# Keep the folders, but ignore the files inside them
+static/reports/.gitkeep
+static/barcodes/.gitkeep
+static/qrcodes/.gitkeep
+static/logos/.gitkeep
+
+# Ignore all files inside these folders except .gitkeep
+static/reports/*
+!static/reports/.gitkeep
+static/barcodes/*
+!static/barcodes/.gitkeep
+static/qrcodes/*
+!static/qrcodes/.gitkeep
+static/logos/*
+!static/logos/.gitkeep
+# Test
+.pytest_cache/
+.coverage
+htmlcov/
+

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Complete Batch{% endblock %}
+{% block page_title %}Complete Batch{% endblock %}
+{% block breadcrumb_active %}Batches{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-check"></i> Complete Batch {{ batch.batch_number }}</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="alert alert-info">
+                <strong>Product:</strong> {{ batch.product.name if batch.product else 'N/A' }}<br>
+                <strong>Planned Quantity:</strong> {{ batch.planned_quantity }}
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Actual Quantity Produced *</label>
+                        <input type="number" name="actual_quantity" class="form-control" required min="0" value="{{ batch.planned_quantity }}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Rejected Quantity</label>
+                        <input type="number" name="rejected_quantity" class="form-control" min="0" value="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-check"></i> Complete Batch
+            </button>
+            <a href="{{ url_for('main.view_production_batch', id=batch.id) }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Merge Duplicate Customers{% endblock %}
+{% block page_title %}Merge Customers{% endblock %}
+{% block breadcrumb_active %}Merge Customers{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <strong>Caution:</strong> Merging customers is irreversible. All orders from the merged customer(s) will be transferred to the primary customer. The merged customer records will be deactivated.
+        </div>
+
+        {% if potential_duplicates %}
+        <div class="card mb-3">
+            <div class="card-header bg-warning">
+                <h3 class="card-title"><i class="fas fa-clone mr-2"></i>Detected Potential Duplicates</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Business Name</th>
+                            <th class="text-center">Duplicate Count</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dup in potential_duplicates %}
+                        <tr>
+                            <td><strong>{{ dup.business_name }}</strong></td>
+                            <td class="text-center"><span class="badge badge-warning">{{ dup.count }} records</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" type="button"
+                                        onclick="document.getElementById('merge_search').value='{{ dup.business_name }}'">
+                                    <i class="fas fa-search mr-1"></i>Resolve
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle mr-1"></i>
+            <strong>No duplicates detected!</strong> All customers have unique business names.
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-object-group mr-2"></i>Manual Merge</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('main.merge_customers') }}"
+                      onsubmit="return confirm('Are you sure? This cannot be undone. The secondary customers will be deactivated.')">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-success">
+                                    <i class="fas fa-star mr-1"></i>Primary Customer (Keep This One)
+                                </label>
+                                <input type="text" id="merge_search" class="form-control mb-2"
+                                       placeholder="Search to filter below...">
+                                <select name="primary_customer_id" class="form-control" required size="8"
+                                        id="primary_select">
+                                    {% for c in customers %}
+                                    <option value="{{ c.id }}">{{ c.name }}{% if c.business_name %} — {{ c.business_name }}{% endif %}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">This customer's record will be preserved. All data will be merged into this record.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-danger">
+                                    <i class="fas fa-times-circle mr-1"></i>Customers to Merge (Deactivate)
+                                </label>
+                                <select name="merge_customer_id[]" class="form-control" multiple required size="8">
+                                    {% for c in customers %}
+                                    <option value="{{ c.id }}">{{ c.name }}{% if c.business_name %} — {{ c.business_name }}{% endif %}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Hold Ctrl/Cmd to select multiple. These records will be deactivated after merge.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('main.customers') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left mr-1"></i>Back to Customers
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-object-group mr-1"></i>Merge Selected Customers
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('merge_search').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#primary_select option').forEach(opt => {
+        opt.hidden = !opt.text.toLowerCase().includes(q);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}Painting Order {{ order.order_number }}{% endblock %}
+{% block page_title %}Painting Order{% endblock %}
+{% block breadcrumb_active %}Painting{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-palette"></i> {{ order.order_number }}</h3>
+            </div>
+            <div class="col text-right">
+                {% if order.status == 'pending' %}
+                <form action="{{ url_for('main.start_painting_order', id=order.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-play"></i> Start Order
+                    </button>
+                </form>
+                {% endif %}
+                {% if order.status == 'in_progress' %}
+                <form action="{{ url_for('main.complete_painting_order', id=order.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Complete Order
+                    </button>
+                </form>
+                {% endif %}
+                <a href="{{ url_for('main.painting_order_invoice', id=order.id) }}" class="btn btn-primary" target="_blank">
+                    <i class="fas fa-file-invoice"></i> Invoice
+                </a>
+                <a href="{{ url_for('main.painting_orders') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Order Info -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <strong>Customer:</strong><br>
+                {{ order.customer_name }}
+            </div>
+            <div class="col-md-3">
+                <strong>Phone:</strong><br>
+                {{ order.customer_phone or '-' }}
+            </div>
+            <div class="col-md-3">
+                <strong>Order Date:</strong><br>
+                {{ order.order_date.strftime('%Y-%m-%d') }}
+            </div>
+            <div class="col-md-3">
+                <strong>Status:</strong><br>
+                <span class="badge badge-{{ 
+                    'warning' if order.status == 'pending' else 
+                    'info' if order.status == 'in_progress' else 
+                    'success' if order.status == 'completed' else 
+                    'secondary'
+                }} badge-lg">
+                    {{ order.status|title }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-boxes"></i> Products to Paint</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-bordered mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Color</th>
+                            <th>Quantity</th>
+                            <th>Price/Unit (PKR)</th>
+                            <th>Setup Charge (PKR)</th>
+                            <th>Subtotal (PKR)</th>
+                            <th>Color Spec</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items %}
+                        <tr>
+                            <td><strong>{{ item.product.name if item.product else 'N/A' }}</strong></td>
+                            <td>
+                                <span class="badge badge-{{ 'info' if item.product and item.product.color == 'Transparent' else 'warning' }}">
+                                    {{ item.product.color if item.product else 'N/A' }}
+                                </span>
+                            </td>
+                            <td>{{ item.quantity }}</td>
+                            <td>PKR {{ "%.2f"|format(item.price_per_unit) }}</td>
+                            <td>PKR {{ "%.2f"|format(item.setup_charge) }}</td>
+                            <td><strong>PKR {{ "%.2f"|format(item.subtotal) }}</strong></td>
+                            <td>{{ item.color_specification or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="bg-light">
+                        <tr>
+                            <th colspan="5" class="text-right">Total Amount:</th>
+                            <th colspan="2"><strong>PKR {{ "%.2f"|format(order.total_amount) }}</strong></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Payment Info -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0"><i class="fas fa-credit-card"></i> Payment Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Total Amount:</strong><br>
+                                PKR {{ "%.2f"|format(order.total_amount) }}
+                            </div>
+                            <div class="col-6">
+                                <strong>Paid Amount:</strong><br>
+                                PKR {{ "%.2f"|format(order.paid_amount) }}
+                            </div>
+                            <div class="col-6 mt-3">
+                                <strong>Balance:</strong><br>
+                                PKR {{ "%.2f"|format(order.total_amount - order.paid_amount) }}
+                            </div>
+                            <div class="col-6 mt-3">
+                                <strong>Payment Status:</strong><br>
+                                <span class="badge badge-{{ 
+                                    'success' if order.payment_status == 'paid' else 
+                                    'warning' if order.payment_status == 'partial' else 
+                                    'danger'
+                                }}">
+                                    {{ order.payment_status|title }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0"><i class="fas fa-sticky-note"></i> Notes</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if order.notes %}
+                        <p class="mb-0">{{ order.notes }}</p>
+                        {% else %}
+                        <p class="text-muted mb-0">No notes</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-history"></i> Order Timeline</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="time-label">
+                        <span class="bg-primary">{{ order.order_date.strftime('%Y-%m-%d') }}</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-plus-circle bg-primary"></i>
+                        <div class="timeline-item">
+                            <h3 class="timeline-header">Order Created</h3>
+                            <div class="timeline-body">
+                                Order {{ order.order_number }} was created
+                                {% if order.created_by %}
+                                by {{ order.created_by }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% if order.status != 'pending' %}
+                    <div>
+                        <i class="fas fa-play-circle bg-info"></i>
+                        <div class="timeline-item">
+                            <h3 class="timeline-header">Order Started</h3>
+                            <div class="timeline-body">
+                                Painting work began on this order
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if order.status == 'completed' %}
+                    <div>
+                        <i class="fas fa-check-circle bg-success"></i>
+                        <div class="timeline-item">
+                            <h3 class="timeline-header">Order Completed</h3>
+                            <div class="timeline-body">
+                                {% if order.delivery_date %}
+                                Completed on {{ order.delivery_date.strftime('%Y-%m-%d') }}
+                                {% else %}
+                                Order has been completed
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

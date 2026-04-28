@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Tax Returns{% endblock %}
+{% block page_title %}Tax Returns{% endblock %}
+{% block breadcrumb_active %}Tax Returns{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <a href="{{ url_for('main.fbr_invoices') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-file-invoice mr-1"></i>FBR Invoices
+            </a>
+            <a href="{{ url_for('main.sales_tax_report') }}" class="btn btn-sm btn-outline-info">
+                <i class="fas fa-chart-bar mr-1"></i>Sales Tax Report
+            </a>
+        </div>
+        <a href="{{ url_for('main.generate_tax_return') }}" class="btn btn-primary">
+            <i class="fas fa-plus mr-1"></i>Generate Return
+        </a>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-3">
+        <div class="small-box bg-primary">
+            <div class="inner"><h3>{{ returns|length }}</h3><p>Total Returns</p></div>
+            <div class="icon"><i class="fas fa-file-contract"></i></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ returns | selectattr('status', 'equalto', 'filed') | list | length }}</h3>
+                <p>Filed Returns</p>
+            </div>
+            <div class="icon"><i class="fas fa-check-circle"></i></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ returns | selectattr('status', 'equalto', 'draft') | list | length }}</h3>
+                <p>Draft / Pending</p>
+            </div>
+            <div class="icon"><i class="fas fa-edit"></i></div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>PKR {{ "{:,.0f}".format(returns | sum(attribute='net_tax_payable')) }}</h3>
+                <p>Total Tax Payable</p>
+            </div>
+            <div class="icon"><i class="fas fa-rupee-sign"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-file-contract mr-2"></i>Monthly GST Returns</h3>
+    </div>
+    <div class="card-body p-0">
+        {% if returns %}
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Period</th>
+                        <th class="text-right">Sales Tax</th>
+                        <th class="text-right">Input Tax</th>
+                        <th class="text-right">Net Payable</th>
+                        <th class="text-right">Withholding</th>
+                        <th>Status</th>
+                        <th>Filed Date</th>
+                        <th>Payment Date</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in returns %}
+                    <tr>
+                        <td><strong>{{ r.return_period }}</strong></td>
+                        <td class="text-right">{{ "{:,.0f}".format(r.sales_tax) }}</td>
+                        <td class="text-right text-success">{{ "{:,.0f}".format(r.input_tax) }}</td>
+                        <td class="text-right font-weight-bold {% if r.net_tax_payable > 0 %}text-danger{% else %}text-success{% endif %}">
+                            {{ "{:,.0f}".format(r.net_tax_payable) }}
+                        </td>
+                        <td class="text-right">{{ "{:,.0f}".format(r.withholding_tax) }}</td>
+                        <td>
+                            {% if r.status == 'paid' %}
+                                <span class="badge badge-success">Paid</span>
+                            {% elif r.status == 'filed' %}
+                                <span class="badge badge-info">Filed</span>
+                            {% else %}
+                                <span class="badge badge-warning">Draft</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">{{ r.filed_date.strftime('%d %b %Y') if r.filed_date else '—' }}</td>
+                        <td class="text-muted small">{{ r.payment_date.strftime('%d %b %Y') if r.payment_date else '—' }}</td>
+                        <td class="text-muted small">{{ r.remarks or '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="thead-light font-weight-bold">
+                    <tr>
+                        <th>Totals</th>
+                        <th class="text-right">{{ "{:,.0f}".format(returns | sum(attribute='sales_tax')) }}</th>
+                        <th class="text-right text-success">{{ "{:,.0f}".format(returns | sum(attribute='input_tax')) }}</th>
+                        <th class="text-right text-danger">{{ "{:,.0f}".format(returns | sum(attribute='net_tax_payable')) }}</th>
+                        <th class="text-right">{{ "{:,.0f}".format(returns | sum(attribute='withholding_tax')) }}</th>
+                        <th colspan="4"></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-file-contract fa-3x mb-3 d-block"></i>
+            <p>No tax returns generated yet.</p>
+            <a href="{{ url_for('main.generate_tax_return') }}" class="btn btn-primary mt-2">
+                <i class="fas fa-plus mr-1"></i>Generate First Return
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

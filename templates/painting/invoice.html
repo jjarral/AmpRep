@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Invoice - {{ order.order_number }}{% endblock %}
+{% block page_title %}Painting Invoice{% endblock %}
+{% block breadcrumb_active %}Painting{% endblock %}
+
+{% block content %}
+<div class="card no-print">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-file-invoice"></i> Invoice {{ order.order_number }}</h3>
+            </div>
+            <div class="col text-right">
+                <button onclick="window.print()" class="btn btn-primary">
+                    <i class="fas fa-print"></i> Print Invoice
+                </button>
+                <a href="{{ url_for('main.view_painting_order', id=order.id) }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Invoice Content (Printable) -->
+<div class="card" id="invoice-content">
+    <div class="card-body">
+        <!-- Company Header -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h2 class="text-primary"><strong>AMPOULEX (Pvt) Ltd</strong></h2>
+                <p class="mb-1">Malik Arshad Farmhouse, Malik Akram Street</p>
+                <p class="mb-1">Darbar-e-Kareemi Stop, G.T. Road</p>
+                <p class="mb-1">Wah Cantt, The. Taxila, Dist. RWP, Punjab, Pakistan</p>
+                <p class="mb-1"><strong>Tel:</strong> 0340-5336238 | 0331-9980908</p>
+                <p class="mb-1"><strong>Email:</strong> ampoulex.hr@gmail.com</p>
+            </div>
+            <div class="col-md-6 text-right">
+                <h1 class="text-secondary">INVOICE</h1>
+                <p class="mb-1"><strong>Invoice #:</strong> {{ order.order_number }}</p>
+                <p class="mb-1"><strong>Date:</strong> {{ order.order_date.strftime('%Y-%m-%d') }}</p>
+                {% if order.delivery_date %}
+                <p class="mb-1"><strong>Delivery Date:</strong> {{ order.delivery_date.strftime('%Y-%m-%d') }}</p>
+                {% endif %}
+                <p class="mb-1"><strong>Status:</strong> 
+                    <span class="badge badge-{{ 
+                        'warning' if order.status == 'pending' else 
+                        'info' if order.status == 'in_progress' else 
+                        'success' if order.status == 'completed' else 
+                        'secondary'
+                    }}">
+                        {{ order.status|title }}
+                    </span>
+                </p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Customer Info -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5><strong>Bill To:</strong></h5>
+                <p class="mb-1">{{ order.customer_name }}</p>
+                {% if order.customer_phone %}
+                <p class="mb-1"><strong>Phone:</strong> {{ order.customer_phone }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th>#</th>
+                        <th>Product</th>
+                        <th>Color</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-right">Price/Unit (PKR)</th>
+                        <th class="text-right">Setup Charge (PKR)</th>
+                        <th class="text-right">Subtotal (PKR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><strong>{{ item.product.name if item.product else 'N/A' }}</strong></td>
+                        <td>{{ item.product.color if item.product else 'N/A' }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-right">{{ "%.2f"|format(item.price_per_unit) }}</td>
+                        <td class="text-right">{{ "%.2f"|format(item.setup_charge) }}</td>
+                        <td class="text-right"><strong>{{ "%.2f"|format(item.subtotal) }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="bg-light">
+                    <tr>
+                        <th colspan="6" class="text-right">Subtotal:</th>
+                        <th class="text-right">PKR {{ "%.2f"|format(order.total_amount) }}</th>
+                    </tr>
+                    <tr>
+                        <th colspan="6" class="text-right">Tax (0%):</th>
+                        <th class="text-right">PKR 0.00</th>
+                    </tr>
+                    <tr class="table-primary">
+                        <th colspan="6" class="text-right"><strong>GRAND TOTAL:</strong></th>
+                        <th class="text-right"><strong>PKR {{ "%.2f"|format(order.total_amount) }}</strong></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Payment Summary -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5><strong>Payment Summary:</strong></h5>
+                <table class="table table-sm table-borderless">
+                    <tr>
+                        <td>Total Amount:</td>
+                        <td class="text-right"><strong>PKR {{ "%.2f"|format(order.total_amount) }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Paid Amount:</td>
+                        <td class="text-right">PKR {{ "%.2f"|format(order.paid_amount) }}</td>
+                    </tr>
+                    <tr class="table-warning">
+                        <td><strong>Balance Due:</strong></td>
+                        <td class="text-right"><strong>PKR {{ "%.2f"|format(order.total_amount - order.paid_amount) }}</strong></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                {% if order.notes %}
+                <h5><strong>Notes:</strong></h5>
+                <p class="text-muted">{{ order.notes }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Footer -->
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <p class="text-muted mb-1">Thank you for your business!</p>
+                <p class="text-muted mb-1"><small>This is a computer-generated invoice.</small></p>
+                <p class="text-muted mb-0"><small>For any queries, please contact us at 0340-5336238</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Print Styles -->
+<style>
+@media print {
+    .no-print, .card-header, .btn, .nav, .sidebar, .main-footer {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    #invoice-content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    body {
+        background: white !important;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if account else 'Add' }} Account{% endblock %}
+{% block page_title %}{{ 'Edit' if account else 'Add' }} Account{% endblock %}
+{% block breadcrumb_active %}Chart of Accounts{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-{{ 'edit' if account else 'plus' }}"></i> {{ 'Edit' if account else 'Add' }} Account</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Account Code *</label>
+                        <input type="text" name="account_code" class="form-control" 
+                               value="{{ account.account_code if account else '' }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Account Name *</label>
+                        <input type="text" name="account_name" class="form-control" 
+                               value="{{ account.account_name if account else '' }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Account Type *</label>
+                        <select name="account_type" class="form-control" required>
+                            <option value="">Select Type</option>
+                            <option value="Asset" {{ 'selected' if account and account.account_type == 'Asset' }}>Asset</option>
+                            <option value="Liability" {{ 'selected' if account and account.account_type == 'Liability' }}>Liability</option>
+                            <option value="Equity" {{ 'selected' if account and account.account_type == 'Equity' }}>Equity</option>
+                            <option value="Income" {{ 'selected' if account and account.account_type == 'Income' }}>Income</option>
+                            <option value="Expense" {{ 'selected' if account and account.account_type == 'Expense' }}>Expense</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Parent Account</label>
+                        <select name="parent_account_id" class="form-control">
+                            <option value="">None</option>
+                            {% for parent in parent_accounts %}
+                            <option value="{{ parent.id }}" {{ 'selected' if account and account.parent_account_id == parent.id }}>
+                                {{ parent.account_code }} - {{ parent.account_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" name="is_active" class="custom-control-input" id="is_active"
+                                   {{ 'checked' if not account or account.is_active }}>
+                            <label class="custom-control-label" for="is_active">Active</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save
+            </button>
+            <a href="{{ url_for('main.chart_of_accounts') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

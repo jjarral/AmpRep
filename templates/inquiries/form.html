@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}New Inquiry{% endblock %}
+{% block page_title %}New Inquiry{% endblock %}
+{% block breadcrumb_active %}Inquiries{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-envelope"></i> Create New Inquiry</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <!-- Customer Information -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Customer Name *</label>
+                        <input type="text" name="customer_name" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Business Name</label>
+                        <input type="text" name="business_name" class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Phone *</label>
+                        <input type="text" name="phone" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Selection -->
+            <div class="mb-4">
+                <h5><i class="fas fa-boxes"></i> Select Products</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="productsTable">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Product</th>
+                                <th>Color</th>
+                                <th>Price/1000 (PKR)</th>
+                                <th>Stock</th>
+                                <th>Quantity</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <!-- Product Column -->
+                                <td>
+                                    <select name="product_id[]" class="form-control product-select" required onchange="updateProductInfo(this)">
+                                        <option value="">Select Product</option>
+                                        {% for product in products %}
+                                        <option value="{{ product.id }}" 
+                                                data-color="{{ product.color }}"
+                                                data-price="{{ product.base_price }}"
+                                                data-stock="{{ product.stock }}">
+                                            {{ product.name }} - {{ product.color }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <!-- Color Column -->
+                                <td class="product-color">-</td>
+                                <!-- Price Column -->
+                                <td class="product-price">PKR 0.00</td>
+                                <!-- Stock Column -->
+                                <td class="product-stock">0</td>
+                                <!-- Quantity Column -->
+                                <td>
+                                    <input type="number" name="quantity[]" class="form-control" value="1000" min="1" required>
+                                </td>
+                                <!-- Action Column -->
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addProductRow()">
+                        <i class="fas fa-plus"></i> Add Another Product
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea name="notes" class="form-control" rows="3" placeholder="Additional notes..."></textarea>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Create Inquiry
+            </button>
+            <a href="{{ url_for('main.inquiries') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function updateProductInfo(select) {
+    const row = select.closest('tr');
+    const option = select.options[select.selectedIndex];
+    
+    if (option.value) {
+        row.querySelector('.product-color').textContent = option.dataset.color || '-';
+        row.querySelector('.product-price').textContent = 'PKR ' + parseFloat(option.dataset.price || 0).toFixed(2);
+        row.querySelector('.product-stock').textContent = option.dataset.stock || '0';
+    } else {
+        row.querySelector('.product-color').textContent = '-';
+        row.querySelector('.product-price').textContent = 'PKR 0.00';
+        row.querySelector('.product-stock').textContent = '0';
+    }
+}
+
+function addProductRow() {
+    const tbody = document.querySelector('#productsTable tbody');
+    const firstRow = tbody.rows[0];
+    const newRow = firstRow.cloneNode(true);
+    
+    // Reset values in new row
+    newRow.querySelector('.product-select').value = '';
+    newRow.querySelector('.product-color').textContent = '-';
+    newRow.querySelector('.product-price').textContent = 'PKR 0.00';
+    newRow.querySelector('.product-stock').textContent = '0';
+    newRow.querySelector('input[name="quantity[]"]').value = '1000';
+    
+    tbody.appendChild(newRow);
+}
+
+function removeRow(button) {
+    const tbody = document.querySelector('#productsTable tbody');
+    if (tbody.rows.length > 1) {
+        button.closest('tr').remove();
+    } else {
+        alert('At least one product is required');
+    }
+}
+</script>
+{% endblock %}

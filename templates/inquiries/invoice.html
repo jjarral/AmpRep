@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+{% block title %}Process Invoice{% endblock %}
+{% block page_title %}Process Invoice{% endblock %}
+{% block breadcrumb_active %}Inquiries{% endblock %}
+
+{% block content %}
+<!-- Stock Warning Alert -->
+{% if stock_issues %}
+<div class="alert alert-warning">
+    <h5><i class="fas fa-exclamation-triangle"></i> Stock Availability Issues</h5>
+    <p>The following products have insufficient stock. Quantities will be adjusted automatically:</p>
+    <ul>
+        {% for issue in stock_issues %}
+        <li>
+            <strong>{{ issue.product }}</strong>: 
+            Requested {{ issue.requested }}, Available {{ issue.available }}
+            <br><small class="text-muted">Order will be created for {{ issue.available }} units</small>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-file-invoice"></i> Process Invoice - {{ inquiry.inquiry_number }}</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <!-- Products Table with Quantity Adjustment -->
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Requested</th>
+                            <th>Available</th>
+                            <th>Order Qty</th>
+                            <th>Unit Price (PKR)</th>
+                            <th>Tax %</th>
+                            <th>Subtotal (PKR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in inquiry.inquiry_items %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.product.name if item.product else 'N/A' }}</strong>
+                                {% if item.product and item.quantity > item.product.stock %}
+                                <br><small class="text-danger">
+                                    <i class="fas fa-exclamation-triangle"></i> Low stock
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.quantity }}</td>
+                            <td class="{{ 'text-danger' if item.product and item.quantity > item.product.stock else 'text-success' }}">
+                                {{ item.product.stock if item.product else 0 }}
+                            </td>
+                            <td>
+                                <input type="number" 
+                                       name="qty_{{ item.id }}" 
+                                       class="form-control form-control-sm" 
+                                       value="{{ item.quantity if item.product and item.quantity <= item.product.stock else (item.product.stock if item.product else 0) }}" 
+                                       min="0" 
+                                       max="{{ item.product.stock if item.product else 0 }}"
+                                       style="width: 100px;">
+                            </td>
+                            <td>
+                                <input type="number" 
+                                       name="price_{{ item.id }}" 
+                                       class="form-control form-control-sm" 
+                                       value="{{ item.product.base_price if item.product else 0 }}" 
+                                       step="0.01"
+                                       style="width: 120px;">
+                            </td>
+                            <td>
+                                <input type="number" 
+                                       name="tax_{{ item.id }}" 
+                                       class="form-control form-control-sm" 
+                                       value="17" 
+                                       step="0.1"
+                                       style="width: 80px;">
+                            </td>
+                            <td class="item-subtotal">PKR 0.00</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="bg-light">
+                        <tr>
+                            <th colspan="6" class="text-right">Total:</th>
+                            <th><strong>PKR <span id="total-amount">0.00</span></strong></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-check"></i> Create Order
+            </button>
+            <a href="{{ url_for('main.edit_inquiry', id=inquiry.id) }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+// Calculate subtotals and total
+function calculateTotals() {
+    let total = 0;
+    {% for item in inquiry.inquiry_items %}
+    (function() {
+        const qtyInput = document.querySelector('input[name="qty_{{ item.id }}"]');
+        const priceInput = document.querySelector('input[name="price_{{ item.id }}"]');
+        const taxInput = document.querySelector('input[name="tax_{{ item.id }}"]');
+        const subtotalCell = qtyInput.closest('tr').querySelector('.item-subtotal');
+        
+        function updateSubtotal() {
+            const qty = parseFloat(qtyInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            const tax = parseFloat(taxInput.value) || 0;
+            const subtotal = qty * price * (1 + tax / 100);
+            subtotalCell.textContent = 'PKR ' + subtotal.toFixed(2);
+            calculateTotal();
+        }
+        
+        qtyInput.addEventListener('input', updateSubtotal);
+        priceInput.addEventListener('input', updateSubtotal);
+        taxInput.addEventListener('input', updateSubtotal);
+        updateSubtotal();
+    })();
+    {% endfor %}
+}
+
+function calculateTotal() {
+    let total = 0;
+    document.querySelectorAll('.item-subtotal').forEach(cell => {
+        const text = cell.textContent.replace('PKR ', '');
+        total += parseFloat(text) || 0;
+    });
+    document.getElementById('total-amount').textContent = total.toFixed(2);
+}
+
+document.addEventListener('DOMContentLoaded', calculateTotals);
+</script>
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Invoice Details</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <!-- Customer Info -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Customer</label>
+                        <input type="text" class="form-control" value="{{ inquiry.customer_name }}" readonly>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Business</label>
+                        <input type="text" class="form-control" value="{{ inquiry.business_name or 'N/A' }}" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Inquiry Number -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Inquiry Number</label>
+                        <input type="text" class="form-control" value="{{ inquiry.inquiry_number }}" readonly>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Total Items</label>
+                        <input type="text" class="form-control" value="{{ inquiry.inquiry_items|length }} product(s)" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Items Table -->
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Color</th>
+                            <th>Quantity</th>
+                            <th>Unit Price (PKR) *</th>
+                            <th>Tax Rate (%)</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in inquiry.inquiry_items %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.product.name if item.product else 'Product' }}</strong>
+                            </td>
+                            <td>
+                                {% if item.product %}
+                                <span class="badge badge-{{ 'info' if item.product.color == 'Transparent' else 'warning' }}">
+                                    {{ item.product.color }}
+                                </span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>{{ item.quantity }}</td>
+                            <td>
+                                <input type="number" 
+                                       name="price_{{ item.product_id }}" 
+                                       class="form-control unit-price" 
+                                       data-row="{{ loop.index }}"
+                                       value="{{ item.product.base_price if item.product else 0 }}" 
+                                       step="0.01" 
+                                       required>
+                            </td>
+                            <td>
+                                <input type="number" 
+                                       name="tax_{{ item.product_id }}" 
+                                       class="form-control tax-rate" 
+                                       data-row="{{ loop.index }}"
+                                       value="17" 
+                                       step="0.1">
+                            </td>
+                            <td class="subtotal">PKR 0.00</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="bg-light">
+                        <tr>
+                            <th colspan="5" class="text-right">Total Subtotal:</th>
+                            <th><span id="total-subtotal">PKR 0.00</span></th>
+                        </tr>
+                        <tr>
+                            <th colspan="5" class="text-right">Total Tax:</th>
+                            <th><span id="total-tax">PKR 0.00</span></th>
+                        </tr>
+                        <tr>
+                            <th colspan="5" class="text-right" style="font-size: 1.2rem;">Grand Total:</th>
+                            <th class="text-primary" style="font-size: 1.2rem;"><span id="grand-total">PKR 0.00</span></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                <strong>Note:</strong> Enter unit prices for each product. Tax will be calculated automatically.
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-check"></i> Generate Invoice & Create Order
+            </button>
+            <a href="{{ url_for('main.inquiries') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Calculate subtotals and totals
+function calculateTotals() {
+    let totalSubtotal = 0;
+    let totalTax = 0;
+    
+    document.querySelectorAll('.unit-price').forEach((input, index) => {
+        const row = input.closest('tr');
+        const quantity = parseFloat(row.querySelector('td:nth-child(3)').textContent) || 0;
+        const unitPrice = parseFloat(input.value) || 0;
+        const taxRate = parseFloat(row.querySelector('.tax-rate').value) || 0;
+        
+        const subtotal = quantity * unitPrice;
+        const tax = subtotal * (taxRate / 100);
+        
+        // Update row subtotal
+        row.querySelector('.subtotal').textContent = `PKR ${subtotal.toFixed(2)}`;
+        
+        totalSubtotal += subtotal;
+        totalTax += tax;
+    });
+    
+    const grandTotal = totalSubtotal + totalTax;
+    
+    // Update totals
+    document.getElementById('total-subtotal').textContent = `PKR ${totalSubtotal.toFixed(2)}`;
+    document.getElementById('total-tax').textContent = `PKR ${totalTax.toFixed(2)}`;
+    document.getElementById('grand-total').textContent = `PKR ${grandTotal.toFixed(2)}`;
+}
+
+// Add event listeners
+document.querySelectorAll('.unit-price, .tax-rate').forEach(input => {
+    input.addEventListener('input', calculateTotals);
+});
+
+// Calculate on page load
+calculateTotals();
+</script>
+{% endblock %}

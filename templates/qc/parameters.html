@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}QC Parameters{% endblock %}
+{% block page_title %}QC Parameters{% endblock %}
+{% block breadcrumb_active %}Quality Control{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-clipboard-check"></i> QC Parameters</h3>
+            </div>
+            <div class="col text-right">
+                <a href="{{ url_for('main.add_qc_parameter') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Parameter
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Parameter</th>
+                        <th>Min</th>
+                        <th>Target</th>
+                        <th>Max</th>
+                        <th>Unit</th>
+                        <th>Mandatory</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for param in parameters %}
+                    <tr>
+                        <td>{{ param.product.name if param.product else 'N/A' }}</td>
+                        <td><strong>{{ param.parameter_name }}</strong></td>
+                        <td>{{ param.min_value if param.min_value else '-' }}</td>
+                        <td>{{ param.target_value if param.target_value else '-' }}</td>
+                        <td>{{ param.max_value if param.max_value else '-' }}</td>
+                        <td>{{ param.unit or '-' }}</td>
+                        <td>
+                            {% if param.is_mandatory %}
+                            <span class="badge badge-danger">Yes</span>
+                            {% else %}
+                            <span class="badge badge-secondary">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

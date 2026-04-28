@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}New Painting Order{% endblock %}
+{% block page_title %}New Painting Order{% endblock %}
+{% block breadcrumb_active %}Painting{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-palette"></i> Create Painting Order</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <!-- Customer Info -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Existing Customer</label>
+                        <select name="customer_id" class="form-control" id="customer_select">
+                            <option value="">Select Customer</option>
+                            {% for customer in customers %}
+                            <option value="{{ customer.id }}">{{ customer.name }} - {{ customer.business_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Or New Customer Name</label>
+                        <input type="text" name="customer_name" class="form-control" placeholder="Enter customer name">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Customer Phone</label>
+                        <input type="text" name="customer_phone" class="form-control" placeholder="Enter phone number">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Delivery Date</label>
+                        <input type="date" name="delivery_date" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="mb-4">
+                <h5><i class="fas fa-boxes"></i> Products to Paint</h5>
+                <table class="table table-bordered" id="paintingItemsTable">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Color</th>
+                            <th>Price/Unit (PKR)</th>
+                            <th>Quantity</th>
+                            <th>Setup Charge (PKR)</th>
+                            <th>Subtotal (PKR)</th>
+                            <th>Color Specification</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <select name="product_id[]" class="form-control product-select" required onchange="updatePrice(this)">
+                                    <option value="">Select Product</option>
+                                    {% for product in products %}
+                                    <option value="{{ product.id }}" 
+                                            data-price="{{ painting_prices[product.id].price_per_unit if painting_prices[product.id] else '0' }}"
+                                            data-setup="{{ painting_prices[product.id].setup_charge if painting_prices[product.id] else '0' }}"
+                                            data-color="{{ product.color }}">
+                                        {{ product.name }} - {{ product.color }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td class="product-color">-</td>
+                            <td><input type="number" step="0.01" name="price[]" class="form-control price-input" value="0" readonly></td>
+                            <td><input type="number" name="quantity[]" class="form-control quantity-input" value="1000" required onchange="calculateSubtotal(this)"></td>
+                            <td><input type="number" step="0.01" name="setup_charge[]" class="form-control setup-input" value="0" readonly></td>
+                            <td class="subtotal">PKR 0.00</td>
+                            <td><input type="text" name="color_specification[]" class="form-control" placeholder="e.g., RAL 3000"></td>
+                            <td>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addPaintingItem()">
+                    <i class="fas fa-plus"></i> Add Product
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea name="notes" class="form-control" rows="3" placeholder="Special instructions..."></textarea>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Create Painting Order
+            </button>
+            <a href="{{ url_for('main.painting_orders') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function updatePrice(select) {
+    const row = select.closest('tr');
+    const price = select.options[select.selectedIndex].dataset.price || 0;
+    const setup = select.options[select.selectedIndex].dataset.setup || 0;
+    const color = select.options[select.selectedIndex].dataset.color || '-';
+    
+    row.querySelector('.price-input').value = price;
+    row.querySelector('.setup-input').value = setup;
+    row.querySelector('.product-color').textContent = color;
+    calculateSubtotal(row.querySelector('.quantity-input'));
+}
+
+function calculateSubtotal(input) {
+    const row = input.closest('tr');
+    const price = parseFloat(row.querySelector('.price-input').value) || 0;
+    const qty = parseFloat(input.value) || 0;
+    const setup = parseFloat(row.querySelector('.setup-input').value) || 0;
+    const subtotal = (price * qty) + setup;
+    row.querySelector('.subtotal').textContent = 'PKR ' + subtotal.toFixed(2);
+}
+
+function addPaintingItem() {
+    const tbody = document.querySelector('#paintingItemsTable tbody');
+    const row = tbody.rows[0].cloneNode(true);
+    row.querySelectorAll('input').forEach(input => {
+        if (!input.classList.contains('price-input') && !input.classList.contains('setup-input')) {
+            input.value = '';
+        }
+    });
+    row.querySelector('.product-color').textContent = '-';
+    row.querySelector('.subtotal').textContent = 'PKR 0.00';
+    tbody.appendChild(row);
+}
+
+function removeRow(button) {
+    const tbody = document.querySelector('#paintingItemsTable tbody');
+    if (tbody.rows.length > 1) {
+        button.closest('tr').remove();
+    } else {
+        alert('At least one product is required');
+    }
+}
+</script>
+{% endblock %}

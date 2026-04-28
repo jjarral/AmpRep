@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Add Production Batch{% endblock %}
+{% block page_title %}Add Production Batch{% endblock %}
+{% block breadcrumb_active %}Batches{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-plus"></i> Create New Production Batch</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Product *</label>
+                        <select name="product_id" class="form-control" required>
+                            <option value="">Select Product</option>
+                            {% for product in products %}
+                            <option value="{{ product.id }}">{{ product.name }} - {{ product.color }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Planned Quantity *</label>
+                        <input type="number" name="planned_quantity" class="form-control" required min="1">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea name="notes" class="form-control" rows="3" placeholder="Additional notes..."></textarea>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Create Batch
+            </button>
+            <a href="{{ url_for('main.production_batches') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

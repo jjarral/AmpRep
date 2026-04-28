@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% block title %}Sales Analysis Report{% endblock %}
+{% block page_title %}Sales Analysis Report{% endblock %}
+{% block breadcrumb_active %}Reports{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-chart-line"></i> Sales Analysis Report</h3>
+            </div>
+            <div class="col text-right">
+                <form method="GET" class="form-inline">
+                    <div class="form-group mr-2">
+                        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+                    </div>
+                    <div class="form-group mr-2">
+                        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+                    </div>
+                    <div class="form-group mr-2">
+                        <select name="group_by" class="form-control form-control-sm">
+                            <option value="product" {{ 'selected' if group_by == 'product' else '' }}>By Product</option>
+                            <option value="customer" {{ 'selected' if group_by == 'customer' else '' }}>By Customer</option>
+                            <option value="date" {{ 'selected' if group_by == 'date' else '' }}>By Date</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- KPI Cards -->
+        <div class="row mb-4">
+            <div class="col-lg-4 col-4">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>PKR {{ "%.2f"|format(total_revenue) }}</h3>
+                        <p>Total Revenue</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-4">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{ total_orders }}</h3>
+                        <p>Total Orders</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-4">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>PKR {{ "%.2f"|format(avg_order_value) }}</h3>
+                        <p>Avg Order Value</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart for Online Viewing ONLY -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-bar"></i> Sales Visualization (Online Only - Not in Exports)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="salesChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered" id="salesTable">
+                <thead class="bg-dark text-white">
+                    <tr>
+                        {% if group_by == 'product' %}
+                        <th>Product</th>
+                        <th>Quantity Sold</th>
+                        <th>Revenue (PKR)</th>
+                        <th>Orders</th>
+                        <th>% of Total</th>
+                        {% elif group_by == 'customer' %}
+                        <th>Customer</th>
+                        <th>Orders</th>
+                        <th>Revenue (PKR)</th>
+                        <th>Avg Order (PKR)</th>
+                        <th>% of Total</th>
+                        {% elif group_by == 'date' %}
+                        <th>Date</th>
+                        <th>Orders</th>
+                        <th>Revenue (PKR)</th>
+                        <th>% of Total</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_data %}
+                    <tr>
+                        {% if group_by == 'product' %}
+                        <td><strong>{{ item.name }}</strong></td>
+                        <td>{{ item.quantity }}</td>
+                        <td>PKR {{ "%.2f"|format(item.revenue) }}</td>
+                        <td>{{ item.orders }}</td>
+                        <td>{{ "%.1f"|format((item.revenue / total_revenue * 100) if total_revenue > 0 else 0) }}%</td>
+                        {% elif group_by == 'customer' %}
+                        <td><strong>{{ item.name }}</strong></td>
+                        <td>{{ item.orders }}</td>
+                        <td>PKR {{ "%.2f"|format(item.revenue) }}</td>
+                        <td>PKR {{ "%.2f"|format(item.avg_order) }}</td>
+                        <td>{{ "%.1f"|format((item.revenue / total_revenue * 100) if total_revenue > 0 else 0) }}%</td>
+                        {% elif group_by == 'date' %}
+                        <td>{{ item.date }}</td>
+                        <td>{{ item.orders }}</td>
+                        <td>PKR {{ "%.2f"|format(item.revenue) }}</td>
+                        <td>{{ "%.1f"|format((item.revenue / total_revenue * 100) if total_revenue > 0 else 0) }}%</td>
+                        {% endif %}
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">No data available for this period</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Export Buttons - TABLES ONLY, NO CHARTS -->
+        <div class="mt-4">
+            <form method="POST" action="{{ url_for('main.generate_excel_report', module='sales_analysis') }}" class="d-inline">
+                <input type="hidden" name="date_from" value="{{ date_from }}">
+                <input type="hidden" name="date_to" value="{{ date_to }}">
+                <input type="hidden" name="group_by" value="{{ group_by }}">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-file-excel"></i> Export Excel (Tables Only)
+                </button>
+            </form>
+            <form method="POST" action="{{ url_for('main.generate_pdf_report', module='sales_analysis') }}" class="d-inline ml-2">
+                <input type="hidden" name="date_from" value="{{ date_from }}">
+                <input type="hidden" name="date_to" value="{{ date_to }}">
+                <input type="hidden" name="group_by" value="{{ group_by }}">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-file-pdf"></i> Export PDF (Tables Only)
+                </button>
+            </form>
+            <button onclick="window.print()" class="btn btn-info ml-2">
+                <i class="fas fa-print"></i> Print
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js for ONLINE VIEWING ONLY -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+if (typeof window.salesChartInstance !== "undefined") { window.salesChartInstance.destroy(); }
+// Chart for ONLINE VIEWING ONLY - Not included in exports
+const ctx = document.getElementById('salesChart').getContext('2d');
+
+{% if report_data %}
+const labels = [{% for item in report_data[:10] %}'{{ item.name[:30] if item.name else item.date }}'{% if not loop.last %},{% endif %}{% endfor %}];
+const data = [{% for item in report_data[:10] %}{{ item.revenue }}{% if not loop.last %},{% endif %}{% endfor %}];
+{% else %}
+const labels = [];
+const data = [];
+{% endif %}
+
+window.salesChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Revenue (PKR)',
+            data: data,
+            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'PKR ' + context.parsed.y.toLocaleString();
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return 'PKR ' + value.toLocaleString();
+                    }
+                }
+            },
+            x: {
+                ticks: {
+                    maxRotation: 45,
+                    minRotation: 45
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

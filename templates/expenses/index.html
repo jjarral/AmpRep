@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+{% block title %}Expenses{% endblock %}
+{% block page_title %}Expenses{% endblock %}
+{% block breadcrumb_active %}Expenses{% endblock %}
+
+{% block content %}
+
+<!-- Summary Cards -->
+<div class="row mb-3" id="summary-cards">
+  <div class="col-lg-4 col-6">
+    <div class="small-box bg-danger">
+      <div class="inner"><h3 id="card-total">PKR 0.00</h3><p>Total Expenses</p></div>
+      <div class="icon"><i class="fas fa-receipt"></i></div>
+    </div>
+  </div>
+  <div class="col-lg-4 col-6">
+    <div class="small-box bg-warning">
+      <div class="inner"><h3 id="card-pending">PKR 0.00</h3><p>Pending</p></div>
+      <div class="icon"><i class="fas fa-clock"></i></div>
+    </div>
+  </div>
+  <div class="col-lg-4 col-6">
+    <div class="small-box bg-success">
+      <div class="inner"><h3 id="card-paid">PKR 0.00</h3><p>Paid</p></div>
+      <div class="icon"><i class="fas fa-check-circle"></i></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div class="card">
+  <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <h5 class="mb-0"><i class="fas fa-table me-2 text-primary"></i>Expense Sheet</h5>
+      <span id="save-status" class="badge bg-secondary ms-2" style="font-size:.75rem;">Loading…</span>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <input type="text" id="search-box" class="form-control form-control-sm" placeholder="&#128269; Search…" style="width:180px;">
+      <select id="filter-status" class="form-select form-select-sm" style="width:130px;">
+        <option value="">All Statuses</option>
+        <option value="pending">Pending</option>
+        <option value="paid">Paid</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <button class="btn btn-sm btn-primary" id="add-row-btn">
+        <i class="fas fa-plus"></i> Add Row
+      </button>
+      <a href="{{ url_for('main.expenses_bulk_upload') }}" class="btn btn-sm btn-outline-success">
+        <i class="fas fa-file-excel"></i> Bulk Upload
+      </a>
+      <form method="POST" action="{{ url_for('main.generate_excel_report', module='expenses') }}" class="d-inline">
+        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Export</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <div style="overflow-x:auto;">
+      <table class="table table-bordered table-hover mb-0" id="expense-grid" style="min-width:1100px;font-size:.875rem;">
+        <thead class="table-dark" style="position:sticky;top:0;z-index:10;">
+          <tr>
+            <th style="width:36px;"></th>
+            <th style="width:120px;">Date</th>
+            <th style="width:140px;">Category</th>
+            <th>Description</th>
+            <th style="width:130px;">Amount (PKR)</th>
+            <th style="width:130px;">Paid By</th>
+            <th style="width:130px;">Payment Method</th>
+            <th style="width:120px;">Reference</th>
+            <th style="width:120px;">Approved By</th>
+            <th style="width:100px;">Status</th>
+            <th style="width:42px;"></th>
+          </tr>
+        </thead>
+        <tbody id="expense-tbody">
+          <tr><td colspan="11" class="text-center py-4 text-muted">
+            <div class="spinner-border spinner-border-sm me-2"></div>Loading…
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card-footer text-muted small d-flex justify-content-between">
+    <span id="row-count">0 rows</span>
+    <span>Click any cell to edit &nbsp;·&nbsp; <kbd>Tab</kbd> next cell &nbsp;·&nbsp; <kbd>Enter</kbd> new row &nbsp;·&nbsp; <kbd>Esc</kbd> cancel</span>
+  </div>
+</div>
+
+<style>
+#expense-grid td { vertical-align: middle; padding: 0 !important; cursor: pointer; }
+#expense-grid td.cell-display { padding: 6px 8px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+#expense-grid td.editing { padding: 0 !important; outline: 2px solid #0d6efd; z-index: 5; position: relative; }
+#expense-grid td input, #expense-grid td select {
+  border: none; outline: none; width: 100%; height: 100%;
+  padding: 5px 7px; background: #fffde7; font-size: .875rem;
+  box-shadow: none; border-radius: 0;
+}
+#expense-grid td select { cursor: pointer; }
+#expense-grid tr.new-row td.cell-display { background: #f0fff4; color: #888; font-style: italic; }
+#expense-grid tr:hover td.cell-display:not(.no-hover) { background: #f8f9fa; }
+#expense-grid tr.saving td.cell-display { opacity: 0.6; }
+.badge-pending { background:#ffc107; color:#000; }
+.badge-paid { background:#28a745; color:#fff; }
+.badge-rejected { background:#dc3545; color:#fff; }
+.del-btn { color:#dc3545; border:none; background:none; padding:4px 8px; font-size:.85rem; opacity:0.5; }
+.del-btn:hover { opacity:1; }
+#expense-grid tr:hover .del-btn { opacity: 1; }
+.row-num { color: #aaa; font-size:.78rem; text-align:center; padding:4px 2px !important; user-select:none; background:#f8f9fa; }
+</style>
+
+<script>
+const CATEGORIES = ['General','Raw Materials','Utilities','Salaries','Transport','Maintenance','Office','Marketing','Production','Quality Control','Tax','Other'];
+const METHODS = ['Cash','Bank Transfer','Cheque','Credit Card','Online'];
+const STATUSES = ['pending','paid','rejected'];
+
+let allExpenses = [];
+let editingCell = null;
+let saveTimer = null;
+
+const tbody = document.getElementById('expense-tbody');
+const searchBox = document.getElementById('search-box');
+const filterStatus = document.getElementById('filter-status');
+const saveStatus = document.getElementById('save-status');
+const rowCount = document.getElementById('row-count');
+
+function fmt(n) { return 'PKR ' + parseFloat(n||0).toLocaleString('en-PK', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+function updateCards() {
+  let total = 0, pending = 0, paid = 0;
+  allExpenses.forEach(e => {
+    const a = parseFloat(e.amount) || 0;
+    total += a;
+    if (e.status === 'pending') pending += a;
+    if (e.status === 'paid') paid += a;
+  });
+  document.getElementById('card-total').textContent = fmt(total);
+  document.getElementById('card-pending').textContent = fmt(pending);
+  document.getElementById('card-paid').textContent = fmt(paid);
+}
+
+function statusBadge(s) {
+  const cls = s === 'paid' ? 'badge-paid' : s === 'rejected' ? 'badge-rejected' : 'badge-pending';
+  return `<span class="badge ${cls}" style="font-size:.78rem;">${s}</span>`;
+}
+
+function makeSelect(options, value, field) {
+  return `<select data-field="${field}" onchange="commitSelect(this)" onblur="commitSelect(this)" onkeydown="cellKeydown(event,this)">
+    ${options.map(o => `<option value="${o}" ${o===value?'selected':''}>${o}</option>`).join('')}
+  </select>`;
+}
+
+function renderRow(exp, idx) {
+  const isNew = !exp.id;
+  const tr = document.createElement('tr');
+  tr.dataset.id = exp.id || '';
+  tr.dataset.idx = idx;
+  if (isNew) tr.classList.add('new-row');
+
+  const cols = [
+    { field: null, html: `<td class="row-num">${idx+1}</td>` },
+    { field: 'date',           val: exp.date,             type: 'date' },
+    { field: 'category',       val: exp.category,         type: 'select', opts: CATEGORIES },
+    { field: 'description',    val: exp.description,      type: 'text' },
+    { field: 'amount',         val: exp.amount,           type: 'number' },
+    { field: 'paid_by',        val: exp.paid_by,          type: 'text' },
+    { field: 'payment_method', val: exp.payment_method,   type: 'select', opts: METHODS },
+    { field: 'reference_number',val: exp.reference_number,type: 'text' },
+    { field: 'approved_by',    val: exp.approved_by,      type: 'text' },
+    { field: 'status',         val: exp.status,           type: 'select', opts: STATUSES },
+    { field: null, html: `<td style="text-align:center;"><button class="del-btn" onclick="deleteRow(this)" title="Delete row"><i class="fas fa-times"></i></button></td>` },
+  ];
+
+  cols.forEach(col => {
+    if (col.html) { tr.insertAdjacentHTML('beforeend', col.html); return; }
+    const td = document.createElement('td');
+    td.className = 'cell-display';
+    td.dataset.field = col.field;
+    td.dataset.type = col.type;
+    if (col.opts) td.dataset.opts = JSON.stringify(col.opts);
+
+    let display = col.val || (isNew ? '—' : '');
+    if (col.field === 'status') display = statusBadge(col.val || 'pending');
+    else if (col.field === 'amount') display = col.val ? parseFloat(col.val).toLocaleString('en-PK', {minimumFractionDigits:2}) : '';
+    td.innerHTML = display;
+
+    td.addEventListener('click', () => startEdit(td));
+    tr.appendChild(td);
+  });
+
+  return tr;
+}
+
+function getFiltered() {
+  const q = searchBox.value.toLowerCase();
+  const sf = filterStatus.value;
+  return allExpenses.filter(e => {
+    const matchQ = !q || [e.category,e.description,e.paid_by,e.reference_number,e.approved_by,e.payment_method].some(v => (v||'').toLowerCase().includes(q));
+    const matchS = !sf || e.status === sf;
+    return matchQ && matchS;
+  });
+}
+
+function renderTable() {
+  tbody.innerHTML = '';
+  const visible = getFiltered();
+  if (!visible.length) {
+    tbody.innerHTML = `<tr><td colspan="11" class="text-center py-5 text-muted"><i class="fas fa-receipt fa-2x mb-2 d-block"></i>No expenses found. Click <strong>Add Row</strong> to start.</td></tr>`;
+    rowCount.textContent = '0 rows';
+    return;
+  }
+  visible.forEach((exp, i) => tbody.appendChild(renderRow(exp, i)));
+  rowCount.textContent = `${visible.length} row${visible.length !== 1 ? 's' : ''}`;
+  updateCards();
+}
+
+async function loadData() {
+  setSaveStatus('loading');
+  const res = await fetch('/api/expenses');
+  allExpenses = await res.json();
+  renderTable();
+  setSaveStatus('saved');
+}
+
+function setSaveStatus(state) {
+  const el = saveStatus;
+  if (state === 'loading') { el.className='badge bg-secondary'; el.textContent='Loading…'; }
+  else if (state === 'saving') { el.className='badge bg-warning text-dark'; el.textContent='Saving…'; }
+  else if (state === 'saved') { el.className='badge bg-success'; el.textContent='All saved'; }
+  else if (state === 'error') { el.className='badge bg-danger'; el.textContent='Error!'; }
+}
+
+function startEdit(td) {
+  if (editingCell === td) return;
+  if (editingCell) commitEdit(editingCell);
+
+  editingCell = td;
+  const field = td.dataset.field;
+  const type = td.dataset.type;
+  const tr = td.closest('tr');
+  const exp = allExpenses.find(e => String(e.id) === tr.dataset.id) || {};
+  const val = exp[field] || '';
+
+  td.classList.add('editing');
+  td.classList.remove('cell-display');
+
+  if (type === 'select') {
+    const opts = JSON.parse(td.dataset.opts || '[]');
+    td.innerHTML = makeSelect(opts, val, field);
+    td.querySelector('select').focus();
+  } else {
+    const inp = document.createElement('input');
+    inp.type = type === 'number' ? 'number' : type === 'date' ? 'date' : 'text';
+    if (type === 'number') { inp.step = '0.01'; inp.min = '0'; }
+    inp.value = val;
+    inp.dataset.field = field;
+    inp.addEventListener('blur', () => commitEdit(td));
+    inp.addEventListener('keydown', (e) => cellKeydown(e, inp));
+    td.innerHTML = '';
+    td.appendChild(inp);
+    inp.focus();
+    inp.select();
+  }
+}
+
+function cellKeydown(e, el) {
+  const td = el.closest('td');
+  const tr = td.closest('tr');
+  if (e.key === 'Escape') { cancelEdit(td); return; }
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    commitEdit(td);
+    const cells = [...tr.querySelectorAll('td.editing, td.cell-display')].filter(c => c.dataset.field);
+    const allTds = [...tr.querySelectorAll('td[data-field]')];
+    const idx = allTds.indexOf(td);
+    if (!e.shiftKey && idx < allTds.length - 1) {
+      startEdit(allTds[idx+1]);
+    } else if (e.shiftKey && idx > 0) {
+      startEdit(allTds[idx-1]);
+    } else if (!e.shiftKey) {
+      // move to next row, first editable cell
+      const nextTr = tr.nextElementSibling;
+      if (nextTr) { const firstTd = nextTr.querySelector('td[data-field]'); if (firstTd) startEdit(firstTd); }
+      else addRow();
+    }
+    return;
+  }
+  if (e.key === 'Enter' && el.tagName !== 'SELECT') {
+    e.preventDefault();
+    commitEdit(td);
+    addRow();
+  }
+}
+
+function commitSelect(sel) {
+  const td = sel.closest('td');
+  if (td) commitEdit(td);
+}
+
+async function commitEdit(td) {
+  if (!td) return;
+  editingCell = null;
+  const type = td.dataset.type;
+  const field = td.dataset.field;
+  const tr = td.closest('tr');
+  const id = tr.dataset.id;
+
+  let newVal = '';
+  const inp = td.querySelector('input, select');
+  if (inp) newVal = inp.value.trim();
+
+  // Restore display
+  td.classList.remove('editing');
+  td.classList.add('cell-display');
+
+  const exp = allExpenses.find(e => String(e.id) === id);
+
+  if (exp && String(exp[field]) === newVal) {
+    // No change — just re-render cell
+    refreshCell(td, exp);
+    return;
+  }
+
+  setSaveStatus('saving');
+
+  if (!id) {
+    // New row — create it
+    if (!newVal) { refreshNewRowCell(td); setSaveStatus('saved'); return; }
+    const data = { date: new Date().toISOString().slice(0,10), category: 'General', status: 'pending', amount: 0 };
+    data[field] = newVal;
+    const res = await fetch('/api/expenses', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+    const json = await res.json();
+    if (json.success) {
+      allExpenses.unshift(json.expense);
+      tr.dataset.id = json.expense.id;
+      tr.classList.remove('new-row');
+      refreshRow(tr, json.expense);
+      setSaveStatus('saved');
+    } else { setSaveStatus('error'); }
+  } else {
+    // Update existing
+    const patch = {}; patch[field] = newVal;
+    const res = await fetch(`/api/expenses/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(patch) });
+    const json = await res.json();
+    if (json.success) {
+      const idx = allExpenses.findIndex(e => String(e.id) === id);
+      if (idx !== -1) allExpenses[idx] = json.expense;
+      refreshRow(tr, json.expense);
+      updateCards();
+      setSaveStatus('saved');
+    } else { setSaveStatus('error'); }
+  }
+}
+
+function cancelEdit(td) {
+  editingCell = null;
+  const tr = td.closest('tr');
+  const id = tr.dataset.id;
+  const exp = allExpenses.find(e => String(e.id) === id);
+  td.classList.remove('editing');
+  td.classList.add('cell-display');
+  if (exp) refreshCell(td, exp);
+  else { td.textContent = '—'; td.classList.add('new-row'); }
+}
+
+function refreshCell(td, exp) {
+  const field = td.dataset.field;
+  if (field === 'status') td.innerHTML = statusBadge(exp.status);
+  else if (field === 'amount') td.textContent = parseFloat(exp.amount||0).toLocaleString('en-PK', {minimumFractionDigits:2});
+  else td.textContent = exp[field] || '';
+}
+
+function refreshNewRowCell(td) {
+  td.textContent = '—';
+}
+
+function refreshRow(tr, exp) {
+  tr.querySelectorAll('td[data-field]').forEach(td => refreshCell(td, exp));
+}
+
+async function deleteRow(btn) {
+  const tr = btn.closest('tr');
+  const id = tr.dataset.id;
+  if (!id) { tr.remove(); return; }
+  if (!confirm('Delete this expense?')) return;
+  const res = await fetch(`/api/expenses/${id}`, { method:'DELETE' });
+  const json = await res.json();
+  if (json.success) {
+    allExpenses = allExpenses.filter(e => String(e.id) !== id);
+    tr.style.transition = 'opacity .2s';
+    tr.style.opacity = '0';
+    setTimeout(() => { tr.remove(); updateCards(); rowCount.textContent = `${allExpenses.length} rows`; }, 200);
+  }
+}
+
+function addRow() {
+  if (editingCell) commitEdit(editingCell);
+  // Check if blank new row already exists at top
+  const firstTr = tbody.querySelector('tr');
+  if (firstTr && !firstTr.dataset.id) { const firstTd = firstTr.querySelector('td[data-field]'); if (firstTd) { startEdit(firstTd); return; } }
+
+  const blankExp = { id: null, date: '', category: '', description: '', amount: '', paid_by: '', payment_method: '', reference_number: '', approved_by: '', status: 'pending' };
+  const tr = renderRow(blankExp, 0);
+  tbody.insertBefore(tr, tbody.firstChild);
+  const firstTd = tr.querySelector('td[data-field]');
+  if (firstTd) startEdit(firstTd);
+}
+
+// Search / filter
+searchBox.addEventListener('input', renderTable);
+filterStatus.addEventListener('change', renderTable);
+document.getElementById('add-row-btn').addEventListener('click', addRow);
+
+// Click outside to commit
+document.addEventListener('click', e => {
+  if (editingCell && !editingCell.contains(e.target)) commitEdit(editingCell);
+});
+
+loadData();
+</script>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Attendance{% endblock %}
+{% block page_title %}Daily Attendance{% endblock %}
+{% block breadcrumb_active %}Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title">Mark Attendance</h3>
+            </div>
+            <div class="col text-right">
+                <form method="GET" class="form-inline">
+                    <label class="mr-2">Date:</label>
+                    <input type="date" name="date" class="form-control form-control-sm mr-2" value="{{ selected_date }}">
+                    <button type="submit" class="btn btn-sm btn-primary">Load</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('main.mark_attendance') }}" method="POST">
+            <input type="hidden" name="date" value="{{ selected_date }}">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    {% set record = attendance_records.get(employee.id) %}
+                    <tr>
+                        <td>
+                            <strong>{{ employee.name }}</strong><br>
+                            <small>{{ employee.role }}</small>
+                            <input type="hidden" name="employee_id" value="{{ employee.id }}">
+                        </td>
+                        <td>
+                            <input type="time" name="check_in" class="form-control form-control-sm" 
+                                   value="{{ record.check_in.strftime('%H:%M') if record and record.check_in else '09:00' }}">
+                        </td>
+                        <td>
+                            <input type="time" name="check_out" class="form-control form-control-sm" 
+                                   value="{{ record.check_out.strftime('%H:%M') if record and record.check_out else '18:00' }}">
+                        </td>
+                        <td>
+                            <select name="status" class="form-control form-control-sm">
+                                <option value="present" {{ 'selected' if record and record.status == 'present' else '' }}>Present</option>
+                                <option value="absent" {{ 'selected' if record and record.status == 'absent' else '' }}>Absent</option>
+                                <option value="half_day" {{ 'selected' if record and record.status == 'half_day' else '' }}>Half Day</option>
+                                <option value="leave" {{ 'selected' if record and record.status == 'leave' else '' }}>On Leave</option>
+                                <option value="sick" {{ 'selected' if record and record.status == 'sick' else '' }}>Sick Leave</option>
+                                <option value="holiday" {{ 'selected' if record and record.status == 'holiday' else '' }}>Holiday</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" name="notes" class="form-control form-control-sm" 
+                                   value="{{ record.notes if record and record.notes else '' }}" placeholder="Optional">
+                        </td>
+                        <td>
+                            <button type="submit" class="btn btn-sm btn-success">
+                                <i class="fas fa-check"></i> Mark
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </form>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5>Today's Summary</h5></div>
+            <div class="card-body">
+                {% set present = attendance_records.values() | selectattr('status', 'equalto', 'present') | list | length %}
+                {% set absent = attendance_records.values() | selectattr('status', 'equalto', 'absent') | list | length %}
+                {% set leave = attendance_records.values() | selectattr('status', 'equalto', 'leave') | list | length %}
+                <p><strong>Present:</strong> <span class="text-success">{{ present }}</span></p>
+                <p><strong>Absent:</strong> <span class="text-danger">{{ absent }}</span></p>
+                <p><strong>On Leave:</strong> <span class="text-warning">{{ leave }}</span></p>
+                <p><strong>Total Employees:</strong> {{ employees|length }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h5>Quick Links</h5></div>
+            <div class="card-body">
+                <a href="{{ url_for('main.attendance_history') }}" class="btn btn-sm btn-info mb-2">
+                    <i class="fas fa-history"></i> Attendance History
+                </a>
+                <a href="{{ url_for('main.generate_timesheet') }}" class="btn btn-sm btn-primary mb-2">
+                    <i class="fas fa-file-alt"></i> Generate Timesheet
+                </a>
+                <a href="{{ url_for('main.timesheets') }}" class="btn btn-sm btn-secondary">
+                    <i class="fas fa-table"></i> View Timesheets
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

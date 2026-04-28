@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Edit Inquiry{% endblock %}
+{% block page_title %}Edit Inquiry{% endblock %}
+{% block breadcrumb_active %}Inquiries{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-edit"></i> Edit Inquiry {{ inquiry.inquiry_number }}</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <!-- Customer Info -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Customer Name *</label>
+                        <input type="text" name="customer_name" class="form-control" value="{{ inquiry.customer_name }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Business Name</label>
+                        <input type="text" name="business_name" class="form-control" value="{{ inquiry.business_name or '' }}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ inquiry.email or '' }}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" name="phone" class="form-control" value="{{ inquiry.phone or '' }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products in Inquiry -->
+            <div class="mb-4">
+                <h5><i class="fas fa-boxes"></i> Products in this Inquiry</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Product</th>
+                                <th>Requested Qty</th>
+                                <th>Available Stock</th>
+                                <th>Status</th>
+                                <th>Adjust Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in inquiry.inquiry_items %}
+                            <tr>
+                                <td>
+                                    <strong>{{ item.product.name if item.product else 'N/A' }}</strong>
+                                    {% if item.product and item.product.stock < item.quantity %}
+                                    <br><small class="text-danger">
+                                        <i class="fas fa-exclamation-triangle"></i> 
+                                        Insufficient stock! Need {{ item.quantity }}, Have {{ item.product.stock }}
+                                    </small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.quantity }}</td>
+                                <td class="{% if item.product and item.product.stock < item.quantity %}text-danger{% else %}text-success{% endif %}">
+                                    {{ item.product.stock if item.product else 0 }}
+                                </td>
+                                <td>
+                                    {% if item.product and item.product.stock >= item.quantity %}
+                                    <span class="badge badge-success">In Stock</span>
+                                    {% elif item.product and item.product.stock > 0 %}
+                                    <span class="badge badge-warning">Partial</span>
+                                    {% else %}
+                                    <span class="badge badge-danger">Out of Stock</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <input type="number" 
+                                           name="qty_{{ item.id }}" 
+                                           class="form-control form-control-sm" 
+                                           value="{{ item.quantity }}" 
+                                           min="0" 
+                                           max="{{ item.product.stock if item.product else 0 }}"
+                                           style="width: 120px;">
+                                    <small class="text-muted">Max: {{ item.product.stock if item.product else 0 }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Status & Notes -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select name="status" class="form-control">
+                            <option value="new" {{ 'selected' if inquiry.status == 'new' else '' }}>New</option>
+                            <option value="followup" {{ 'selected' if inquiry.status == 'followup' else '' }}>Follow-up</option>
+                            <option value="converted" {{ 'selected' if inquiry.status == 'converted' else '' }}>Converted</option>
+                            <option value="cancelled" {{ 'selected' if inquiry.status == 'cancelled' else '' }}>Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea name="notes" class="form-control" rows="3">{{ inquiry.notes or '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Update Inquiry
+            </button>
+            <a href="{{ url_for('main.inquiries') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+            {% if inquiry.status != 'converted' %}
+            <a href="{{ url_for('main.process_invoice', id=inquiry.id) }}" class="btn btn-success float-right">
+                <i class="fas fa-file-invoice"></i> Convert to Order
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Stock Alert Section - FIXED -->
+{% set insufficient_stock = [] %}
+{% for item in inquiry.inquiry_items %}
+    {% if item.product and item.product.stock < item.quantity %}
+        {% set _ = insufficient_stock.append(item) %}
+    {% endif %}
+{% endfor %}
+
+{% if insufficient_stock %}
+<div class="alert alert-warning mt-3">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Stock Warning:</strong> {{ insufficient_stock|length }} product(s) have insufficient stock.
+    <ul class="mb-0 mt-2">
+        {% for item in insufficient_stock %}
+        <li>{{ item.product.name if item.product else 'N/A' }}: Need {{ item.quantity }}, Available {{ item.product.stock if item.product else 0 }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endblock %}

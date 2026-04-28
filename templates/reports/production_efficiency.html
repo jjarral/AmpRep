@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Production Efficiency Report{% endblock %}
+{% block page_title %}Production Efficiency Report{% endblock %}
+{% block breadcrumb_active %}Reports{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-industry"></i> Production Efficiency Report</h3>
+            </div>
+            <div class="col text-right">
+                <form method="GET" class="form-inline">
+                    <div class="form-group mr-2">
+                        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+                    </div>
+                    <div class="form-group mr-2">
+                        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- KPI Cards -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{ total_batches }}</h3>
+                        <p>Total Batches</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>{{ "%.1f"|format(avg_yield) }}%</h3>
+                        <p>Avg Yield</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>{{ total_produced }}</h3>
+                        <p>Total Produced</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>{{ total_rejected }}</h3>
+                        <p>Total Rejected</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Production Batches Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="bg-dark text-white">
+                    <tr>
+                        <th>Batch #</th>
+                        <th>Product</th>
+                        <th>Planned</th>
+                        <th>Actual</th>
+                        <th>Rejected</th>
+                        <th>Yield %</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for batch in batches %}
+                    <tr>
+                        <td><strong>{{ batch.batch_number }}</strong></td>
+                        <td>{{ batch.product.name if batch.product else 'N/A' }}</td>
+                        <td>{{ batch.planned_quantity }}</td>
+                        <td>{{ batch.actual_quantity or '-' }}</td>
+                        <td class="text-danger">{{ batch.rejected_quantity or 0 }}</td>
+                        <td>
+                            <span class="badge badge-{{ 'success' if (batch.yield_percentage or 0) >= 95 else 'warning' if (batch.yield_percentage or 0) >= 80 else 'danger' }}">
+                                {{ "%.1f"|format(batch.yield_percentage) if batch.yield_percentage else '-' }}%
+                            </span>
+                        </td>
+                        <td>{{ batch.start_date.strftime('%Y-%m-%d') if batch.start_date else '-' }}</td>
+                        <td>{{ batch.end_date.strftime('%Y-%m-%d') if batch.end_date else '-' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">No completed batches in this period</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Export Buttons -->
+        <div class="mt-4">
+            <form method="POST" action="{{ url_for('main.generate_excel_report', module='production') }}" class="d-inline">
+                <input type="hidden" name="date_from" value="{{ date_from }}">
+                <input type="hidden" name="date_to" value="{{ date_to }}">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-file-excel"></i> Export Excel
+                </button>
+            </form>
+            <form method="POST" action="{{ url_for('main.generate_pdf_report', module='production') }}" class="d-inline ml-2">
+                <input type="hidden" name="date_from" value="{{ date_from }}">
+                <input type="hidden" name="date_to" value="{{ date_to }}">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-file-pdf"></i> Export PDF
+                </button>
+            </form>
+            <button onclick="window.print()" class="btn btn-info ml-2">
+                <i class="fas fa-print"></i> Print
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

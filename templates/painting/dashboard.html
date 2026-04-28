@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}Painting Service Dashboard{% endblock %}
+{% block page_title %}Painting Service Dashboard{% endblock %}
+{% block breadcrumb_active %}Painting{% endblock %}
+
+{% block content %}
+<!-- KPI Cards -->
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ pending_orders|length }}</h3>
+                <p>Pending Orders</p>
+            </div>
+            <div class="icon"><i class="fas fa-clock"></i></div>
+            <a href="{{ url_for('main.painting_orders', status='pending') }}" class="small-box-footer">
+                View <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ active_orders|length }}</h3>
+                <p>In Progress</p>
+            </div>
+            <div class="icon"><i class="fas fa-palette"></i></div>
+            <a href="{{ url_for('main.painting_orders', status='in_progress') }}" class="small-box-footer">
+                View <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ completed_this_month|length }}</h3>
+                <p>Completed This Month</p>
+            </div>
+            <div class="icon"><i class="fas fa-check-circle"></i></div>
+            <a href="{{ url_for('main.painting_orders', status='completed') }}" class="small-box-footer">
+                View <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-primary">
+            <div class="inner">
+                <h3>PKR {{ "%.2f"|format(total_revenue) }}</h3>
+                <p>Monthly Revenue</p>
+            </div>
+            <div class="icon"><i class="fas fa-rupee-sign"></i></div>
+            <a href="{{ url_for('main.painting_orders') }}" class="small-box-footer">
+                View All <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-list"></i> Recent Painting Orders</h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('main.add_painting_order') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> New Order
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Products</th>
+                                <th>Total (PKR)</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in (pending_orders + active_orders)[:10] %}
+                            <tr>
+                                <td><strong>{{ order.order_number }}</strong></td>
+                                <td>{{ order.customer_name }}</td>
+                                <td>{{ order.items|length }} product(s)</td>
+                                <td>PKR {{ "%.2f"|format(order.total_amount) }}</td>
+                                <td>
+                                    <span class="badge badge-{{ 
+                                        'warning' if order.status == 'pending' else 
+                                        'info' if order.status == 'in_progress' else 
+                                        'success' if order.status == 'completed' else 
+                                        'secondary'
+                                    }}">
+                                        {{ order.status|title }}
+                                    </span>
+                                </td>
+                                <td>{{ order.order_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('main.view_painting_order', id=order.id) }}" class="btn btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('main.painting_order_invoice', id=order.id) }}" class="btn btn-success" target="_blank">
+                                            <i class="fas fa-file-invoice"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No recent orders</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('main.painting_orders') }}" class="btn btn-sm btn-outline-primary">
+                    View All Orders <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-tools"></i> Quick Actions</h3>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('main.add_painting_order') }}" class="btn btn-block btn-primary mb-2">
+                    <i class="fas fa-plus"></i> New Painting Order
+                </a>
+                <a href="{{ url_for('main.painting_prices') }}" class="btn btn-block btn-secondary mb-2">
+                    <i class="fas fa-tags"></i> Manage Prices
+                </a>
+                <a href="{{ url_for('main.painting_orders') }}" class="btn btn-block btn-info">
+                    <i class="fas fa-list"></i> All Orders
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-chart-bar"></i> This Month</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h4 class="text-success">{{ completed_this_month|length }}</h4>
+                            <small class="text-muted">Completed</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h4 class="text-primary">PKR {{ "%.2f"|format(total_revenue) }}</h4>
+                            <small class="text-muted">Revenue</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-info-circle"></i> Information</h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        Product-specific pricing
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        Setup charges per product
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success"></i>
+                        Color specifications
+                    </li>
+                    <li>
+                        <i class="fas fa-check text-success"></i>
+                        Invoice generation
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

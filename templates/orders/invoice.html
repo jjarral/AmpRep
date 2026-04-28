@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - {{ order.order_number }}</title>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+            }
+            .invoice-box { 
+                box-shadow: none !important; 
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+            font-size: 11px;
+        }
+        
+        .invoice-box {
+            max-width: 210mm;
+            margin: auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 15mm;
+            position: relative;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #1e3a8a;
+        }
+        
+        .company-branding {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .company-name h1 {
+            font-size: 28px;
+            margin-bottom: 3px;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+        
+        .company-slogan {
+            font-size: 11px;
+            font-style: italic;
+            color: #64748b;
+        }
+        
+        .invoice-title {
+            text-align: right;
+        }
+        
+        .invoice-title h2 {
+            font-size: 32px;
+            margin-bottom: 5px;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+        
+        .invoice-meta {
+            font-size: 10px;
+            line-height: 1.6;
+        }
+        
+        .invoice-meta strong {
+            display: inline-block;
+            min-width: 100px;
+        }
+        
+        /* Company Info Bar */
+        .company-info-bar {
+            background: #f8fafc;
+            padding: 6px 10px;
+            border-bottom: 2px solid #1e3a8a;
+            margin-bottom: 10px;
+        }
+        
+        .company-info-bar p {
+            margin: 2px 0;
+            font-size: 9px;
+            color: #64748b;
+        }
+        
+        .company-info-bar strong {
+            color: #1e3a8a;
+        }
+        
+        /* Info Section */
+        .info-section {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 15px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .info-block h3 {
+            color: #1e3a8a;
+            font-size: 12px;
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #3b82f6;
+            text-transform: uppercase;
+        }
+        
+        .info-block p {
+            margin: 3px 0;
+            font-size: 10px;
+            color: #475569;
+        }
+        
+        .info-block strong {
+            color: #1e293b;
+        }
+        
+        /* Items Table */
+        .items-section {
+            margin-bottom: 10px;
+        }
+        
+        .section-title {
+            background: #1e3a8a;
+            color: white;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 0;
+            text-transform: uppercase;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+            font-size: 10px;
+        }
+        
+        thead {
+            background: #f1f5f9;
+        }
+        
+        th {
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #1e3a8a;
+            border-bottom: 2px solid #1e3a8a;
+        }
+        
+        td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        /* Totals */
+        .totals-section {
+            margin-bottom: 10px;
+        }
+        
+        .totals-table {
+            width: 280px;
+            margin-left: auto;
+            font-size: 10px;
+        }
+        
+        .totals-table td {
+            padding: 5px 8px;
+            border: none;
+        }
+        
+        .totals-table .label {
+            font-weight: 600;
+            color: #475569;
+            text-align: right;
+        }
+        
+        .totals-table .amount {
+            text-align: right;
+            font-weight: 500;
+        }
+        
+        .totals-table .grand-total {
+            background: #1e3a8a;
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        
+        .totals-table .grand-total td {
+            border-top: 2px solid #3b82f6;
+            padding: 8px;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #f8fafc;
+            padding: 10px;
+            border-top: 2px solid #1e3a8a;
+            margin-top: 10px;
+        }
+        
+        .payment-info {
+            margin-bottom: 8px;
+        }
+        
+        .payment-info h4 {
+            color: #1e3a8a;
+            margin-bottom: 4px;
+            font-size: 11px;
+        }
+        
+        .payment-info p {
+            margin: 2px 0;
+            font-size: 9px;
+            color: #64748b;
+        }
+        
+        .footer-note {
+            text-align: center;
+            padding: 6px 0;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            margin: 6px 0;
+        }
+        
+        .footer-note p {
+            margin: 2px 0;
+            color: #475569;
+            font-size: 9px;
+        }
+        
+        .footer-note strong {
+            color: #1e3a8a;
+        }
+        
+        .company-footer {
+            text-align: center;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 8px;
+            color: #64748b;
+        }
+        
+        .company-footer p {
+            margin: 2px 0;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-paid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-unpaid {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .badge-partial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        /* Actions */
+        .actions {
+            max-width: 210mm;
+            margin: 0 auto 10px;
+            text-align: right;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            margin: 0 3px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: #1e3a8a;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Print Actions -->
+    <div class="no-print actions">
+        <button onclick="window.print()" class="btn btn-primary">🖨️ Print / Save as PDF</button>
+        <a href="{{ url_for('main.edit_order', id=order.id) }}" class="btn btn-secondary">✏️ Edit</a>
+        <a href="{{ url_for('main.orders') }}" class="btn btn-secondary">← Back</a>
+    </div>
+    
+    <div class="invoice-box">
+        <!-- Header -->
+        <div class="header">
+            <div class="company-branding">
+                <div class="logo">
+                    {% if logo_path %}
+                    <img src="{{ url_for('static', filename=logo_path) }}" alt="Ampoulex Logo">
+                    {% else %}
+                    <div style="font-size: 40px; color: #1e3a8a;">🏭</div>
+                    {% endif %}
+                </div>
+                <div class="company-name">
+                    <h1>AMPOULEX</h1>
+                    <p class="company-slogan">Where Precision Meets Perfection</p>
+                </div>
+            </div>
+            <div class="invoice-title">
+                <h2>INVOICE</h2>
+                <div class="invoice-meta">
+                    <div><strong>Invoice #:</strong> {{ order.order_number }}</div>
+                    <div><strong>Date:</strong> {{ order.created_at.strftime('%B %d, %Y') }}</div>
+                    <div><strong>Status:</strong> 
+                        <span class="badge badge-{{ 'paid' if order.payment_status == 'paid' else 'unpaid' if order.payment_status == 'unpaid' else 'partial' }}">
+                            {{ order.payment_status }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Company Info Bar -->
+        <div class="company-info-bar">
+            <p><strong>Address:</strong> Malik Arshad Farmhouse, Malik Akram Street, Darbar-e-Kareemi Stop, G.T. Road, Wah Cantt, The. Taxila, Dist. RWP, Punjab, Pakistan</p>
+            <p><strong>Tel:</strong> 0340-5336238 | 0331-9980908 | <strong>Email:</strong> ampoulex.hr@gmail.com | <strong>Web:</strong> www.ampoulex.com</p>
+        </div>
+        
+        <!-- Info Section -->
+        <div class="info-section">
+            <div class="info-block">
+                <h3>Bill To:</h3>
+                <p><strong>{{ order.customer_name_snapshot or 'N/A' }}</strong></p>
+                <p>{{ order.customer_business_snapshot or '' }}</p>
+                <p>{{ order.customer_email_snapshot or '' }}</p>
+                <p>{{ order.customer_phone_snapshot or '' }}</p>
+            </div>
+            
+            <div class="info-block">
+                <h3>Order Details:</h3>
+                <p><strong>Order #:</strong> {{ order.order_number }}</p>
+                <p><strong>Items:</strong> {{ order.order_items|length }} product(s)</p>
+                <p><strong>Payment:</strong> {{ order.payment_method or 'Not specified' }}</p>
+            </div>
+        </div>
+        
+        <!-- Items Section -->
+        <div class="items-section">
+            <div class="section-title">Order Items</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th width="5%">#</th>
+                        <th width="40%">Description</th>
+                        <th width="15%" class="text-center">Qty</th>
+                        <th width="20%" class="text-right">Unit Price</th>
+                        <th width="20%" class="text-right">Line Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.order_items %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <strong>{{ item.product.name if item.product else 'Product' }}</strong>
+                            {% if item.product %}
+                            <br><small style="color: #64748b; font-size: 9px;">
+                                {{ item.product.color }}{% if item.product.specification %} | {{ item.product.specification }}{% endif %}
+                            </small>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-right">PKR {{ "%.2f"|format(item.unit_price) }}</td>
+                        <td class="text-right"><strong>PKR {{ "%.2f"|format(item.subtotal) }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Totals Section -->
+        <div class="totals-section">
+            <table class="totals-table">
+                <tr>
+                    <td class="label">Subtotal:</td>
+                    <td class="amount">PKR {{ "%.2f"|format(order.total_amount - order.tax_amount) }}</td>
+                </tr>
+                <tr>
+                    <td class="label">GST @ 17%:</td>
+                    <td class="amount">PKR {{ "%.2f"|format(order.tax_amount) }}</td>
+                </tr>
+                {% if order.paid_amount > 0 %}
+                <tr>
+                    <td class="label">Paid:</td>
+                    <td class="amount" style="color: #059669;">- PKR {{ "%.2f"|format(order.paid_amount) }}</td>
+                </tr>
+                {% endif %}
+                <tr class="grand-total">
+                    <td class="label">TOTAL:</td>
+                    <td class="amount">PKR {{ "%.2f"|format(order.total_amount) }}</td>
+                </tr>
+                {% if order.payment_status != 'paid' %}
+                <tr>
+                    <td class="label" style="color: #dc2626; font-weight: 700;">Balance Due:</td>
+                    <td class="amount" style="color: #dc2626; font-weight: 700;">
+                        PKR {{ "%.2f"|format(order.total_amount - order.paid_amount) }}
+                    </td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="payment-info">
+                <h4>Payment Instructions:</h4>
+                <p><strong>Make all checks/cash payable to:</strong> Ampoulex</p>
+            </div>
+            
+            <div class="footer-note">
+                <p><strong>Thank you for your business!</strong></p>
+                <p>Should you have any enquiries concerning this invoice, please contact <strong>Mirza Abdul Majeed</strong> on <strong>0340-5336238</strong></p>
+            </div>
+            
+            <div class="company-footer">
+                <p><strong>AMPOULEX</strong> - Where Precision Meets Perfection</p>
+                <p>Malik Arshad Farmhouse, Malik Akram Street, Darbar-e-Kareemi Stop, G.T. Road, Wah Cantt, The. Taxila, Dist. RWP, Punjab, Pakistan</p>
+                <p>Tel: 0340-5336238 | 0331-9980908 | Email: ampoulex.hr@gmail.com | Web: www.ampoulex.com</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

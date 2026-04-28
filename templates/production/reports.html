@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Production Reports{% endblock %}
+{% block page_title %}Production Reports{% endblock %}
+{% block breadcrumb_active %}Reports{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Production Stats -->
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ total_batches }}</h3>
+                <p>Total Batches</p>
+            </div>
+            <div class="icon"><i class="fas fa-boxes"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ completed_batches }}</h3>
+                <p>Completed Batches</p>
+            </div>
+            <div class="icon"><i class="fas fa-check-circle"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ "%.1f"|format(avg_yield) }}%</h3>
+                <p>Avg Yield %</p>
+            </div>
+            <div class="icon"><i class="fas fa-chart-line"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-primary">
+            <div class="inner">
+                <h3>{{ production_by_product|length }}</h3>
+                <p>Products Made</p>
+            </div>
+            <div class="icon"><i class="fas fa-industry"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Production by Product -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-chart-bar"></i> Production by Product (Last 30 Days)</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Total Produced</th>
+                                <th>% of Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set total_produced = production_by_product|sum(attribute='1') %}
+                            {% for product_name, quantity in production_by_product %}
+                            <tr>
+                                <td><strong>{{ product_name }}</strong></td>
+                                <td>{{ quantity }}</td>
+                                <td>
+                                    {% if total_produced > 0 %}
+                                    {{ "%.1f"|format((quantity / total_produced) * 100) }}%
+                                    {% else %}
+                                    0%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No production data in last 30 days</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

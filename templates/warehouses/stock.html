@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Stock - {{ warehouse.name }}{% endblock %}
+{% block page_title %}Warehouse Stock{% endblock %}
+{% block breadcrumb_active %}Warehouses{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-boxes"></i> Stock Levels - {{ warehouse.name }}</h3>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Material</th>
+                    <th>Unit</th>
+                    <th>Quantity</th>
+                    <th>Reserved</th>
+                    <th>Available</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stock in stock_levels %}
+                <tr>
+                    <td>{{ stock.material.name }}</td>
+                    <td>{{ stock.material.unit }}</td>
+                    <td>{{ stock.quantity }}</td>
+                    <td>{{ stock.reserved_quantity }}</td>
+                    <td>{{ stock.available_quantity }}</td>
+                    <td>{{ stock.last_updated.strftime('%Y-%m-%d') if stock.last_updated else '-' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">No stock records</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

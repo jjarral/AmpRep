@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if customer else 'Add' }} Customer{% endblock %}
+
+{% block page_title %}{{ 'Edit' if customer else 'Add' }} Customer{% endblock %}
+
+{% block breadcrumb_active %}{{ 'Edit' if customer else 'Add' }} Customer{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Customer Details</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Customer Name *</label>
+                        <input type="text" name="name" class="form-control" 
+                               value="{{ customer.name if customer else '' }}" 
+                               placeholder="Enter customer name" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Business Name</label>
+                        <input type="text" name="business_name" class="form-control" 
+                               value="{{ customer.business_name if customer else '' }}" 
+                               placeholder="Enter business name">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Role in Business</label>
+                        <input type="text" name="role" class="form-control" 
+                               value="{{ customer.role if customer else '' }}" 
+                               placeholder="e.g., Owner, Manager, Procurement Officer">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" name="email" class="form-control" 
+                               value="{{ customer.email if customer else '' }}" 
+                               placeholder="Enter email address" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" name="phone" class="form-control" 
+                               value="{{ customer.phone if customer else '' }}" 
+                               placeholder="e.g., 0300-1234567">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Payment Terms</label>
+                        <select name="payment_terms" class="form-control">
+                            <option value="cash" {{ 'selected' if customer and customer.payment_terms == 'cash' else '' }}>
+                                Cash on Delivery
+                            </option>
+                            <option value="credit-30" {{ 'selected' if customer and customer.payment_terms == 'credit-30' else '' }}>
+                                Credit 30 Days
+                            </option>
+                            <option value="credit-60" {{ 'selected' if customer and customer.payment_terms == 'credit-60' else '' }}>
+                                Credit 60 Days
+                            </option>
+                            <option value="advance" {{ 'selected' if customer and customer.payment_terms == 'advance' else '' }}>
+                                50% Advance
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Address</label>
+                <textarea name="address" class="form-control" rows="4" 
+                          placeholder="Enter complete address">{{ customer.address if customer else '' }}</textarea>
+            </div>
+        </div>
+        
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Customer
+            </button>
+            <a href="{{ url_for('main.customers') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-info-circle"></i> Customer Information
+        </h3>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <h5><i class="fas fa-lightbulb"></i> Tips:</h5>
+            <ul class="mb-0">
+                <li>Fill in all required fields marked with <strong>*</strong></li>
+                <li>Email address must be unique for each customer</li>
+                <li>Payment terms can be customized later in the pricing section</li>
+                <li>After saving, you can set custom product pricing for this customer</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

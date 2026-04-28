@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if employee else 'Add' }} Employee{% endblock %}
+{% block page_title %}{{ 'Edit' if employee else 'Add' }} Employee{% endblock %}
+{% block breadcrumb_active %}{{ 'Edit' if employee else 'Add' }} Employee{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Employee Details</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Employee Name *</label>
+                        <input type="text" name="name" class="form-control" value="{{ employee.name if employee else '' }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Role/Position *</label>
+                        <input type="text" name="role" class="form-control" value="{{ employee.role if employee else '' }}" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Department *</label>
+                        <select name="department" class="form-control" required>
+                            <option value="production" {{ 'selected' if employee and employee.department == 'production' else '' }}>Production</option>
+                            <option value="sales" {{ 'selected' if employee and employee.department == 'sales' else '' }}>Sales</option>
+                            <option value="admin" {{ 'selected' if employee and employee.department == 'admin' else '' }}>Admin</option>
+                            <option value="quality" {{ 'selected' if employee and employee.department == 'quality' else '' }}>Quality Control</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Base Salary (PKR) *</label>
+                        <input type="number" name="base_salary" class="form-control" value="{{ employee.base_salary if employee else '' }}" step="0.01" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ employee.email if employee else '' }}">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" name="phone" class="form-control" value="{{ employee.phone if employee else '' }}">
+                    </div>
+                </div>
+            </div>
+            <!-- Add these fields to the employee form -->
+<div class="row">
+    <div class="col-md-6 form-group">
+        <label>CNIC *</label>
+        <input type="text" name="cnic" class="form-control" value="{{ employee.cnic if employee else '' }}" placeholder="12345-1234567-1" required pattern="\d{5}-\d{7}-\d">
+    </div>
+    <div class="col-md-6 form-group">
+        <label>Payment Frequency *</label>
+        <select name="payment_frequency" class="form-control" required>
+            <option value="daily" {{ 'selected' if employee and employee.payment_frequency == 'daily' else '' }}>Daily</option>
+            <option value="weekly" {{ 'selected' if employee and employee.payment_frequency == 'weekly' else '' }}>Weekly</option>
+            <option value="bi-monthly" {{ 'selected' if employee and employee.payment_frequency == 'bi-monthly' else '' }}>Bi-Monthly</option>
+            <option value="monthly" {{ 'selected' if employee and employee.payment_frequency == 'monthly' else '' }}>Monthly</option>
+        </select>
+    </div>
+</div>
+<div class="form-group">
+    <label>Address</label>
+    <textarea name="address" class="form-control" rows="2">{{ employee.address if employee else '' }}</textarea>
+</div>
+<div class="row">
+    <div class="col-md-6 form-group">
+        <label>Emergency Contact</label>
+        <input type="text" name="emergency_contact" class="form-control" value="{{ employee.emergency_contact if employee else '' }}">
+    </div>
+    <div class="col-md-6 form-group">
+        <label>Emergency Phone</label>
+        <input type="tel" name="emergency_phone" class="form-control" value="{{ employee.emergency_phone if employee else '' }}">
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6 form-group">
+        <label>Bank Name</label>
+        <input type="text" name="bank_name" class="form-control" value="{{ employee.bank_name if employee else '' }}">
+    </div>
+    <div class="col-md-6 form-group">
+        <label>Bank Account</label>
+        <input type="text" name="bank_account" class="form-control" value="{{ employee.bank_account if employee else '' }}">
+    </div>
+</div>
+<div class="alert alert-info">
+    <small>
+        <strong>Tax Calculation:</strong> Based on Pakistan Income Tax 2025-26<br>
+        • No tax on income ≤ PKR 600,000/year<br>
+        • Progressive rates 2.5% - 35% above threshold<br>
+        • 9% surcharge on income > PKR 10M
+    </small>
+</div>
+            <div class="form-group">
+                <label>Outstanding Loan (PKR)</label>
+                <input type="number" name="outstanding_loan" class="form-control" value="{{ employee.outstanding_loan if employee else 0 }}" step="0.01">
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Save Employee</button>
+            <a href="{{ url_for('main.payroll') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Purchase History — {{ supplier.name }}{% endblock %}
+{% block page_title %}Supplier Purchase History{% endblock %}
+{% block breadcrumb_active %}{{ supplier.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-0">{{ supplier.name }}</h5>
+            <small class="text-muted">
+                {{ supplier.contact_person or '' }}
+                {% if supplier.phone %} &nbsp;·&nbsp; {{ supplier.phone }}{% endif %}
+                {% if supplier.email %} &nbsp;·&nbsp; {{ supplier.email }}{% endif %}
+            </small>
+        </div>
+        <a href="{{ url_for('main.suppliers') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left mr-1"></i>All Suppliers
+        </a>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <div class="small-box bg-primary">
+            <div class="inner">
+                <h3>{{ total_orders }}</h3>
+                <p>Total Orders</p>
+            </div>
+            <div class="icon"><i class="fas fa-shopping-bag"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>PKR {{ "{:,.0f}".format(total_spent) }}</h3>
+                <p>Total Spent</p>
+            </div>
+            <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>PKR {{ "{:,.0f}".format(avg_order_value) }}</h3>
+                <p>Average Order Value</p>
+            </div>
+            <div class="icon"><i class="fas fa-chart-line"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-history mr-2"></i>Purchase Order History</h3>
+        <div class="card-tools">
+            <a href="{{ url_for('main.add_purchase_order') }}" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus mr-1"></i>New Order
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if purchase_orders %}
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>PO Number</th>
+                        <th>Order Date</th>
+                        <th>Expected Date</th>
+                        <th class="text-right">Amount (PKR)</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for po in purchase_orders %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('main.view_purchase_order', id=po.id) }}" class="font-weight-bold">
+                                {{ po.po_number }}
+                            </a>
+                        </td>
+                        <td>{{ po.order_date.strftime('%d %b %Y') if po.order_date else '—' }}</td>
+                        <td>{{ po.expected_date.strftime('%d %b %Y') if po.expected_date else '—' }}</td>
+                        <td class="text-right font-weight-bold">{{ "{:,.0f}".format(po.grand_total) }}</td>
+                        <td>
+                            {% if po.status == 'received' %}
+                                <span class="badge badge-success">Received</span>
+                            {% elif po.status == 'approved' %}
+                                <span class="badge badge-info">Approved</span>
+                            {% elif po.status == 'sent' %}
+                                <span class="badge badge-primary">Sent</span>
+                            {% elif po.status == 'draft' %}
+                                <span class="badge badge-secondary">Draft</span>
+                            {% elif po.status == 'cancelled' %}
+                                <span class="badge badge-danger">Cancelled</span>
+                            {% else %}
+                                <span class="badge badge-light">{{ po.status | title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('main.view_purchase_order', id=po.id) }}" class="btn btn-xs btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="thead-light font-weight-bold">
+                    <tr>
+                        <th colspan="3">Total ({{ purchase_orders|length }} orders)</th>
+                        <th class="text-right">PKR {{ "{:,.0f}".format(total_spent) }}</th>
+                        <th colspan="2"></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-box-open fa-3x mb-3 d-block"></i>
+            <p>No purchase orders found for <strong>{{ supplier.name }}</strong>.</p>
+            <a href="{{ url_for('main.add_purchase_order') }}" class="btn btn-primary mt-2">
+                <i class="fas fa-plus mr-1"></i>Create First Order
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

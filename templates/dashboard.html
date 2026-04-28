@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block breadcrumb_active %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .db-greeting {
+        margin-bottom: 1.75rem;
+    }
+    .db-greeting h2 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #0c2340;
+        margin-bottom: .2rem;
+    }
+    .db-greeting p {
+        color: #6b7a99;
+        font-size: .92rem;
+        margin: 0;
+    }
+    .db-greeting p strong { color: #c8a84b; }
+
+    /* ── Stat Cards ─────────────────────── */
+    .stat-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; margin-bottom: 1.75rem; }
+    .stat-card {
+        background: #fff; border-radius: 14px; padding: 1.5rem 1.5rem 1.25rem;
+        border: 1px solid #eef1f7; box-shadow: 0 2px 12px rgba(12,35,64,.06);
+        position: relative; overflow: hidden; transition: all .2s;
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(12,35,64,.12); }
+    .stat-card::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .stat-card.rev::before  { background: linear-gradient(90deg,#0d8a5f,#14b879); }
+    .stat-card.ord::before  { background: linear-gradient(90deg,#0c2340,#1e4a7c); }
+    .stat-card.inq::before  { background: linear-gradient(90deg,#c8a84b,#e6cc7a); }
+    .stat-card.cust::before { background: linear-gradient(90deg,#2563eb,#60a5fa); }
+
+    .stat-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .75rem; }
+    .stat-icon {
+        width: 48px; height: 48px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.15rem; color: #fff;
+    }
+    .stat-card.rev  .stat-icon { background: linear-gradient(135deg,#0d8a5f,#14b879); }
+    .stat-card.ord  .stat-icon { background: linear-gradient(135deg,#0c2340,#1e4a7c); }
+    .stat-card.inq  .stat-icon { background: linear-gradient(135deg,#c8a84b,#e6cc7a); color: #0c2340; }
+    .stat-card.cust .stat-icon { background: linear-gradient(135deg,#2563eb,#60a5fa); }
+
+    .stat-val { font-size: 1.7rem; font-weight: 800; color: #0c2340; line-height: 1.1; }
+    .stat-val.sm { font-size: 1.3rem; }
+    .stat-lbl { font-size: .78rem; color: #6b7a99; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-top: .15rem; }
+    .stat-link {
+        display: inline-flex; align-items: center; gap: .35rem;
+        font-size: .78rem; font-weight: 600; color: #1e4a7c;
+        margin-top: .65rem; transition: color .2s;
+    }
+    .stat-link:hover { color: #c8a84b; text-decoration: none; }
+
+    /* ── Quick Actions ───────────────────── */
+    .qa-row { display: grid; grid-template-columns: repeat(6,1fr); gap: .9rem; margin-bottom: 1.75rem; }
+    .qa-btn {
+        display: flex; flex-direction: column; align-items: center; gap: .55rem;
+        padding: 1.1rem .75rem; background: #fff; border-radius: 12px;
+        border: 1px solid #eef1f7; text-align: center; color: #2d3a52;
+        font-size: .78rem; font-weight: 600; transition: all .2s; text-decoration: none;
+        box-shadow: 0 1px 6px rgba(12,35,64,.04);
+    }
+    .qa-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(12,35,64,.1); color: #0c2340; text-decoration: none; }
+    .qa-icon {
+        width: 40px; height: 40px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; color: #fff;
+    }
+    .qa-icon.navy   { background: #0c2340; }
+    .qa-icon.gold   { background: #c8a84b; color: #0c2340; }
+    .qa-icon.green  { background: #0d8a5f; }
+    .qa-icon.blue   { background: #2563eb; }
+    .qa-icon.teal   { background: #0891b2; }
+    .qa-icon.purple { background: #7c3aed; }
+
+    /* ── Panel Cards ────────────────────── */
+    .panel-card {
+        background: #fff; border-radius: 14px; border: 1px solid #eef1f7;
+        box-shadow: 0 2px 12px rgba(12,35,64,.06); overflow: hidden; margin-bottom: 1.5rem;
+    }
+    .panel-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 1rem 1.5rem; border-bottom: 1px solid #eef1f7;
+    }
+    .panel-title { font-size: .95rem; font-weight: 700; color: #0c2340; display: flex; align-items: center; gap: .5rem; margin: 0; }
+    .panel-title i { color: #c8a84b; font-size: .85rem; }
+    .panel-badge {
+        background: rgba(200,168,75,.12); color: #c8a84b;
+        padding: .2rem .65rem; border-radius: 50px;
+        font-size: .72rem; font-weight: 700;
+    }
+    .panel-body { padding: 0; }
+    .panel-body-pad { padding: 1.5rem; }
+
+    /* ── Tables ──────────────────────────── */
+    .db-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    .db-table thead th {
+        padding: .65rem 1.5rem; text-align: left;
+        font-size: .72rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .06em; color: #6b7a99; background: #f8f9fc;
+        border-bottom: 1px solid #eef1f7;
+    }
+    .db-table tbody td {
+        padding: .75rem 1.5rem; border-bottom: 1px solid #f3f4f8;
+        color: #2d3a52; vertical-align: middle;
+    }
+    .db-table tbody tr:last-child td { border-bottom: none; }
+    .db-table tbody tr:hover { background: #fafbff; }
+    .db-table .cust-name { font-weight: 600; color: #0c2340; }
+    .db-table .mono { font-family: 'SF Mono','Fira Code',monospace; font-size: .82rem; font-weight: 600; }
+    .db-table .text-gold { color: #c8a84b; }
+    .db-table .text-green { color: #0d8a5f; }
+
+    /* Badges */
+    .st-badge {
+        display: inline-block; padding: .2rem .6rem; border-radius: 50px;
+        font-size: .72rem; font-weight: 700; letter-spacing: .03em;
+    }
+    .st-new       { background: #e0f2fe; color: #0369a1; }
+    .st-followup  { background: #fef3c7; color: #92400e; }
+    .st-converted { background: #ede9fe; color: #6d28d9; }
+    .st-closed    { background: #d1fae5; color: #065f46; }
+    .st-processing{ background: #dbeafe; color: #1e40af; }
+    .st-completed { background: #d1fae5; color: #065f46; }
+    .st-draft     { background: #f1f5f9; color: #475569; }
+    .st-cancelled { background: #fee2e2; color: #991b1b; }
+
+    /* ── Report Card ────────────────────── */
+    .report-form-row {
+        display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap;
+    }
+    .report-form-row .fg { display: flex; flex-direction: column; gap: .35rem; }
+    .report-form-row .fg label {
+        font-size: .75rem; font-weight: 700; color: #6b7a99;
+        text-transform: uppercase; letter-spacing: .05em;
+    }
+    .report-form-row .fg select,
+    .report-form-row .fg input[type="date"] {
+        padding: .5rem .75rem; border: 1.5px solid #eef1f7;
+        border-radius: 8px; font-family: inherit; font-size: .88rem;
+        color: #2d3a52; background: #f8f9fc; transition: border-color .2s;
+    }
+    .report-form-row .fg select:focus,
+    .report-form-row .fg input[type="date"]:focus {
+        outline: none; border-color: #1e4a7c; background: #fff;
+    }
+    .btn-report {
+        display: inline-flex; align-items: center; gap: .5rem;
+        padding: .55rem 1.5rem; background: #0c2340; color: #fff;
+        border: none; border-radius: 8px; font-weight: 700; font-size: .85rem;
+        cursor: pointer; transition: all .2s;
+    }
+    .btn-report:hover { background: #1e4a7c; transform: translateY(-1px); }
+
+    /* ── Empty state ────────────────────── */
+    .empty-state { text-align: center; padding: 2.5rem 1rem; color: #6b7a99; }
+    .empty-state i { font-size: 2rem; margin-bottom: .75rem; opacity: .4; display: block; }
+    .empty-state p { font-size: .88rem; margin: 0; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* ── Responsive ─────────────────────── */
+    @media (max-width: 1200px) {
+        .stat-row { grid-template-columns: repeat(2,1fr); }
+        .qa-row { grid-template-columns: repeat(3,1fr); }
+    }
+    @media (max-width: 768px) {
+        .stat-row { grid-template-columns: 1fr; }
+        .qa-row { grid-template-columns: repeat(2,1fr); }
+        .report-form-row { flex-direction: column; align-items: stretch; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Greeting -->
+<div class="db-greeting">
+    <h2>Welcome back, {{ current_user.username|capitalize }}</h2>
+    <p>Here's what's happening at <strong>Ampoulex</strong> today &mdash; {{ datetime.utcnow().strftime('%A, %d %B %Y') }}</p>
+</div>
+
+<!-- ═══ STAT CARDS ════════════════════════════════════ -->
+<div class="stat-row">
+    <div class="stat-card rev">
+        <div class="stat-top">
+            <div>
+                <div class="stat-val sm">PKR {{ "{:,.0f}".format(total_revenue) }}</div>
+                <div class="stat-lbl">Total Revenue</div>
+            </div>
+            <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+        </div>
+        <a href="{{ url_for('main.orders') }}" class="stat-link">View Orders <i class="fas fa-arrow-right"></i></a>
+    </div>
+
+    <div class="stat-card ord">
+        <div class="stat-top">
+            <div>
+                <div class="stat-val">{{ total_orders }}</div>
+                <div class="stat-lbl">Total Orders</div>
+            </div>
+            <div class="stat-icon"><i class="fas fa-file-invoice"></i></div>
+        </div>
+        <a href="{{ url_for('main.orders') }}" class="stat-link">Manage Orders <i class="fas fa-arrow-right"></i></a>
+    </div>
+
+    <div class="stat-card inq">
+        <div class="stat-top">
+            <div>
+                <div class="stat-val">{{ active_inquiries }}</div>
+                <div class="stat-lbl">Active Inquiries</div>
+            </div>
+            <div class="stat-icon"><i class="fas fa-envelope-open-text"></i></div>
+        </div>
+        <a href="{{ url_for('main.inquiries') }}" class="stat-link">View Inquiries <i class="fas fa-arrow-right"></i></a>
+    </div>
+
+    <div class="stat-card cust">
+        <div class="stat-top">
+            <div>
+                <div class="stat-val">{{ total_customers }}</div>
+                <div class="stat-lbl">Active Customers</div>
+            </div>
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+        </div>
+        <a href="{{ url_for('main.customers') }}" class="stat-link">All Customers <i class="fas fa-arrow-right"></i></a>
+    </div>
+</div>
+
+<!-- ═══ QUICK ACTIONS ════════════════════════════════ -->
+<div class="qa-row">
+    <a href="{{ url_for('main.add_order') }}" class="qa-btn">
+        <div class="qa-icon navy"><i class="fas fa-plus"></i></div>
+        New Order
+    </a>
+    <a href="{{ url_for('main.add_customer') }}" class="qa-btn">
+        <div class="qa-icon blue"><i class="fas fa-user-plus"></i></div>
+        Add Customer
+    </a>
+    <a href="{{ url_for('main.inquiries') }}" class="qa-btn">
+        <div class="qa-icon gold"><i class="fas fa-inbox"></i></div>
+        Inquiries
+    </a>
+    <a href="{{ url_for('main.products') }}" class="qa-btn">
+        <div class="qa-icon green"><i class="fas fa-box-open"></i></div>
+        Products
+    </a>
+    <a href="{{ url_for('main.production') }}" class="qa-btn">
+        <div class="qa-icon teal"><i class="fas fa-industry"></i></div>
+        Production
+    </a>
+    <a href="{{ url_for('main.chart_of_accounts') }}" class="qa-btn">
+        <div class="qa-icon purple"><i class="fas fa-calculator"></i></div>
+        Accounts
+    </a>
+</div>
+
+<!-- ═══ TABLES ROW ═══════════════════════════════════ -->
+<div class="row">
+    <!-- Recent Orders -->
+    <div class="col-lg-7">
+        <div class="panel-card">
+            <div class="panel-header">
+                <h3 class="panel-title"><i class="fas fa-receipt"></i> Recent Orders</h3>
+                <span class="panel-badge">{{ recent_orders|length }} latest</span>
+            </div>
+            <div class="panel-body">
+                {% if recent_orders %}
+                <div class="table-wrap">
+                <table class="db-table">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td><a href="{{ url_for('main.view_order', id=order.id) }}" class="mono text-gold">#{{ order.id }}</a></td>
+                            <td class="cust-name">{{ order.customer.name if order.customer else 'N/A' }}</td>
+                            <td class="mono">PKR {{ "{:,.0f}".format(order.total_amount or 0) }}</td>
+                            <td>
+                                <span class="st-badge st-{{ order.status or 'draft' }}">
+                                    {{ (order.status or 'draft')|capitalize }}
+                                </span>
+                            </td>
+                            <td style="color:#6b7a99;font-size:.82rem;">{{ order.created_at.strftime('%d %b %Y') if order.created_at else '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-file-invoice"></i>
+                    <p>No orders yet. Create your first order to get started.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Inquiries -->
+    <div class="col-lg-5">
+        <div class="panel-card">
+            <div class="panel-header">
+                <h3 class="panel-title"><i class="fas fa-envelope-open-text"></i> Recent Inquiries</h3>
+                <span class="panel-badge">{{ recent_inquiries|length }} latest</span>
+            </div>
+            <div class="panel-body">
+                {% if recent_inquiries %}
+                <div class="table-wrap">
+                <table class="db-table">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Status</th>
+                            <th>Received</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inq in recent_inquiries %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('main.edit_inquiry', id=inq.id) }}" class="cust-name" style="text-decoration:none;">
+                                    {{ inq.business_name or inq.customer_name or 'Unknown' }}
+                                </a>
+                                <div style="font-size:.75rem;color:#6b7a99;">{{ inq.customer_name }}</div>
+                            </td>
+                            <td>
+                                <span class="st-badge st-{{ inq.status or 'new' }}">
+                                    {{ (inq.status or 'new')|capitalize }}
+                                </span>
+                            </td>
+                            <td style="color:#6b7a99;font-size:.82rem;">{{ inq.created_at.strftime('%d %b') if inq.created_at else '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-envelope"></i>
+                    <p>No inquiries yet. They'll show up here once customers submit them.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ REPORT GENERATION ════════════════════════════ -->
+<div class="panel-card">
+    <div class="panel-header">
+        <h3 class="panel-title"><i class="fas fa-file-export"></i> Generate Report</h3>
+    </div>
+    <div class="panel-body-pad">
+        <form action="{{ url_for('main.generate_pdf_report', module='dashboard') }}" method="POST">
+            <div class="report-form-row">
+                <div class="fg">
+                    <label>Report Type</label>
+                    <select name="report_type">
+                        <option value="summary">Summary Report</option>
+                        <option value="detailed">Detailed Report</option>
+                        <option value="export">Data Export</option>
+                    </select>
+                </div>
+                <div class="fg">
+                    <label>From</label>
+                    <input type="date" name="date_from" value="{{ (datetime.utcnow() - timedelta(days=30)).strftime('%Y-%m-%d') }}">
+                </div>
+                <div class="fg">
+                    <label>To</label>
+                    <input type="date" name="date_to" value="{{ datetime.utcnow().strftime('%Y-%m-%d') }}">
+                </div>
+                <button type="submit" class="btn-report"><i class="fas fa-download"></i> Generate</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

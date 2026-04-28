@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if warehouse else 'Add' }} Warehouse{% endblock %}
+{% block page_title %}{{ 'Edit' if warehouse else 'Add' }} Warehouse{% endblock %}
+{% block breadcrumb_active %}Warehouses{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-warehouse"></i> {{ 'Edit' if warehouse else 'Add' }} Warehouse</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Warehouse Name *</label>
+                        <input type="text" name="name" class="form-control" value="{{ warehouse.name if warehouse else '' }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Warehouse Code *</label>
+                        <input type="text" name="code" class="form-control" value="{{ warehouse.code if warehouse else '' }}" required>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <textarea name="address" class="form-control" rows="2">{{ warehouse.address if warehouse else '' }}</textarea>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" name="city" class="form-control" value="{{ warehouse.city if warehouse else '' }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Manager</label>
+                        <input type="text" name="manager" class="form-control" value="{{ warehouse.manager if warehouse else '' }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" name="phone" class="form-control" value="{{ warehouse.phone if warehouse else '' }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> {{ 'Update' if warehouse else 'Create' }} Warehouse
+            </button>
+            <a href="{{ url_for('main.warehouses') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

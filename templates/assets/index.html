@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Fixed Assets{% endblock %}
+{% block page_title %}Fixed Assets{% endblock %}
+{% block breadcrumb_active %}Fixed Assets{% endblock %}
+
+{% block content %}
+<!-- Summary cards -->
+<div class="row mb-3">
+  <div class="col-md-4">
+    <div class="info-box bg-primary">
+      <span class="info-box-icon"><i class="fas fa-industry"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Total Purchase Cost</span>
+        <span class="info-box-number">PKR {{ "{:,.0f}".format(total_cost) }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="info-box bg-warning">
+      <span class="info-box-icon"><i class="fas fa-chart-line"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Total Depreciation</span>
+        <span class="info-box-number">PKR {{ "{:,.0f}".format(total_depreciation) }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="info-box bg-success">
+      <span class="info-box-icon"><i class="fas fa-balance-scale"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Total Book Value</span>
+        <span class="info-box-number">PKR {{ "{:,.0f}".format(total_book_value) }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="row align-items-center">
+      <div class="col"><h3 class="card-title">Asset Register</h3></div>
+      <div class="col text-right">
+        <a href="{{ url_for('main.add_fixed_asset') }}" class="btn btn-sm btn-primary">
+          <i class="fas fa-plus"></i> Add Asset
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover table-striped mb-0">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Asset Name</th>
+          <th>Category</th>
+          <th>Location</th>
+          <th>Purchase Date</th>
+          <th class="text-right">Purchase Cost</th>
+          <th class="text-right">Accum. Depr.</th>
+          <th class="text-right">Book Value</th>
+          <th class="text-right">Annual Depr.</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set categories = assets | map(attribute='category') | unique | list %}
+        {% for category in categories %}
+          <tr class="table-secondary">
+            <td colspan="11"><strong>{{ category }}</strong></td>
+          </tr>
+          {% for a in assets if a.category == category %}
+          <tr>
+            <td><code>{{ a.asset_code }}</code></td>
+            <td>
+              <strong>{{ a.name }}</strong>
+              {% if a.serial_number %}<br><small class="text-muted">S/N: {{ a.serial_number }}</small>{% endif %}
+            </td>
+            <td>{{ a.category }}</td>
+            <td>{{ a.location or '—' }}</td>
+            <td>{{ a.purchase_date.strftime('%d %b %Y') }}</td>
+            <td class="text-right">{{ "{:,.0f}".format(a.purchase_cost) }}</td>
+            <td class="text-right text-danger">{{ "{:,.0f}".format(a.accumulated_depreciation) }}</td>
+            <td class="text-right font-weight-bold text-success">{{ "{:,.0f}".format(a.book_value) }}</td>
+            <td class="text-right text-muted">{{ "{:,.0f}".format(a.annual_depreciation) }}/yr</td>
+            <td>
+              <span class="badge badge-{{ 'success' if a.status == 'active' else 'danger' if a.status == 'disposed' else 'warning' }}">
+                {{ a.status.replace('_', ' ').title() }}
+              </span>
+            </td>
+            <td>
+              <a href="{{ url_for('main.edit_fixed_asset', id=a.id) }}" class="btn btn-sm btn-warning" title="Edit"><i class="fas fa-edit"></i></a>
+              <!-- Quick depreciation -->
+              <button type="button" class="btn btn-sm btn-info" title="Run Depreciation"
+                      data-toggle="modal" data-target="#deprModal{{ a.id }}"><i class="fas fa-calculator"></i></button>
+              <form method="POST" action="{{ url_for('main.delete_fixed_asset', id=a.id) }}" class="d-inline"
+                    onsubmit="return confirm('Delete this asset permanently?')">
+                <button type="submit" class="btn btn-sm btn-danger" title="Delete"><i class="fas fa-trash"></i></button>
+              </form>
+
+              <!-- Depreciation modal -->
+              <div class="modal fade" id="deprModal{{ a.id }}" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                  <div class="modal-content">
+                    <div class="modal-header"><h5 class="modal-title">Run Depreciation</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
+                    <form method="POST" action="{{ url_for('main.run_depreciation', id=a.id) }}">
+                    <div class="modal-body">
+                      <p class="text-muted mb-1">Asset: <strong>{{ a.name }}</strong></p>
+                      <p class="text-muted mb-2">Monthly: <strong>PKR {{ "{:,.2f}".format(a.monthly_depreciation) }}</strong></p>
+                      <div class="form-group">
+                        <label>Number of months</label>
+                        <input type="number" name="months" class="form-control" value="1" min="1" max="12">
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn btn-info">Apply</button>
+                    </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="11" class="text-center text-muted py-4">No assets recorded yet. <a href="{{ url_for('main.add_fixed_asset') }}">Add the first asset</a>.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

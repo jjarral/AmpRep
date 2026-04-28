@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Pricing{% endblock %}
+{% block page_title %}Customer Pricing{% endblock %}
+{% block breadcrumb_active %}Customer Pricing{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Custom Pricing for {{ customer.name }} ({{ customer.business_name }})</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Base Price (PKR)</th>
+                        <th>Agreed Price (PKR)</th>
+                        <th>Payment Terms</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>{{ product.name }} - {{ product.color }}</td>
+                        <td>{{ "%.2f"|format(product.base_price) }}</td>
+                        <td>
+                            <input type="number" name="agreed_price[]" class="form-control" 
+                                   value="{{ custom_prices[product.id].agreed_price if product.id in custom_prices else product.base_price }}" 
+                                   step="0.01">
+                            <input type="hidden" name="product_id[]" value="{{ product.id }}">
+                        </td>
+                        <td>
+                            <select name="payment_terms[]" class="form-control">
+                                <option value="cash" {{ 'selected' if product.id in custom_prices and custom_prices[product.id].payment_terms == 'cash' else '' }}>Cash</option>
+                                <option value="credit-30" {{ 'selected' if product.id in custom_prices and custom_prices[product.id].payment_terms == 'credit-30' else '' }}>Credit 30 Days</option>
+                                <option value="credit-60" {{ 'selected' if product.id in custom_prices and custom_prices[product.id].payment_terms == 'credit-60' else '' }}>Credit 60 Days</option>
+                            </select>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Save Pricing</button>
+            <a href="{{ url_for('main.customers') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

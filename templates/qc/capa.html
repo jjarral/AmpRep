@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}CAPA — Corrective & Preventive Actions{% endblock %}
+{% block page_title %}CAPA{% endblock %}
+{% block breadcrumb_active %}CAPA{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <p class="text-muted mb-0">Corrective &amp; Preventive Actions linked to quality failures and customer complaints.</p>
+        <a href="{{ url_for('main.customer_complaints') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-exclamation-circle mr-1"></i>View Complaints
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card card-primary">
+            <div class="card-header"><h3 class="card-title"><i class="fas fa-search mr-2"></i>Root Cause Analysis</h3></div>
+            <div class="card-body">
+                <p class="text-muted small">Identify the root cause of a quality non-conformance using the 5-Why or Fishbone method.</p>
+                <ul class="text-muted small pl-3">
+                    <li>Review batch production records</li>
+                    <li>Check raw material COA/test results</li>
+                    <li>Verify equipment calibration status</li>
+                    <li>Review operator records &amp; training</li>
+                </ul>
+                <a href="{{ url_for('main.customer_complaints') }}" class="btn btn-primary btn-sm btn-block">
+                    Start from a Complaint
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-warning">
+            <div class="card-header"><h3 class="card-title"><i class="fas fa-tools mr-2"></i>Corrective Actions</h3></div>
+            <div class="card-body">
+                <p class="text-muted small">Actions taken to eliminate the cause of a detected non-conformity to prevent recurrence.</p>
+                <ul class="text-muted small pl-3">
+                    <li>Update SOPs / work instructions</li>
+                    <li>Retraining of operators</li>
+                    <li>Equipment repair or replacement</li>
+                    <li>Supplier change / qualification</li>
+                </ul>
+                <a href="{{ url_for('main.qc_parameters') }}" class="btn btn-warning btn-sm btn-block">
+                    Review QC Parameters
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-success">
+            <div class="card-header"><h3 class="card-title"><i class="fas fa-shield-alt mr-2"></i>Preventive Actions</h3></div>
+            <div class="card-body">
+                <p class="text-muted small">Proactive actions to eliminate potential causes of non-conformities before they occur.</p>
+                <ul class="text-muted small pl-3">
+                    <li>Risk assessment of processes</li>
+                    <li>Scheduled preventive maintenance</li>
+                    <li>Statistical process control (SPC)</li>
+                    <li>Regular internal audits</li>
+                </ul>
+                <a href="{{ url_for('main.qc_parameters') }}" class="btn btn-success btn-sm btn-block">
+                    Manage QC Parameters
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-2">
+    <div class="card-header"><h3 class="card-title"><i class="fas fa-clipboard-list mr-2"></i>CAPA Workflow</h3></div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col">
+                <div class="p-3 border rounded">
+                    <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2 d-block"></i>
+                    <strong>1. Detect</strong>
+                    <p class="text-muted small mt-1 mb-0">Complaint / QC failure identified</p>
+                </div>
+            </div>
+            <div class="col-auto d-flex align-items-center"><i class="fas fa-arrow-right text-muted"></i></div>
+            <div class="col">
+                <div class="p-3 border rounded">
+                    <i class="fas fa-search fa-2x text-warning mb-2 d-block"></i>
+                    <strong>2. Investigate</strong>
+                    <p class="text-muted small mt-1 mb-0">Root cause analysis</p>
+                </div>
+            </div>
+            <div class="col-auto d-flex align-items-center"><i class="fas fa-arrow-right text-muted"></i></div>
+            <div class="col">
+                <div class="p-3 border rounded">
+                    <i class="fas fa-wrench fa-2x text-info mb-2 d-block"></i>
+                    <strong>3. Act</strong>
+                    <p class="text-muted small mt-1 mb-0">Implement corrective actions</p>
+                </div>
+            </div>
+            <div class="col-auto d-flex align-items-center"><i class="fas fa-arrow-right text-muted"></i></div>
+            <div class="col">
+                <div class="p-3 border rounded">
+                    <i class="fas fa-check-circle fa-2x text-success mb-2 d-block"></i>
+                    <strong>4. Verify</strong>
+                    <p class="text-muted small mt-1 mb-0">Confirm effectiveness</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

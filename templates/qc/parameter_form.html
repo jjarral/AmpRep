@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}{% if param %}Edit QC Parameter{% else %}Add QC Parameter{% endif %}{% endblock %}
+{% block page_title %}{% if param %}Edit QC Parameter{% else %}Add QC Parameter{% endif %}{% endblock %}
+{% block breadcrumb_active %}{% if param %}Edit Parameter{% else %}Add Parameter{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-sliders-h mr-2"></i>
+                    {% if param %}Edit QC Parameter{% else %}New QC Parameter{% endif %}
+                </h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('main.qc_parameters') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i>Back to Parameters
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('main.add_qc_parameter') }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Product <span class="text-danger">*</span></label>
+                                <select name="product_id" class="form-control" required>
+                                    <option value="">-- Select Product --</option>
+                                    {% for product in products %}
+                                    <option value="{{ product.id }}" {% if param and param.product_id == product.id %}selected{% endif %}>
+                                        {{ product.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Parameter Name <span class="text-danger">*</span></label>
+                                <input type="text" name="parameter_name" class="form-control" required
+                                       value="{{ param.parameter_name if param else '' }}"
+                                       placeholder="e.g. Wall Thickness, Breakage Point, pH">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Minimum Value</label>
+                                <input type="number" name="min_value" class="form-control" step="0.001"
+                                       value="{{ param.min_value if param else '' }}" placeholder="0.000">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Target Value</label>
+                                <input type="number" name="target_value" class="form-control" step="0.001"
+                                       value="{{ param.target_value if param else '' }}" placeholder="0.000">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Maximum Value</label>
+                                <input type="number" name="max_value" class="form-control" step="0.001"
+                                       value="{{ param.max_value if param else '' }}" placeholder="0.000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Unit of Measurement</label>
+                                <input type="text" name="unit" class="form-control"
+                                       value="{{ param.unit if param else '' }}"
+                                       placeholder="mm, g, %, ppm, bar...">
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Test Method</label>
+                                <input type="text" name="test_method" class="form-control"
+                                       value="{{ param.test_method if param else '' }}"
+                                       placeholder="e.g. ISO 4802, USP <661>, Visual inspection">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" name="is_mandatory" id="is_mandatory"
+                                   class="custom-control-input"
+                                   {% if param and param.is_mandatory %}checked{% endif %}>
+                            <label class="custom-control-label font-weight-bold" for="is_mandatory">
+                                Mandatory parameter (must pass for batch release)
+                            </label>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('main.qc_parameters') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save mr-1"></i>
+                            {% if param %}Update Parameter{% else %}Add Parameter{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

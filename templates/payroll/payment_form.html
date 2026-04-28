@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Process Payroll Payment{% endblock %}
+{% block page_title %}Process Payment{% endblock %}
+{% block breadcrumb_active %}Process Payment{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-money-bill-wave mr-2"></i>Process Salary Payment</h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('main.payroll_payments') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i>Back to Payments
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if timesheets %}
+                <form method="POST" action="{{ url_for('main.process_payment') }}">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Select Approved Timesheet <span class="text-danger">*</span></label>
+                        <select name="timesheet_id" class="form-control" required id="ts_select"
+                                onchange="updateTimesheetInfo(this)">
+                            <option value="">-- Select a timesheet to pay --</option>
+                            {% for ts in timesheets %}
+                            <option value="{{ ts.id }}"
+                                    data-employee="{{ ts.employee.name }}"
+                                    data-period="{{ ts.period_start }} to {{ ts.period_end }}"
+                                    data-net="{{ ts.net_pay }}">
+                                {{ ts.employee.name }} — {{ ts.period_start }} to {{ ts.period_end }} — Net: PKR {{ "{:,.0f}".format(ts.net_pay) }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div id="ts_info" class="alert alert-info d-none">
+                        <strong>Employee:</strong> <span id="ts_emp"></span> &nbsp;|&nbsp;
+                        <strong>Period:</strong> <span id="ts_period"></span> &nbsp;|&nbsp;
+                        <strong>Base Net Pay:</strong> PKR <span id="ts_net"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Bonuses (PKR)</label>
+                                <input type="number" name="bonuses" class="form-control" step="0.01" min="0" value="0">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Allowances (PKR)</label>
+                                <input type="number" name="allowances" class="form-control" step="0.01" min="0" value="0">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Other Deductions (PKR)</label>
+                                <input type="number" name="other_deductions" class="form-control" step="0.01" min="0" value="0">
+                                <small class="text-muted">FBR income tax &amp; loan deductions are auto-calculated.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Payment Method</label>
+                                <select name="payment_method" class="form-control">
+                                    <option value="bank_transfer">Bank Transfer</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="cheque">Cheque</option>
+                                    <option value="mobile_wallet">Mobile Wallet (JazzCash/Easypaisa)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Payment Reference</label>
+                                <input type="text" name="payment_reference" class="form-control"
+                                       placeholder="Bank ref / cheque number / transaction ID">
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('main.payroll_payments') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check-circle mr-1"></i>Process Payment
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                    <p>No approved timesheets available for payment.</p>
+                    <p class="small">Timesheets must be approved before they can be paid. Go to Timesheets to approve pending entries.</p>
+                    <a href="{{ url_for('main.timesheets') }}" class="btn btn-primary mt-2">
+                        <i class="fas fa-table mr-1"></i>Go to Timesheets
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateTimesheetInfo(sel) {
+    const opt = sel.selectedOptions[0];
+    const info = document.getElementById('ts_info');
+    if (opt && opt.value) {
+        document.getElementById('ts_emp').textContent = opt.dataset.employee;
+        document.getElementById('ts_period').textContent = opt.dataset.period;
+        document.getElementById('ts_net').textContent = parseFloat(opt.dataset.net).toLocaleString();
+        info.classList.remove('d-none');
+    } else {
+        info.classList.add('d-none');
+    }
+}
+</script>
+{% endblock %}

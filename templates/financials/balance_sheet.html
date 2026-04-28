@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Balance Sheet{% endblock %}
+{% block page_title %}Balance Sheet{% endblock %}
+{% block breadcrumb_active %}Financials{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-balance-scale"></i> Balance Sheet</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- ASSETS -->
+            <div class="col-md-6">
+                <h4 class="text-success"><i class="fas fa-arrow-up"></i> ASSETS</h4>
+                <table class="table table-sm">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Current Assets</th>
+                            <th class="text-right">Amount (PKR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Cash in Bank</td>
+                            <td class="text-right">{{ "%.2f"|format(bank_balance) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Petty Cash</td>
+                            <td class="text-right">{{ "%.2f"|format(petty_cash_balance) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Accounts Receivable</td>
+                            <td class="text-right">{{ "%.2f"|format(accounts_receivable) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Inventory (Finished Goods)</td>
+                            <td class="text-right">{{ "%.2f"|format(inventory_value) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Raw Materials</td>
+                            <td class="text-right">{{ "%.2f"|format(raw_material_value) }}</td>
+                        </tr>
+                        <tr class="table-success">
+                            <td><strong>Total Current Assets</strong></td>
+                            <td class="text-right"><strong>{{ "%.2f"|format(total_current_assets) }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Fixed Assets</td>
+                            <td class="text-right">{{ "%.2f"|format(fixed_assets) }}</td>
+                        </tr>
+                        <tr class="table-success">
+                            <td><strong>TOTAL ASSETS</strong></td>
+                            <td class="text-right"><strong>{{ "%.2f"|format(total_assets) }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- LIABILITIES & EQUITY -->
+            <div class="col-md-6">
+                <h4 class="text-danger"><i class="fas fa-arrow-down"></i> LIABILITIES</h4>
+                <table class="table table-sm">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Current Liabilities</th>
+                            <th class="text-right">Amount (PKR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Accounts Payable</td>
+                            <td class="text-right">{{ "%.2f"|format(accounts_payable) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Employee Loans</td>
+                            <td class="text-right">{{ "%.2f"|format(total_employee_loans) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Tax Payable (GST)</td>
+                            <td class="text-right">{{ "%.2f"|format(tax_payable) }}</td>
+                        </tr>
+                        <tr class="table-danger">
+                            <td><strong>Total Current Liabilities</strong></td>
+                            <td class="text-right"><strong>{{ "%.2f"|format(total_current_liabilities) }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Long-term Liabilities</td>
+                            <td class="text-right">{{ "%.2f"|format(long_term_liabilities) }}</td>
+                        </tr>
+                        <tr class="table-danger">
+                            <td><strong>TOTAL LIABILITIES</strong></td>
+                            <td class="text-right"><strong>{{ "%.2f"|format(total_liabilities) }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4 class="text-primary mt-4"><i class="fas fa-coins"></i> EQUITY</h4>
+                <table class="table table-sm">
+                    <tbody>
+                        <tr>
+                            <td>Retained Earnings</td>
+                            <td class="text-right">{{ "%.2f"|format(equity) }}</td>
+                        </tr>
+                        <tr class="table-primary">
+                            <td><strong>TOTAL EQUITY</strong></td>
+                            <td class="text-right"><strong>{{ "%.2f"|format(equity) }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Verification -->
+        <div class="alert alert-{{ 'success' if total_assets == (total_liabilities + equity) else 'warning' }} mt-4">
+            <strong>Balance Sheet Verification:</strong><br>
+            Total Assets ({{ "%.2f"|format(total_assets) }}) = Total Liabilities ({{ "%.2f"|format(total_liabilities) }}) + Equity ({{ "%.2f"|format(equity) }})<br>
+            <strong>Difference: PKR {{ "%.2f"|format(total_assets - (total_liabilities + equity)) }}</strong>
+        </div>
+    </div>
+</div>
+{% endblock %}

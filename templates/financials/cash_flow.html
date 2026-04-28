@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Cash Flow Statement{% endblock %}
+{% block page_title %}Cash Flow Statement{% endblock %}
+{% block breadcrumb_active %}Financials{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-hand-holding-usd"></i> Cash Flow Statement</h3>
+            </div>
+            <div class="col text-right">
+                <form method="GET" class="form-inline">
+                    <div class="form-group mr-2">
+                        <input type="date" name="start_date" class="form-control form-control-sm" value="{{ start_date }}">
+                    </div>
+                    <div class="form-group mr-2">
+                        <input type="date" name="end_date" class="form-control form-control-sm" value="{{ end_date }}">
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Cash Flow Activity</th>
+                        <th class="text-right">Amount (PKR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Operating Activities -->
+                    <tr class="table-success">
+                        <td><strong>Operating Activities</strong></td>
+                        <td class="text-right"></td>
+                    </tr>
+                    <tr>
+                        <td>Cash from Sales</td>
+                        <td class="text-right">{{ "%.2f"|format(cash_from_sales) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Cash from Expenses</td>
+                        <td class="text-right text-danger">- {{ "%.2f"|format(cash_from_expenses) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Cash from Payroll</td>
+                        <td class="text-right text-danger">- {{ "%.2f"|format(cash_from_payroll) }}</td>
+                    </tr>
+                    <tr class="table-success">
+                        <td><strong>Net Cash from Operations</strong></td>
+                        <td class="text-right"><strong>{{ "%.2f"|format(net_cash_from_operations) }}</strong></td>
+                    </tr>
+                    
+                    <!-- Investing Activities -->
+                    <tr class="table-info">
+                        <td><strong>Investing Activities</strong></td>
+                        <td class="text-right"></td>
+                    </tr>
+                    <tr>
+                        <td>Equipment Purchases</td>
+                        <td class="text-right text-danger">- {{ "%.2f"|format(cash_from_investing) }}</td>
+                    </tr>
+                    <tr class="table-info">
+                        <td><strong>Net Cash from Investing</strong></td>
+                        <td class="text-right"><strong>{{ "%.2f"|format(net_cash_from_investing) }}</strong></td>
+                    </tr>
+                    
+                    <!-- Financing Activities -->
+                    <tr class="table-warning">
+                        <td><strong>Financing Activities</strong></td>
+                        <td class="text-right"></td>
+                    </tr>
+                    <tr>
+                        <td>Loan Disbursements</td>
+                        <td class="text-right">{{ "%.2f"|format(cash_from_loans) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Loan Repayments</td>
+                        <td class="text-right text-danger">- {{ "%.2f"|format(cash_to_loans) }}</td>
+                    </tr>
+                    <tr class="table-warning">
+                        <td><strong>Net Cash from Financing</strong></td>
+                        <td class="text-right"><strong>{{ "%.2f"|format(net_cash_from_financing) }}</strong></td>
+                    </tr>
+                    
+                    <!-- Summary -->
+                    <tr class="table-primary">
+                        <td><strong>Net Change in Cash</strong></td>
+                        <td class="text-right"><strong>{{ "%.2f"|format(net_change_in_cash) }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Opening Cash Balance</td>
+                        <td class="text-right">{{ "%.2f"|format(opening_cash) }}</td>
+                    </tr>
+                    <tr class="table-primary">
+                        <td><strong>CLOSING CASH BALANCE</strong></td>
+                        <td class="text-right"><strong>{{ "%.2f"|format(closing_cash) }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Suppliers{% endblock %}
+{% block page_title %}Suppliers{% endblock %}
+{% block breadcrumb_active %}Suppliers{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="card-title"><i class="fas fa-truck"></i> Suppliers</h3>
+            </div>
+            <div class="col text-right">
+                <a href="{{ url_for('main.add_supplier') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Supplier
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Contact Person</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>City</th>
+                        <th>Payment Terms</th>
+                        <th>Rating</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for supplier in suppliers %}
+                    <tr>
+                        <td><strong>{{ supplier.name }}</strong></td>
+                        <td>{{ supplier.contact_person or '-' }}</td>
+                        <td>{{ supplier.email or '-' }}</td>
+                        <td>{{ supplier.phone or '-' }}</td>
+                        <td>{{ supplier.city or '-' }}</td>
+                        <td>{{ supplier.payment_terms }}</td>
+                        <td>
+                            {% for i in range(5) %}
+                            <i class="fas fa-star {{ 'text-warning' if i < supplier.rating|int else 'text-muted' }}"></i>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('main.edit_supplier', id=supplier.id) }}" class="btn btn-info" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('main.supplier_purchase_history', id=supplier.id) }}" class="btn btn-success" title="Purchase History">
+                                    <i class="fas fa-history"></i>
+                                </a>
+                                <a href="{{ url_for('main.delete_supplier', id=supplier.id) }}" class="btn btn-danger" title="Delete" onclick="return confirm('Archive this supplier?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">No suppliers found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

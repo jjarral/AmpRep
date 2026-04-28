@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Accounting Dashboard{% endblock %}
+{% block page_title %}Accounting Dashboard{% endblock %}
+{% block breadcrumb_active %}Accounting{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Quick Stats -->
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5>Pending Payments</h5>
+                <h2>{{ pending_payments }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5>Pending Receipts</h5>
+                <h2>{{ pending_receipts }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5>Bank Accounts</h5>
+                <h2>{{ bank_accounts|length }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5>Accounts</h5>
+                <h2>{{ accounts|length }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('main.add_journal_entry') }}" class="btn btn-primary mb-2">
+                    <i class="fas fa-plus"></i> New Journal Entry
+                </a>
+                <a href="{{ url_for('main.add_payment_voucher') }}" class="btn btn-danger mb-2">
+                    <i class="fas fa-money-bill-wave"></i> Payment Voucher
+                </a>
+                <a href="{{ url_for('main.add_receipt_voucher') }}" class="btn btn-success mb-2">
+                    <i class="fas fa-hand-holding-usd"></i> Receipt Voucher
+                </a>
+                <a href="{{ url_for('main.trial_balance') }}" class="btn btn-info mb-2">
+                    <i class="fas fa-balance-scale"></i> Trial Balance
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recent Journal Entries</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Entry #</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in recent_entries %}
+                        <tr>
+                            <td>{{ entry.entry_number }}</td>
+                            <td>{{ entry.entry_date }}</td>
+                            <td>{{ entry.description[:30] }}...</td>
+                            <td>
+                                <span class="badge badge-{{ 'success' if entry.status == 'posted' else 'warning' }}">
+                                    {{ entry.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

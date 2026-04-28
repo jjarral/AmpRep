@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login | Ampoulex</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            background: #0c2340;
+            background-image:
+                radial-gradient(ellipse 70% 50% at 30% 60%, rgba(30,74,124,.5), transparent 70%),
+                radial-gradient(ellipse 50% 70% at 80% 30%, rgba(200,168,75,.08), transparent 60%);
+            padding: 1.5rem;
+        }
+        .login-wrapper { width: 100%; max-width: 420px; }
+
+        .login-logo { text-align: center; margin-bottom: 2rem; }
+        .login-logo img { height: 100px; width: auto; }
+
+        .login-card {
+            background: #fff; border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.3);
+            overflow: hidden;
+        }
+        .login-card-accent {
+            height: 4px;
+            background: linear-gradient(90deg, #c8a84b, #e6cc7a, #c8a84b);
+        }
+        .login-card-body { padding: 2.5rem 2rem 2rem; }
+
+        .login-heading {
+            font-size: 1.3rem; font-weight: 700; color: #0c2340;
+            margin-bottom: .25rem;
+        }
+        .login-sub {
+            font-size: .88rem; color: #6b7a99; margin-bottom: 2rem;
+        }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label {
+            display: block; font-size: .78rem; font-weight: 700;
+            color: #2d3a52; margin-bottom: .4rem;
+            letter-spacing: .03em; text-transform: uppercase;
+        }
+        .input-wrap {
+            display: flex; align-items: center;
+            border: 1.5px solid #eef1f7; border-radius: 10px;
+            background: #f6f8fc; transition: all .2s; overflow: hidden;
+        }
+        .input-wrap:focus-within {
+            border-color: #1e4a7c; background: #fff;
+            box-shadow: 0 0 0 3px rgba(22,50,87,.1);
+        }
+        .input-wrap input {
+            flex: 1; border: none; outline: none; background: transparent;
+            padding: .75rem 1rem; font-size: .92rem; font-family: inherit;
+            color: #1a243a;
+        }
+        .input-wrap input::placeholder { color: #ccd3df; }
+        .input-icon {
+            padding: 0 .85rem; color: #ccd3df; font-size: .9rem;
+        }
+        .input-wrap:focus-within .input-icon { color: #1e4a7c; }
+
+        .login-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        .remember-label {
+            display: flex; align-items: center; gap: .45rem;
+            font-size: .82rem; color: #6b7a99; cursor: pointer;
+        }
+        .remember-label input[type="checkbox"] {
+            width: 16px; height: 16px; accent-color: #0c2340; cursor: pointer;
+        }
+
+        .btn-login {
+            width: 100%; padding: .85rem;
+            background: #0c2340; color: #fff; border: none; border-radius: 10px;
+            font-family: inherit; font-size: .95rem; font-weight: 700;
+            cursor: pointer; transition: all .2s;
+            display: flex; align-items: center; justify-content: center; gap: .5rem;
+        }
+        .btn-login:hover {
+            background: #163257; transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(12,35,64,.3);
+        }
+
+        .login-hint {
+            text-align: center; margin-top: 1.5rem; padding-top: 1.25rem;
+            border-top: 1px solid #eef1f7;
+        }
+        .login-hint p {
+            font-size: .8rem; color: #6b7a99; margin: 0;
+        }
+        .login-hint strong { color: #0c2340; }
+
+        .login-footer {
+            text-align: center; margin-top: 1.5rem;
+        }
+        .login-footer a {
+            color: rgba(255,255,255,.5); font-size: .82rem; font-weight: 500;
+            text-decoration: none; transition: color .2s;
+        }
+        .login-footer a:hover { color: #e6cc7a; }
+        .login-footer a i { margin-right: .35rem; }
+
+        /* Alert */
+        .alert {
+            padding: .75rem 1rem; border-radius: 10px; font-size: .85rem;
+            margin-bottom: 1rem; font-weight: 500; position: relative;
+        }
+        .alert-danger { background: #fee2e2; color: #991b1b; }
+        .alert-success { background: #d1fae5; color: #065f46; }
+        .alert-warning { background: #fef3c7; color: #92400e; }
+        .alert-info { background: #dbeafe; color: #1e40af; }
+        .alert .close-btn {
+            position: absolute; top: .6rem; right: .75rem;
+            background: none; border: none; font-size: 1.1rem; cursor: pointer;
+            color: inherit; opacity: .6;
+        }
+        .alert .close-btn:hover { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-logo">
+            <img src="/static/logo-transparent.png" alt="Ampoulex" style="filter: invert(1) brightness(2);">
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+                    {{ message }}
+                    <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="login-card">
+            <div class="login-card-accent"></div>
+            <div class="login-card-body">
+                <h2 class="login-heading">Welcome back</h2>
+                <p class="login-sub">Sign in to your Ampoulex dashboard</p>
+
+                <form action="{{ url_for('main.login') }}" method="POST">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <div class="input-wrap">
+                            <input type="text" name="username" placeholder="Enter username" required autofocus>
+                            <span class="input-icon"><i class="fas fa-user"></i></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="input-wrap">
+                            <input type="password" name="password" placeholder="Enter password" required>
+                            <span class="input-icon"><i class="fas fa-lock"></i></span>
+                        </div>
+                    </div>
+                    <div class="login-row">
+                        <label class="remember-label">
+                            <input type="checkbox" name="remember"> Remember me
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-login">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                </form>
+
+                <div class="login-hint">
+                    <p>Default: <strong>admin</strong> / <strong>admin123</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-footer">
+            <a href="{{ url_for('main.customer_site') }}" target="_blank">
+                <i class="fas fa-globe"></i> View Customer Website
+            </a>
+        </div>
+    </div>
+</body>
+</html>

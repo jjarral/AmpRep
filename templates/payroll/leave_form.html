@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}{% if leave_request %}Edit Leave Request{% else %}New Leave Request{% endif %}{% endblock %}
+{% block page_title %}Leave Request{% endblock %}
+{% block breadcrumb_active %}{% if leave_request %}Edit Leave Request{% else %}New Leave Request{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-calendar-minus mr-2"></i>
+                    {% if leave_request %}Edit Leave Request{% else %}Submit Leave Request{% endif %}
+                </h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('main.leave_requests') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i>Back
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('main.add_leave_request') }}">
+                    <div class="form-group">
+                        <label class="font-weight-bold">Employee <span class="text-danger">*</span></label>
+                        <select name="employee_id" class="form-control" required>
+                            <option value="">-- Select Employee --</option>
+                            {% for emp in employees %}
+                            <option value="{{ emp.id }}"
+                                    {% if leave_request and leave_request.employee_id == emp.id %}selected{% endif %}>
+                                {{ emp.name }} — {{ emp.department or 'General' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">Leave Type <span class="text-danger">*</span></label>
+                        <select name="leave_type" class="form-control" required>
+                            <option value="annual" {% if not leave_request or leave_request.leave_type == 'annual' %}selected{% endif %}>
+                                Annual Leave
+                            </option>
+                            <option value="sick" {% if leave_request and leave_request.leave_type == 'sick' %}selected{% endif %}>
+                                Sick Leave
+                            </option>
+                            <option value="casual" {% if leave_request and leave_request.leave_type == 'casual' %}selected{% endif %}>
+                                Casual Leave
+                            </option>
+                            <option value="unpaid" {% if leave_request and leave_request.leave_type == 'unpaid' %}selected{% endif %}>
+                                Unpaid Leave
+                            </option>
+                            <option value="maternity" {% if leave_request and leave_request.leave_type == 'maternity' %}selected{% endif %}>
+                                Maternity Leave
+                            </option>
+                            <option value="emergency" {% if leave_request and leave_request.leave_type == 'emergency' %}selected{% endif %}>
+                                Emergency Leave
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">Start Date <span class="text-danger">*</span></label>
+                                <input type="date" name="start_date" class="form-control" required
+                                       id="start_date" onchange="calcDays()"
+                                       value="{{ leave_request.start_date.strftime('%Y-%m-%d') if leave_request else '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold">End Date <span class="text-danger">*</span></label>
+                                <input type="date" name="end_date" class="form-control" required
+                                       id="end_date" onchange="calcDays()"
+                                       value="{{ leave_request.end_date.strftime('%Y-%m-%d') if leave_request else '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">Total Days</label>
+                        <div class="input-group">
+                            <input type="number" id="total_days_display" class="form-control bg-light" readonly value="">
+                            <div class="input-group-append">
+                                <span class="input-group-text">working days</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">Reason / Details</label>
+                        <textarea name="reason" class="form-control" rows="3"
+                                  placeholder="Provide reason for leave request...">{{ leave_request.reason if leave_request else '' }}</textarea>
+                    </div>
+
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('main.leave_requests') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane mr-1"></i>
+                            {% if leave_request %}Update Request{% else %}Submit Request{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function calcDays() {
+    const s = document.getElementById('start_date').value;
+    const e = document.getElementById('end_date').value;
+    if (s && e) {
+        const diff = (new Date(e) - new Date(s)) / (1000*60*60*24) + 1;
+        document.getElementById('total_days_display').value = diff > 0 ? diff : '';
+    }
+}
+</script>
+{% endblock %}

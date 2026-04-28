@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Add Supplier Invoice{% endblock %}
+{% block page_title %}Add Supplier Invoice{% endblock %}
+{% block breadcrumb_active %}Supplier Invoices{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-file-invoice-dollar"></i> Add Supplier Invoice</h3>
+    </div>
+    <form method="POST">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Supplier *</label>
+                        <select name="supplier_id" class="form-control" required>
+                            <option value="">Select Supplier</option>
+                            {% for supplier in suppliers %}
+                            <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Purchase Order</label>
+                        <select name="po_id" class="form-control">
+                            <option value="">Select PO (Optional)</option>
+                            {% for po in purchase_orders %}
+                            <option value="{{ po.id }}">{{ po.po_number }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Invoice Number *</label>
+                        <input type="text" name="invoice_number" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Invoice Date *</label>
+                        <input type="date" name="invoice_date" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <input type="date" name="due_date" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Total Amount (PKR) *</label>
+                        <input type="number" step="0.01" name="total_amount" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea name="notes" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Add Invoice
+            </button>
+            <a href="{{ url_for('main.supplier_invoices') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
