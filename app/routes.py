@@ -44,6 +44,22 @@ def favicon():
         'favicon.ico',
         mimetype='image/vnd.microsoft.icon'
     )
+
+@main_bp.route('/health')
+def health_check():
+    """Health check endpoint for Cloud Run and load balancers"""
+    try:
+        # Check database connectivity
+        db.session.execute('SELECT 1')
+        return jsonify({'status': 'healthy', 'database': 'connected'}), 200
+    except Exception as e:
+        return jsonify({'status': 'unhealthy', 'error': str(e)}), 503
+
+@main_bp.route('/ping')
+def ping():
+    """Simple ping endpoint for basic health checks"""
+    return jsonify({'status': 'ok'}), 200
+
 # ============================================================================
 # HELPER FUNCTIONS
 # ============================================================================
