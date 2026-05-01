@@ -267,32 +267,53 @@ def create_app():
     }
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 
-    db_url = os.environ.get('DATABASE_URL') or os.environ.get('NEON_DATABASE_URL')
+    # ────────────────────────────────────────────────────────────────
+    # 🗄️ Database Configuration: Postgres for prod, SQLite for localhost
+    # ────────────────────────────────────────────────────────────────
+
+    # Check ALL common Postgres connection string variable names
+    db_url = (
+        os.environ.get('DATABASE_URL') 
+        or os.environ.get('NEON_DATABASE_URL')
+        or os.environ.get('POSTGRES_URL')           # Vercel Neon integration
+        or os.environ.get('POSTGRES_PRISMA_URL')    # Vercel Neon integration  
+        or os.environ.get('DATABASE_PRIVATE_URL')   # Alternative
+    )
+
+    # DEBUG: Log what we found (remove after testing)
+    app.logger.info(f"🔍 Env check: DATABASE_URL={bool(os.environ.get('DATABASE_URL'))}, "
+                    f"POSTGRES_URL={bool(os.environ.get('POSTGRES_URL'))}, "
+                    f"VERCEL={bool(os.environ.get('VERCEL'))}")
 
     if db_url and isinstance(db_url, str) and 'postgres' in db_url:
+        # ✅ Production: Postgres/Neon
         if 'connect_timeout' not in db_url:
             sep = '&' if '?' in db_url else '?'
             db_url += f"{sep}connect_timeout=10"
-
         if 'sslmode' not in db_url:
             sep = '&' if '?' in db_url else '?'
             db_url += f"{sep}sslmode=require"
-
+        
         app.config['SQLALCHEMY_DATABASE_URI'] = db_url
         app.config['SESSION_COOKIE_SECURE'] = True
+        app.logger.info(f"🔗 Connected to Postgres: {db_url.split('@')[-1].split('?')[0]}")
+        
+    elif _is_local_environment():
+        # ✅ Local development: SQLite fallback
+        sqlite_path = PROJECT_ROOT / 'ampoulex.db'
+        db_url = f"sqlite:///{sqlite_path}"
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+        app.config['SESSION_COOKIE_SECURE'] = False
+        app.logger.info(f"🗄️ Using local SQLite: {sqlite_path}")
+        
     else:
-        dev_mode = os.environ.get('FLASK_ENV') == 'development' or os.environ.get('DEBUG') in ('1', 'true', 'True')
-        if dev_mode:
-            sqlite_path = PROJECT_ROOT / 'ampoulex.db'
-            db_url = f"sqlite:///{sqlite_path}"
-            app.logger.info(f"No DATABASE_URL configured; using local SQLite at {sqlite_path}.")
-            app.config['SQLALCHEMY_DATABASE_URI'] = db_url
-            app.config['SESSION_COOKIE_SECURE'] = False
-        else:
-            raise RuntimeError(
-                'DATABASE_URL or NEON_DATABASE_URL must be set for Neon/Postgres deployment.'
-            )
-
+        # ❌ Production/Cloud without DATABASE_URL → show helpful error
+        available_vars = [k for k in os.environ.keys() if 'POSTGRES' in k or 'DATABASE' in k or 'NEON' in k]
+        raise RuntimeError(
+            f'DATABASE_URL or NEON_DATABASE_URL must be set for production deployment.\n'
+            f'Found these related env vars: {available_vars if available_vars else "NONE"}\n'
+            f'Fix: Go to Vercel Dashboard → Settings → Environment Variables → Add DATABASE_URL'
+        )
     app.config['SESSION_COOKIE_SAMESITE'] = 'None'
     app.config['SESSION_COOKIE_HTTPONLY'] = True
 
