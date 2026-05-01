@@ -21,4 +21,5 @@ if __name__ == '__main__':
     print('URL: http://localhost:5000')
     print('Login: admin / admin123')
     # Use socketio.run for WebSocket support
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+    # use_reloader=False to avoid issues with stat reloader in some environments
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000, use_reloader=False)
