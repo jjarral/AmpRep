@@ -28,6 +28,8 @@ socketio = SocketIO(cors_allowed_origins="*")
 # ============================================================================
 # 📋 COMPLETE TEMPLATE LIST (ALL 108 TEMPLATES)
 # ============================================================================
+# This documents ALL templates used in routes.py for reference
+# ============================================================================
 TEMPLATES = {
     # Root Templates (3)
     'root': [
@@ -242,27 +244,6 @@ TEMPLATES = {
 # Total: 108 templates
 TOTAL_TEMPLATES = sum(len(templates) for templates in TEMPLATES.values())
 
-
-def _is_local_environment() -> bool:
-    """Detect if running on localhost/local development."""
-    # Check common local dev indicators
-    if os.environ.get('FLASK_ENV') == 'development':
-        return True
-    if os.environ.get('DEBUG') in ('1', 'true', 'True', True):
-        return True
-    # Check for cloud platform env vars (if any are set, we're NOT local)
-    cloud_indicators = [
-        'VERCEL', 'VERCEL_REGION',
-        'GAE_ENV', 'GOOGLE_CLOUD_PROJECT',
-        'AWS_LAMBDA_FUNCTION_NAME',
-        'DYNO',  # Heroku
-        'KUBERNETES_SERVICE_HOST',
-    ]
-    if any(os.environ.get(ind) for ind in cloud_indicators):
-        return False
-    return True
-
-
 def create_app():
     PROJECT_ROOT = Path(__file__).parent.parent
     TEMPLATES_FOLDER = PROJECT_ROOT / 'templates'
@@ -272,7 +253,7 @@ def create_app():
                 template_folder=str(TEMPLATES_FOLDER),
                 static_folder=str(STATIC_DIR))
     
-    # Apply ProxyFix for Cloud Run / reverse proxy
+    # Apply ProxyFix for Cloud Run / reverse proxy (trusts X-Forwarded-For headers)
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     # Configuration
@@ -286,38 +267,31 @@ def create_app():
     }
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 
-    # ────────────────────────────────────────────────────────────────
-    # 🗄️ Database Configuration: Postgres for prod, SQLite for localhost
-    # ────────────────────────────────────────────────────────────────
     db_url = os.environ.get('DATABASE_URL') or os.environ.get('NEON_DATABASE_URL')
-    
+
     if db_url and isinstance(db_url, str) and 'postgres' in db_url:
-        # ✅ Production: Postgres/Neon
         if 'connect_timeout' not in db_url:
             sep = '&' if '?' in db_url else '?'
             db_url += f"{sep}connect_timeout=10"
+
         if 'sslmode' not in db_url:
             sep = '&' if '?' in db_url else '?'
             db_url += f"{sep}sslmode=require"
-        
+
         app.config['SQLALCHEMY_DATABASE_URI'] = db_url
         app.config['SESSION_COOKIE_SECURE'] = True
-        app.logger.info(f"🔗 Connected to Postgres: {db_url.split('@')[-1].split('?')[0]}")
-        
-    elif _is_local_environment():
-        # ✅ Local development: SQLite fallback
-        sqlite_path = PROJECT_ROOT / 'ampoulex.db'
-        db_url = f"sqlite:///{sqlite_path}"
-        app.config['SQLALCHEMY_DATABASE_URI'] = db_url
-        app.config['SESSION_COOKIE_SECURE'] = False
-        app.logger.info(f"🗄️ Using local SQLite: {sqlite_path}")
-        
     else:
-        # ❌ Production/Cloud without DATABASE_URL → hard fail
-        raise RuntimeError(
-            'DATABASE_URL or NEON_DATABASE_URL must be set for production deployment. '
-            'Set it in your environment variables or use the Vercel/Neon integration.'
-        )
+        dev_mode = os.environ.get('FLASK_ENV') == 'development' or os.environ.get('DEBUG') in ('1', 'true', 'True')
+        if dev_mode:
+            sqlite_path = PROJECT_ROOT / 'ampoulex.db'
+            db_url = f"sqlite:///{sqlite_path}"
+            app.logger.info(f"No DATABASE_URL configured; using local SQLite at {sqlite_path}.")
+            app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+            app.config['SESSION_COOKIE_SECURE'] = False
+        else:
+            raise RuntimeError(
+                'DATABASE_URL or NEON_DATABASE_URL must be set for Neon/Postgres deployment.'
+            )
 
     app.config['SESSION_COOKIE_SAMESITE'] = 'None'
     app.config['SESSION_COOKIE_HTTPONLY'] = True
