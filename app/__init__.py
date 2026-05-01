@@ -258,13 +258,42 @@ def create_app():
 
     # Configuration
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
+<<<<<<< HEAD
+=======
+    db_url = os.environ.get('DATABASE_URL', 'sqlite:///ampoulex.db')
+    
+    # Configure based on database type
+    if db_url and db_url.startswith('sqlite'):
+        # SQLite configuration for local development
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {}
+        app.config['SESSION_COOKIE_SECURE'] = False  # Allow HTTP for local dev
+    else:
+        # PostgreSQL configuration for production
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+            'pool_pre_ping': True,
+            'pool_recycle': 280,
+            'pool_size': 5,
+            'max_overflow': 10,
+        }
+        
+        # Validate DATABASE_URL
+        if isinstance(db_url, str) and 'postgres' in db_url and 'connect_timeout' not in db_url:
+            sep = '&' if '?' in db_url else '?'
+            db_url += f"{sep}connect_timeout=10"
+            app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+        
+        # Ensure sslmode=require for Neon
+        if isinstance(db_url, str) and 'postgres' in db_url and 'sslmode' not in db_url:
+            sep = '&' if '?' in db_url else '?'
+            db_url += f"{sep}sslmode=require"
+            app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+        
+        app.config['SESSION_COOKIE_SECURE'] = True  # Require HTTPS for production
+    
+>>>>>>> 7cc0be74c6b2f394fe074c6af6897a1a47ba0dde
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        'pool_pre_ping': True,
-        'pool_recycle': 280,
-        'pool_size': 5,
-        'max_overflow': 10,
-    }
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 
     db_url = os.environ.get('DATABASE_URL')
@@ -275,11 +304,10 @@ def create_app():
 
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     # SameSite=None + Secure=True allows cookies in all contexts including iframes
-    # (Replit preview and Cloud Run both serve over HTTPS, so Secure is always safe)
     app.config['SESSION_COOKIE_SAMESITE'] = 'None'
-    app.config['SESSION_COOKIE_SECURE'] = True
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     
+<<<<<<< HEAD
     # Validate DATABASE_URL
     if db_url and isinstance(db_url, str) and 'postgres' in db_url and 'connect_timeout' not in db_url:
         sep = '&' if '?' in db_url else '?'
@@ -292,6 +320,8 @@ def create_app():
         db_url += f"{sep}sslmode=require"
         app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     
+=======
+>>>>>>> 7cc0be74c6b2f394fe074c6af6897a1a47ba0dde
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
