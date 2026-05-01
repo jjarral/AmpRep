@@ -149,6 +149,8 @@ def send_production_complete_notification(batch, admin_email):
     """Send production batch completion notification"""
     subject = f'Production Complete - {batch.batch_number}'
     
+    yield_text = f"{batch.yield_percentage:.1f}%" if batch.yield_percentage else 'N/A'
+
     body = f"""
     Dear Team,
     
@@ -158,7 +160,7 @@ def send_production_complete_notification(batch, admin_email):
     Product: {batch.product.name if batch.product else 'N/A'}
     Planned Quantity: {batch.planned_quantity}
     Actual Quantity: {batch.actual_quantity or 'N/A'}
-    Yield: {batch.yield_percentage:.1f}% if batch.yield_percentage else 'N/A'}
+    Yield: {yield_text}
     
     Best regards,
     Ampoulex 

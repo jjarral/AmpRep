@@ -3,7 +3,14 @@ import urllib.request
 import urllib.error
 from pathlib import Path
 from datetime import datetime, timedelta
-from flask import Flask, jsonify, request, Response
+
+try:
+    from flask import Flask, jsonify, request, Response
+except ModuleNotFoundError as e:
+    raise RuntimeError(
+        "Missing required dependency: Flask. Install dependencies with `python -m pip install -r requirements.txt`."
+    ) from e
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_socketio import SocketIO
@@ -251,7 +258,6 @@ def create_app():
 
     # Configuration
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_pre_ping': True,
@@ -260,6 +266,14 @@ def create_app():
         'max_overflow': 10,
     }
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
+
+    db_url = os.environ.get('DATABASE_URL')
+    if not db_url:
+        sqlite_path = PROJECT_ROOT / 'ampoulex.db'
+        db_url = f"sqlite:///{sqlite_path}"
+        app.logger.info(f"No DATABASE_URL configured; using local SQLite at {sqlite_path}.")
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     # SameSite=None + Secure=True allows cookies in all contexts including iframes
     # (Replit preview and Cloud Run both serve over HTTPS, so Secure is always safe)
     app.config['SESSION_COOKIE_SAMESITE'] = 'None'
@@ -267,7 +281,6 @@ def create_app():
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     
     # Validate DATABASE_URL
-    db_url = os.environ.get('DATABASE_URL')
     if db_url and isinstance(db_url, str) and 'postgres' in db_url and 'connect_timeout' not in db_url:
         sep = '&' if '?' in db_url else '?'
         db_url += f"{sep}connect_timeout=10"
