@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Product Catalogue - Ampoulex{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Our Product Catalogue</h1>
+            <p class="text-lg text-gray-600">Premium Quality Glass Ampoules for Pharmaceutical Packaging</p>
+            <div class="mt-6">
+                <a href="{{ url_for('main.inquiry') }}" 
+                   class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+                    Request a Quote
+                </a>
+            </div>
+        </div>
+
+        <!-- Products Grouped by Size -->
+        <div class="space-y-12">
+            {% for capacity in sorted_capacities %}
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <!-- Capacity Header -->
+                <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-4">
+                    <h2 class="text-2xl font-bold text-white">{{ capacity }} Glass Ampoules</h2>
+                    <p class="text-indigo-100 mt-1">Available Variants</p>
+                </div>
+
+                <!-- Variants Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                    {% for product in grouped_products[capacity] %}
+                    <div class="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow duration-300">
+                        <!-- Color Badge -->
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="px-3 py-1 text-sm font-semibold rounded-full 
+                                {% if 'amber' in product.color.lower() %}
+                                    bg-amber-100 text-amber-800
+                                {% else %}
+                                    bg-blue-100 text-blue-800
+                                {% endif %}">
+                                {{ product.color }}
+                            </span>
+                            {% if product.usp_type %}
+                            <span class="text-xs text-gray-500">{{ product.usp_type }}</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Product Name -->
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">{{ product.name }}</h3>
+
+                        <!-- Specifications -->
+                        <div class="space-y-2 text-sm text-gray-600 mb-4">
+                            {% if product.body_diameter %}
+                            <div class="flex justify-between">
+                                <span>Body Diameter:</span>
+                                <span class="font-medium">{{ product.body_diameter }} mm</span>
+                            </div>
+                            {% endif %}
+                            {% if product.overall_length %}
+                            <div class="flex justify-between">
+                                <span>Overall Length:</span>
+                                <span class="font-medium">{{ product.overall_length }} mm</span>
+                            </div>
+                            {% endif %}
+                            {% if product.wall_thickness %}
+                            <div class="flex justify-between">
+                                <span>Wall Thickness:</span>
+                                <span class="font-medium">{{ product.wall_thickness }} mm</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Use Case -->
+                        {% if product.use_case_notes %}
+                        <p class="text-xs text-gray-500 italic mb-4 line-clamp-2">
+                            {{ product.use_case_notes[:100] }}...
+                        </p>
+                        {% endif %}
+
+                        <!-- Action Button -->
+                        <a href="{{ url_for('main.inquiry') }}?product={{ product.id }}"
+                           class="block w-full text-center px-4 py-2 border border-indigo-600 text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors">
+                            Inquire Now
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Additional Services -->
+        <div class="mt-16 bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Additional Services</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="text-center p-4">
+                    <div class="text-3xl mb-2">🖨️</div>
+                    <h3 class="font-semibold text-gray-900">Printing</h3>
+                    <p class="text-sm text-gray-600 mt-1">Custom logo & text printing</p>
+                </div>
+                <div class="text-center p-4">
+                    <div class="text-3xl mb-2">🔥</div>
+                    <h3 class="font-semibold text-gray-900">Annealing</h3>
+                    <p class="text-sm text-gray-600 mt-1">Stress relief treatment</p>
+                </div>
+                <div class="text-center p-4">
+                    <div class="text-3xl mb-2">📦</div>
+                    <h3 class="font-semibold text-gray-900">Repacking</h3>
+                    <p class="text-sm text-gray-600 mt-1">Custom packaging solutions</p>
+                </div>
+                <div class="text-center p-4">
+                    <div class="text-3xl mb-2">✅</div>
+                    <h3 class="font-semibold text-gray-900">Quality Control</h3>
+                    <p class="text-sm text-gray-600 mt-1">Rigorous inspection</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact CTA -->
+        <div class="mt-12 text-center bg-indigo-600 rounded-lg p-8">
+            <h2 class="text-2xl font-bold text-white mb-4">Need a Custom Quote?</h2>
+            <p class="text-indigo-100 mb-6">Contact us for bulk orders and special requirements</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="tel:0340-5336238" class="text-white font-semibold hover:text-indigo-200">
+                    📞 0340-5336238
+                </a>
+                <a href="mailto:jarraljunaid4@gmail.com" class="text-white font-semibold hover:text-indigo-200">
+                    ✉️ jarraljunaid4@gmail.com
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
