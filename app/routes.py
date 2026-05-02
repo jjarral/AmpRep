@@ -733,7 +733,7 @@ def products():
 def add_product():
     if request.method == 'POST':
         try:
-            base_price = int(request.form.get('base_price', 0) or 0)
+            base_price = float(request.form.get('base_price', 0))
             
             product = Product(
                 name=request.form.get('name', ''),
@@ -748,8 +748,8 @@ def add_product():
                 wall_thickness=float(request.form.get('wall_thickness', 0) or 0),
                 
                 # ✅ PRICING: Store as per 1000, calculate per unit
-                base_price=base_price,  # Price per 1000 units
-                price_per_unit=base_price / 1000,  # Auto-calculated
+                base_price=base_price,
+                unit_price=base_price / 1000.0,  
                 
                 stock=int(request.form.get('stock', '0') or 0),
                 color=request.form.get('color', ''),
@@ -826,7 +826,7 @@ def edit_product(id):
             
             # ✅ UPDATE PRICING:
             product.base_price = base_price
-            product.price_per_unit = base_price / 1000
+            product.unit_price = base_price / 1000.0  # 🔥 ADD THIS LINE
             
             product.stock = int(request.form.get('stock', '0') or 0)
             product.color = request.form.get('color', '')
