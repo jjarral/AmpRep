@@ -60,7 +60,7 @@ class Product(db.Model):
     stock = db.Column(db.Integer, default=0)
     base_price = db.Column(db.Integer, default=0)
     price_per_unit = db.Column(db.Numeric(10, 4))
-    unit_price = db.Column(db.Numeric(10, 4))
+    unit_price = db.Column(db.Numeric(10, 4), default=0.00, nullable=False)
     
     # ✅ DIMENSION FIELDS:
     body_diameter = db.Column(db.Float, default=0)
