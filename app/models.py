@@ -55,7 +55,7 @@ class Product(db.Model):
     neck_finish = db.Column(db.String(20))
     sku = db.Column(db.String(50))
     color = db.Column(db.String(50), nullable=True)
-    
+    stock_value = db.Column(db.Numeric(10, 2), default=0.00, nullable=True)
     # ✅ ADD ALL THESE MISSING COLUMNS:
     stock = db.Column(db.Integer, default=0)
     base_price = db.Column(db.Integer, default=0)
