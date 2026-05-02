@@ -87,6 +87,10 @@ class Product(db.Model):
     is_deleted = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    def set_price(self, price_per_1000):
+        """Set base price and automatically calculate unit price."""
+        self.base_price = price_per_1000
+        self.unit_price = price_per_1000 / 1000.0
 
 class Customer(db.Model):
     __tablename__ = 'customer'
