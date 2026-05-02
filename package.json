@@ -11,6 +11,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@vercel/speed-insights": "^2.0.0",
     "admin-lte": "^4.0.0-rc6",
     "bootstrap": "^5.3.8",
     "chart.js": "^4.5.1",
