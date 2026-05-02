@@ -681,7 +681,78 @@ def admin_reset_password(user_id):
         db.session.commit()
         flash(f'Password reset for "{user.username}". They must change it on next login.', 'success')
     return redirect(url_for('main.admin_users'))
+@main_bp.route('/catalogue')
+def product_catalogue():
+    """Display products grouped by size with variants."""
+    from sqlalchemy import func, extract
+    
+    # Get all active products
+    products = Product.query.filter_by(is_active=True).order_by(
+        # Extract capacity from name (1cc, 2cc, etc.)
+        func.cast(func.substring(Product.name, 1, func.position('cc' in Product.name) + 1), db.Integer),
+        Product.color
+    ).all()
+    
+    # Group by capacity
+    grouped_products = {}
+    for product in products:
+        # Extract capacity (e.g., "1cc" from "1cc Clear Ampoule")
+        import re
+        match = re.search(r'(\d+cc)', product.name, re.IGNORECASE)
+        if match:
+            capacity = match.group(1).upper()
+            if capacity not in grouped_products:
+                grouped_products[capacity] = []
+            grouped_products[capacity].append(product)
+    
+    # Sort by capacity
+    sorted_capacities = sorted(grouped_products.keys(), 
+                               key=lambda x: int(x.replace('cc', '')))
+    
+    return render_template('customer/catalogue.html', 
+                          grouped_products=grouped_products,
+                          sorted_capacities=sorted_capacities)
 
+
+@main_bp.route('/inquiry', methods=['GET', 'POST'])
+def inquiry():
+    """Customer inquiry form with grouped products."""
+    from flask_mail import Message
+    
+    # Get grouped products (same logic as catalogue)
+    products = Product.query.filter_by(is_active=True).all()
+    grouped_products = {}
+    import re
+    
+    for product in products:
+        match = re.search(r'(\d+cc)', product.name, re.IGNORECASE)
+        if match:
+            capacity = match.group(1).upper()
+            if capacity not in grouped_products:
+                grouped_products[capacity] = []
+            grouped_products[capacity].append(product)
+    
+    sorted_capacities = sorted(grouped_products.keys(), 
+                               key=lambda x: int(x.replace('cc', '')))
+    
+    if request.method == 'POST':
+        # Handle inquiry submission
+        customer_name = request.form.get('customer_name')
+        customer_email = request.form.get('customer_email')
+        customer_phone = request.form.get('customer_phone')
+        company_name = request.form.get('company_name')
+        selected_products = request.form.getlist('selected_products')
+        message = request.form.get('message')
+        
+        # Save inquiry to database or send email
+        # ... your inquiry handling logic ...
+        
+        flash('Thank you for your inquiry! We will contact you soon.', 'success')
+        return redirect(url_for('main.inquiry'))
+    
+    return render_template('customer/inquiry.html',
+                          grouped_products=grouped_products,
+                          sorted_capacities=sorted_capacities)
 
 # ============================================================================
 # DASHBOARD
