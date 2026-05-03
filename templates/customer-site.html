@@ -11,631 +11,222 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js" defer></script>
 
     <style>
-        /* ── Tokens ─────────────────────────────── */
         :root {
-            --navy:      #0c2340;
-            --navy-md:   #163257;
-            --navy-lt:   #1e4a7c;
-            --gold:      #c8a84b;
-            --gold-lt:   #e6cc7a;
-            --green:     #0d8a5f;
-            --off-white: #f6f8fc;
-            --white:     #ffffff;
-            --gray-100:  #eef1f7;
-            --gray-300:  #ccd3df;
-            --gray-500:  #6b7a99;
-            --gray-700:  #2d3a52;
-            --text:      #1a243a;
-            --radius:    12px;
-            --radius-lg: 20px;
+            --navy: #0c2340; --navy-md: #163257; --navy-lt: #1e4a7c;
+            --gold: #c8a84b; --gold-lt: #e6cc7a; --green: #0d8a5f;
+            --off-white: #f6f8fc; --white: #ffffff;
+            --gray-100: #eef1f7; --gray-300: #ccd3df; --gray-500: #6b7a99;
+            --text: #1a243a; --radius: 12px; --radius-lg: 20px;
             --shadow-sm: 0 2px 12px rgba(12,35,64,.07);
             --shadow-md: 0 8px 32px rgba(12,35,64,.12);
-            --shadow-lg: 0 20px 60px rgba(12,35,64,.18);
             --transition: all .25s ease;
         }
-
-        /* ── Reset ──────────────────────────────── */
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; overflow-x: hidden; }
         body { font-family: 'Inter', sans-serif; color: var(--text); background: var(--white); line-height: 1.7; overflow-x: hidden; }
         img, svg { max-width: 100%; height: auto; display: block; }
         h1,h2,h3,h4 { line-height: 1.25; }
         a { color: inherit; text-decoration: none; }
-
-        /* ── Utility ────────────────────────────── */
         .container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
-        .section-tag {
-            display: inline-flex; align-items: center; gap: .5rem;
-            background: rgba(200,168,75,.12); color: var(--gold);
-            padding: .35rem 1rem; border-radius: 50px;
-            font-size: .8rem; font-weight: 700; letter-spacing: .06em;
-            text-transform: uppercase; margin-bottom: 1rem;
-            border: 1px solid rgba(200,168,75,.3);
-        }
-        .section-title {
-            font-family: 'DM Serif Display', serif;
-            font-size: clamp(2rem, 4vw, 2.8rem);
-            color: var(--navy); margin-bottom: .75rem;
-        }
+        .section-tag { display: inline-flex; align-items: center; gap: .5rem; background: rgba(200,168,75,.12); color: var(--gold); padding: .35rem 1rem; border-radius: 50px; font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 1rem; border: 1px solid rgba(200,168,75,.3); }
+        .section-title { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 4vw, 2.8rem); color: var(--navy); margin-bottom: .75rem; }
         .section-subtitle { color: var(--gray-500); font-size: 1.05rem; max-width: 640px; }
         .section-header-block { margin-bottom: 3.5rem; }
         .section-header-block.center { text-align: center; }
         .section-header-block.center .section-subtitle { margin: 0 auto; }
-
-        /* ── Buttons ──────────────────────────── */
-        .btn {
-            display: inline-flex; align-items: center; gap: .5rem;
-            font-weight: 600; border-radius: 50px;
-            padding: .85rem 2.2rem; transition: var(--transition);
-            border: 2px solid transparent; font-size: .95rem; cursor: pointer;
-        }
-        .btn-gold {
-            background: var(--gold); color: var(--navy);
-        }
+        .btn { display: inline-flex; align-items: center; gap: .5rem; font-weight: 600; border-radius: 50px; padding: .85rem 2.2rem; transition: var(--transition); border: 2px solid transparent; font-size: .95rem; cursor: pointer; }
+        .btn-gold { background: var(--gold); color: var(--navy); }
         .btn-gold:hover { background: var(--gold-lt); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,168,75,.35); }
-        .btn-outline-white {
-            background: transparent; color: var(--white);
-            border-color: rgba(255,255,255,.4);
-        }
+        .btn-outline-white { background: transparent; color: var(--white); border-color: rgba(255,255,255,.4); }
         .btn-outline-white:hover { background: rgba(255,255,255,.1); border-color: var(--white); }
-        .btn-navy {
-            background: var(--navy); color: var(--white);
-        }
+        .btn-navy { background: var(--navy); color: var(--white); }
         .btn-navy:hover { background: var(--navy-md); transform: translateY(-2px); box-shadow: var(--shadow-md); }
-
-        /* ── Navbar ─────────────────────────────── */
-        .navbar {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            background: rgba(255,255,255,.97); backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--gray-100);
-            transition: var(--transition);
-        }
+        .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(255,255,255,.97); backdrop-filter: blur(16px); border-bottom: 1px solid var(--gray-100); transition: var(--transition); }
         .navbar.scrolled { box-shadow: var(--shadow-md); }
-        .navbar-inner {
-            max-width: 1280px; margin: 0 auto; padding: .9rem 2rem;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .navbar-inner { max-width: 1280px; margin: 0 auto; padding: .9rem 2rem; display: flex; justify-content: space-between; align-items: center; }
         .navbar-logo img { height: 42px; width: auto; }
         .nav-links { display: flex; list-style: none; gap: 2.5rem; align-items: center; }
         .nav-links a { font-weight: 500; font-size: .92rem; color: var(--gray-700); transition: color .2s; }
         .nav-links a:hover { color: var(--navy); }
-        .nav-cta {
-            background: var(--navy); color: var(--white) !important;
-            padding: .65rem 1.6rem; border-radius: 50px; font-weight: 600;
-        }
+        .nav-cta { background: var(--navy); color: var(--white) !important; padding: .65rem 1.6rem; border-radius: 50px; font-weight: 600; }
         .nav-cta:hover { background: var(--navy-lt) !important; }
-
-        /* Mobile burger */
         .burger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
         .burger span { display: block; width: 24px; height: 2px; background: var(--navy); transition: var(--transition); border-radius: 2px; }
         .burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
         .burger.open span:nth-child(2) { opacity: 0; }
         .burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-        /* ── Hero ───────────────────────────────── */
-        .hero {
-            min-height: 100vh; padding-top: 72px;
-            background: var(--navy);
-            position: relative; overflow: hidden;
-        }
-        .hero::before {
-            content: '';
-            position: absolute; inset: 0;
-            background:
-                radial-gradient(ellipse 80% 60% at 70% 50%, rgba(30,74,124,.7) 0%, transparent 65%),
-                radial-gradient(ellipse 50% 80% at 20% 80%, rgba(200,168,75,.08) 0%, transparent 55%);
-        }
-        .hero-grid {
-            display: grid; grid-template-columns: 1fr 1fr;
-            align-items: center; min-height: calc(100vh - 72px);
-            max-width: 1280px; margin: 0 auto; padding: 4rem 2rem;
-            gap: 4rem; position: relative; z-index: 1;
-        }
+        .hero { min-height: 100vh; padding-top: 72px; background: var(--navy); position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 70% 50%, rgba(30,74,124,.7) 0%, transparent 65%), radial-gradient(ellipse 50% 80% at 20% 80%, rgba(200,168,75,.08) 0%, transparent 55%); }
+        .hero-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: center; min-height: calc(100vh - 72px); max-width: 1280px; margin: 0 auto; padding: 4rem 2rem; gap: 4rem; position: relative; z-index: 1; }
         .hero-text { color: var(--white); }
-        .hero-eyebrow {
-            display: inline-flex; align-items: center; gap: .6rem;
-            background: rgba(200,168,75,.15); border: 1px solid rgba(200,168,75,.35);
-            color: var(--gold-lt); padding: .4rem 1rem; border-radius: 50px;
-            font-size: .8rem; font-weight: 700; letter-spacing: .06em;
-            text-transform: uppercase; margin-bottom: 1.5rem;
-        }
-        .hero-title {
-            font-family: 'DM Serif Display', serif;
-            font-size: clamp(2.4rem, 5vw, 3.8rem);
-            color: var(--white); line-height: 1.15;
-            margin-bottom: 1.5rem;
-        }
+        .hero-eyebrow { display: inline-flex; align-items: center; gap: .6rem; background: rgba(200,168,75,.15); border: 1px solid rgba(200,168,75,.35); color: var(--gold-lt); padding: .4rem 1rem; border-radius: 50px; font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 1.5rem; }
+        .hero-title { font-family: 'DM Serif Display', serif; font-size: clamp(2.4rem, 5vw, 3.8rem); color: var(--white); line-height: 1.15; margin-bottom: 1.5rem; }
         .hero-title span { color: var(--gold-lt); }
         .hero-desc { color: rgba(255,255,255,.65); font-size: 1.1rem; margin-bottom: 2.5rem; max-width: 480px; }
         .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
-        .hero-stats-row {
-            display: flex; gap: 2.5rem; margin-top: 3.5rem;
-            padding-top: 2.5rem; border-top: 1px solid rgba(255,255,255,.1);
-        }
+        .hero-stats-row { display: flex; gap: 2.5rem; margin-top: 3.5rem; padding-top: 2.5rem; border-top: 1px solid rgba(255,255,255,.1); }
         .hero-stat-num { font-size: 2rem; font-weight: 800; color: var(--gold-lt); }
         .hero-stat-lbl { font-size: .82rem; color: rgba(255,255,255,.55); margin-top: .1rem; }
-
-        /* Hero visual */
-        .hero-visual {
-            display: flex; align-items: center; justify-content: center;
-            position: relative;
-        }
-        .ampoule-showcase {
-            background: rgba(255,255,255,.04);
-            border: 1px solid rgba(255,255,255,.1);
-            border-radius: 28px;
-            padding: 3rem 2.5rem;
-            width: 100%; max-width: 420px;
-            backdrop-filter: blur(12px);
-            position: relative;
-        }
-        .ampoule-showcase::before {
-            content: '';
-            position: absolute; top: -1px; left: 15%; right: 15%; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
-        }
-        .amp-row {
-            display: flex; align-items: flex-end; gap: 1.2rem;
-            justify-content: center; margin-bottom: 2rem;
-        }
-        .amp {
-            display: flex; flex-direction: column; align-items: center; gap: 0;
-            transition: transform .3s; cursor: default;
-        }
+        .hero-visual { display: flex; align-items: center; justify-content: center; position: relative; }
+        .ampoule-showcase { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 28px; padding: 3rem 2.5rem; width: 100%; max-width: 420px; backdrop-filter: blur(12px); position: relative; }
+        .ampoule-showcase::before { content: ''; position: absolute; top: -1px; left: 15%; right: 15%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+        .amp-row { display: flex; align-items: flex-end; gap: 1.2rem; justify-content: center; margin-bottom: 2rem; }
+        .amp { display: flex; flex-direction: column; align-items: center; gap: 0; transition: transform .3s; cursor: default; }
         .amp:hover { transform: translateY(-6px); }
-        .amp-cap {
-            width: 14px; height: 10px;
-            background: var(--gold);
-            border-radius: 4px 4px 0 0;
-            position: relative;
-        }
+        .amp-cap { width: 14px; height: 10px; background: var(--gold); border-radius: 4px 4px 0 0; position: relative; }
         .amp-neck { width: 6px; height: 8px; background: rgba(200,220,255,.45); margin: 0 auto; }
-        .amp-body {
-            background: linear-gradient(180deg, rgba(200,225,255,.55) 0%, rgba(160,200,255,.35) 100%);
-            border: 1px solid rgba(200,225,255,.45);
-            border-radius: 6px 6px 10px 10px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .amp-body.amber-fill {
-            background: linear-gradient(180deg, rgba(245,185,80,.55) 0%, rgba(200,140,30,.35) 100%);
-            border-color: rgba(245,185,80,.5);
-        }
+        .amp-body { background: linear-gradient(180deg, rgba(200,225,255,.55) 0%, rgba(160,200,255,.35) 100%); border: 1px solid rgba(200,225,255,.45); border-radius: 6px 6px 10px 10px; display: flex; align-items: center; justify-content: center; }
+        .amp-body.amber-fill { background: linear-gradient(180deg, rgba(245,185,80,.55) 0%, rgba(200,140,30,.35) 100%); border-color: rgba(245,185,80,.5); }
         .amp-size-sm .amp-body { width: 20px; height: 64px; }
         .amp-size-md .amp-body { width: 24px; height: 88px; }
         .amp-size-lg .amp-body { width: 28px; height: 110px; }
         .amp-size-xl .amp-body { width: 32px; height: 130px; }
         .amp-label { font-size: .65rem; color: rgba(255,255,255,.5); margin-top: .5rem; }
         .showcase-title { text-align: center; color: rgba(255,255,255,.7); font-size: .82rem; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
-        .showcase-badges {
-            display: flex; justify-content: center; gap: .75rem; margin-top: 1.5rem; flex-wrap: wrap;
-        }
-        .s-badge {
-            background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
-            color: rgba(255,255,255,.7); padding: .3rem .8rem;
-            border-radius: 50px; font-size: .72rem; font-weight: 600;
-        }
-
-        /* ── Trust strip ─────────────────────────── */
-        .trust-strip {
-            background: var(--gold);
-            padding: 1.2rem 0;
-        }
-        .trust-strip-inner {
-            max-width: 1280px; margin: 0 auto; padding: 0 2rem;
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 1rem; flex-wrap: wrap;
-        }
-        .trust-item {
-            display: flex; align-items: center; gap: .6rem;
-            color: var(--navy); font-weight: 700; font-size: .88rem;
-        }
+        .showcase-badges { display: flex; justify-content: center; gap: .75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+        .s-badge { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); color: rgba(255,255,255,.7); padding: .3rem .8rem; border-radius: 50px; font-size: .72rem; font-weight: 600; }
+        .trust-strip { background: var(--gold); padding: 1.2rem 0; }
+        .trust-strip-inner { max-width: 1280px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        .trust-item { display: flex; align-items: center; gap: .6rem; color: var(--navy); font-weight: 700; font-size: .88rem; }
         .trust-item i { font-size: 1rem; }
         .trust-divider { width: 1px; height: 24px; background: rgba(12,35,64,.2); }
-
-        /* ── Features ────────────────────────────── */
         .features-section { padding: 6rem 0; background: var(--off-white); }
-        .features-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-        }
-        .feature-card {
-            background: var(--white); border-radius: var(--radius-lg);
-            padding: 2.5rem; border: 1px solid var(--gray-100);
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition); position: relative; overflow: hidden;
-        }
-        .feature-card::after {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-            background: linear-gradient(90deg, var(--navy), var(--gold));
-            transform: scaleX(0); transform-origin: left; transition: transform .3s;
-        }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .feature-card { background: var(--white); border-radius: var(--radius-lg); padding: 2.5rem; border: 1px solid var(--gray-100); box-shadow: var(--shadow-sm); transition: var(--transition); position: relative; overflow: hidden; }
+        .feature-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--navy), var(--gold)); transform: scaleX(0); transform-origin: left; transition: transform .3s; }
         .feature-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); }
         .feature-card:hover::after { transform: scaleX(1); }
-        .feature-icon-wrap {
-            width: 56px; height: 56px; background: var(--navy);
-            border-radius: var(--radius); display: flex; align-items: center;
-            justify-content: center; color: var(--gold); font-size: 1.3rem;
-            margin-bottom: 1.5rem;
-        }
+        .feature-icon-wrap { width: 56px; height: 56px; background: var(--navy); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 1.3rem; margin-bottom: 1.5rem; }
         .feature-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: .5rem; }
         .feature-card p { color: var(--gray-500); font-size: .92rem; line-height: 1.65; }
-
-        /* ── Products ─────────────────────────────── */
+        
+        /* ── PRODUCTS & VARIANTS STYLES ── */
         .products-section { padding: 6rem 0; background: var(--white); }
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 2rem;
-        }
-        .product-card {
-            background: var(--white); border: 1px solid var(--gray-100);
-            border-radius: var(--radius-lg); overflow: hidden;
-            box-shadow: var(--shadow-sm); transition: var(--transition);
-        }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem; }
+        .product-card { background: var(--white); border: 1px solid var(--gray-100); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); transition: var(--transition); }
         .product-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
-        .product-thumb {
-            height: 140px;
-            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
-            display: flex; align-items: center; justify-content: center;
-            position: relative; overflow: hidden;
-        }
-        .product-thumb i {
-            font-size: 3.5rem;
-            color: rgba(255,255,255,0.85);
-        }
+        .product-thumb { height: 140px; background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .product-thumb i { font-size: 3.5rem; color: rgba(255,255,255,0.85); }
         .product-body { padding: 1.75rem; }
         .product-name { font-size: 1.25rem; font-weight: 700; color: var(--navy); margin-bottom: .5rem; }
         .product-capacity { color: var(--gray-500); font-size: .9rem; margin-bottom: 1.25rem; }
-        .variants-label {
-            font-size: .8rem;
-            font-weight: 600;
-            letter-spacing: .05em;
-            text-transform: uppercase;
-            color: var(--gray-500);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
+        .variants-label { font-size: .8rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--gray-500); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.4rem; }
         .variants-label i { color: var(--gold); }
-        .variants-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-        }
-        .variant-option {
-            padding: 0.75rem;
-            border: 1.5px solid var(--gray-100);
-            border-radius: var(--radius);
-            text-align: center;
-            transition: var(--transition);
-            background: var(--off-white);
-        }
-        .variant-option:hover {
-            border-color: var(--navy-lt);
-            background: rgba(12,35,64,.04);
-        }
-        .color-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 0.4rem;
-            border: 1px solid var(--gray-300);
-            vertical-align: middle;
-        }
+        .variants-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .variant-option { display: flex; align-items: center; justify-content: center; padding: 0.75rem; border: 1.5px solid var(--gray-100); border-radius: var(--radius); transition: var(--transition); background: var(--off-white); min-width: 120px; }
+        .variant-option:hover { border-color: var(--navy-lt); background: rgba(12,35,64,.04); }
+        .variant-name { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; color: var(--navy); }
+        .color-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--gray-300); flex-shrink: 0; }
         .color-transparent { background: #c8e8f8; }
         .color-amber { background: #f59e0b; }
-        .variant-name {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--navy);
-        }
 
-        /* ── Quote Section ────────────────────────── */
         .quote-section { padding: 6rem 0; background: var(--off-white); }
-        .quote-card {
-            background: var(--white); border-radius: 24px; overflow: hidden;
-            box-shadow: var(--shadow-lg); display: grid;
-            grid-template-columns: 380px 1fr;
-            border: 1px solid var(--gray-100);
-        }
-        .quote-sidebar {
-            background: var(--navy);
-            padding: 3.5rem 2.5rem;
-            position: relative; overflow: hidden;
-        }
-        .quote-sidebar::before {
-            content: ''; position: absolute; top: -80px; right: -80px;
-            width: 300px; height: 300px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(200,168,75,.12), transparent 70%);
-        }
-        .quote-sidebar::after {
-            content: ''; position: absolute; bottom: -60px; left: -60px;
-            width: 200px; height: 200px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(30,74,124,.5), transparent 70%);
-        }
+        .quote-card { background: var(--white); border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-lg); display: grid; grid-template-columns: 380px 1fr; border: 1px solid var(--gray-100); }
+        .quote-sidebar { background: var(--navy); padding: 3.5rem 2.5rem; position: relative; overflow: hidden; }
+        .quote-sidebar::before { content: ''; position: absolute; top: -80px; right: -80px; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(200,168,75,.12), transparent 70%); }
+        .quote-sidebar::after { content: ''; position: absolute; bottom: -60px; left: -60px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(30,74,124,.5), transparent 70%); }
         .qs-inner { position: relative; z-index: 1; }
-        .qs-tag {
-            display: inline-flex; align-items: center; gap: .5rem;
-            background: rgba(200,168,75,.15); border: 1px solid rgba(200,168,75,.3);
-            color: var(--gold-lt); padding: .35rem .9rem;
-            border-radius: 50px; font-size: .75rem; font-weight: 700;
-            letter-spacing: .06em; text-transform: uppercase; margin-bottom: 1.5rem;
-        }
-        .qs-title {
-            font-family: 'DM Serif Display', serif;
-            font-size: 1.9rem; color: var(--white); margin-bottom: 1rem;
-        }
+        .qs-tag { display: inline-flex; align-items: center; gap: .5rem; background: rgba(200,168,75,.15); border: 1px solid rgba(200,168,75,.3); color: var(--gold-lt); padding: .35rem .9rem; border-radius: 50px; font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 1.5rem; }
+        .qs-title { font-family: 'DM Serif Display', serif; font-size: 1.9rem; color: var(--white); margin-bottom: 1rem; }
         .qs-desc { color: rgba(255,255,255,.6); font-size: .92rem; margin-bottom: 2.5rem; line-height: 1.7; }
-        .qs-contact-item {
-            display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem;
-        }
-        .qs-contact-icon {
-            width: 40px; height: 40px; min-width: 40px;
-            background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
-            border-radius: 10px; display: flex; align-items: center; justify-content: center;
-            color: var(--gold-lt); font-size: .9rem;
-        }
+        .qs-contact-item { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; }
+        .qs-contact-icon { width: 40px; height: 40px; min-width: 40px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--gold-lt); font-size: .9rem; }
         .qs-contact-label { font-size: .75rem; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .06em; }
         .qs-contact-val { font-size: .92rem; color: var(--white); font-weight: 500; }
         .qs-divider { border: none; border-top: 1px solid rgba(255,255,255,.08); margin: 2rem 0; }
-
         .quote-form-wrap { padding: 3.5rem; }
         .qf-title { font-size: 1.4rem; font-weight: 700; color: var(--navy); margin-bottom: .35rem; }
         .qf-subtitle { color: var(--gray-500); font-size: .9rem; margin-bottom: 2rem; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
         .form-group { margin-bottom: 1.25rem; }
-        .form-group label {
-            display: block; font-size: .82rem; font-weight: 600;
-            color: var(--gray-700); margin-bottom: .45rem; letter-spacing: .02em;
-        }
+        .form-group label { display: block; font-size: .82rem; font-weight: 600; color: var(--gray-700); margin-bottom: .45rem; letter-spacing: .02em; }
         .required { color: #e53e3e; }
-        .form-control {
-            width: 100%; padding: .8rem 1rem;
-            border: 1.5px solid var(--gray-100); border-radius: var(--radius);
-            font-family: inherit; font-size: .93rem; color: var(--text);
-            background: var(--white); transition: var(--transition);
-        }
+        .form-control { width: 100%; padding: .8rem 1rem; border: 1.5px solid var(--gray-100); border-radius: var(--radius); font-family: inherit; font-size: .93rem; color: var(--text); background: var(--white); transition: var(--transition); }
         .form-control:focus { outline: none; border-color: var(--navy-lt); box-shadow: 0 0 0 3px rgba(22,50,87,.1); }
         .form-control.error { border-color: #e53e3e; }
-        .product-group {
-            background: var(--off-white); border: 1px solid var(--gray-100);
-            border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem;
-        }
+        .product-group { background: var(--off-white); border: 1px solid var(--gray-100); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
         .product-group-title { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem; }
         .product-group-capacity { font-size: 0.85rem; color: var(--gray-500); margin-bottom: 0.75rem; }
-        .btn-submit {
-            width: 100%; padding: 1rem;
-            background: var(--navy); color: var(--white);
-            border: none; border-radius: var(--radius); font-family: inherit;
-            font-size: 1rem; font-weight: 700; cursor: pointer;
-            transition: var(--transition); display: flex; align-items: center;
-            justify-content: center; gap: .6rem; letter-spacing: .02em;
-        }
+        .btn-submit { width: 100%; padding: 1rem; background: var(--navy); color: var(--white); border: none; border-radius: var(--radius); font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: .6rem; letter-spacing: .02em; }
         .btn-submit:hover { background: var(--navy-lt); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(12,35,64,.3); }
         .btn-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; }
         .form-note { text-align: center; color: var(--gray-500); font-size: .8rem; margin-top: .9rem; }
         .form-note i { color: var(--green); }
-
-        /* ── Footer ──────────────────────────────── */
         .footer { background: var(--navy); color: rgba(255,255,255,.65); padding: 5rem 0 0; }
-        .footer-grid {
-            display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 3rem; padding-bottom: 4rem;
-        }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; padding-bottom: 4rem; }
         .footer-brand { margin-bottom: 1.25rem; }
         .footer-brand img { height: 44px; filter: brightness(0) invert(1); opacity: .9; }
         .footer-about { font-size: .88rem; line-height: 1.8; margin-bottom: 1.5rem; max-width: 280px; }
         .footer-social { display: flex; gap: .75rem; }
-        .social-link {
-            width: 38px; height: 38px;
-            background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
-            border-radius: 10px; display: flex; align-items: center; justify-content: center;
-            color: rgba(255,255,255,.65); font-size: .9rem; transition: var(--transition);
-        }
+        .social-link { width: 38px; height: 38px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.65); font-size: .9rem; transition: var(--transition); }
         .social-link:hover { background: var(--gold); color: var(--navy); border-color: var(--gold); }
-        .footer-heading {
-            font-size: .82rem; font-weight: 700; letter-spacing: .08em;
-            text-transform: uppercase; color: var(--white); margin-bottom: 1.5rem;
-        }
+        .footer-heading { font-size: .82rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--white); margin-bottom: 1.5rem; }
         .footer-links { list-style: none; }
         .footer-links li { margin-bottom: .8rem; }
         .footer-links a { font-size: .88rem; color: rgba(255,255,255,.55); transition: color .2s; }
         .footer-links a:hover { color: var(--gold-lt); }
         .footer-links li.no-link { font-size: .88rem; }
         .footer-links li.no-link i { width: 16px; margin-right: .5rem; opacity: .6; }
-        .footer-bottom {
-            border-top: 1px solid rgba(255,255,255,.08);
-            padding: 1.5rem 0; text-align: center; font-size: .82rem;
-        }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,.08); padding: 1.5rem 0; text-align: center; font-size: .82rem; }
         .footer-bottom strong { color: var(--gold-lt); }
-
-        /* ── Toast ───────────────────────────────── */
-        .toast {
-            position: fixed; bottom: 2rem; right: 2rem;
-            background: var(--white); padding: 1rem 1.5rem;
-            border-radius: var(--radius); box-shadow: var(--shadow-lg);
-            display: flex; align-items: center; gap: 1rem; z-index: 9999;
-            transform: translateX(420px); transition: transform .35s cubic-bezier(.34,1.56,.64,1);
-            max-width: 340px; border: 1px solid var(--gray-100);
-        }
+        .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--white); padding: 1rem 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 1rem; z-index: 9999; transform: translateX(420px); transition: transform .35s cubic-bezier(.34,1.56,.64,1); max-width: 340px; border: 1px solid var(--gray-100); }
         .toast.show { transform: translateX(0); }
         .toast-success { border-left: 4px solid var(--green); }
         .toast-error { border-left: 4px solid #e53e3e; }
         .toast-icon { font-size: 1.4rem; }
         .toast-title { font-weight: 700; font-size: .92rem; color: var(--text); }
         .toast-msg { font-size: .82rem; color: var(--gray-500); margin-top: .1rem; }
-
-        /* Spinner */
         .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ── Responsive ─────────────────────────── */
-        @media (max-width: 1024px) {
-            .features-grid { grid-template-columns: repeat(2, 1fr); }
-            .quote-card { grid-template-columns: 1fr; }
-            .quote-sidebar { padding: 3rem 2.5rem; }
-            .footer-grid { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
-        }
-        @media (max-width: 768px) {
-            .hero-grid { grid-template-columns: 1fr; gap: 3rem; padding: 3rem 1.5rem; }
-            .hero-visual { display: none; }
-            .hero-stats-row { flex-wrap: wrap; gap: 1.5rem; }
-            .nav-links { display: none; position: fixed; top: 71px; left: 0; right: 0; background: var(--white); flex-direction: column; gap: 0; padding: 1rem 0; box-shadow: var(--shadow-md); border-bottom: 1px solid var(--gray-100); }
-            .nav-links.open { display: flex; }
-            .nav-links li { padding: .75rem 2rem; }
-            .burger { display: flex; }
-            .trust-strip-inner { justify-content: center; }
-            .trust-divider { display: none; }
-            .features-grid { grid-template-columns: 1fr; }
-            .form-row { grid-template-columns: 1fr; gap: 0; }
-            .quote-form-wrap { padding: 2rem 1.5rem; }
-            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
-            .products-grid { grid-template-columns: 1fr; }
-        }
-        /* Fix variant text visibility */
-.variant-option {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem;
-    border: 1.5px solid var(--gray-100);
-    border-radius: var(--radius);
-    transition: var(--transition);
-    background: var(--off-white);
-    min-width: 120px;
-}
-
-.variant-name {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--navy);
-    white-space: nowrap;
-}
-
-.color-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 1px solid var(--gray-300);
-    flex-shrink: 0;
-}
-
-.color-transparent { 
-    background: #c8e8f8; 
-}
-
-.color-amber { 
-    background: #f59e0b; 
-}
+        @media (max-width: 1024px) { .features-grid { grid-template-columns: repeat(2, 1fr); } .quote-card { grid-template-columns: 1fr; } .quote-sidebar { padding: 3rem 2.5rem; } .footer-grid { grid-template-columns: 1fr 1fr; gap: 2.5rem; } }
+        @media (max-width: 768px) { .hero-grid { grid-template-columns: 1fr; gap: 3rem; padding: 3rem 1.5rem; } .hero-visual { display: none; } .hero-stats-row { flex-wrap: wrap; gap: 1.5rem; } .nav-links { display: none; position: fixed; top: 71px; left: 0; right: 0; background: var(--white); flex-direction: column; gap: 0; padding: 1rem 0; box-shadow: var(--shadow-md); border-bottom: 1px solid var(--gray-100); } .nav-links.open { display: flex; } .nav-links li { padding: .75rem 2rem; } .burger { display: flex; } .trust-strip-inner { justify-content: center; } .trust-divider { display: none; } .features-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; gap: 0; } .quote-form-wrap { padding: 2rem 1.5rem; } .footer-grid { grid-template-columns: 1fr; gap: 2rem; } .products-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<!-- ═══ NAVBAR ═══════════════════════════════════════ -->
 <nav class="navbar" id="navbar">
     <div class="navbar-inner">
         <a href="{{ url_for('main.index') }}" class="navbar-logo">
             <img src="/static/logo.png" alt="Ampoulex">
         </a>
-        
         <ul class="nav-links" id="navLinks">
             <li><a href="{{ url_for('main.index') }}">Home</a></li>
             <li><a href="#features">Why Us</a></li>
             <li><a href="#products">Product Catalogue</a></li>
             <li><a href="#inquiry" class="nav-cta">Request Quote</a></li>
         </ul>
-        
         <button class="burger" id="burger" aria-label="Menu">
             <span></span><span></span><span></span>
         </button>
     </div>
 </nav>
 
-<!-- ═══ HERO ══════════════════════════════════════════ -->
 <section class="hero" id="home">
     <div class="hero-grid">
         <div class="hero-text">
-            <div class="hero-eyebrow">
-                <i class="fas fa-certificate"></i>
-                Pakistan's Premier Glass Ampoule Manufacturer
-            </div>
-            <h1 class="hero-title">
-                Pharmaceutical Grade <span>Glass Ampoules</span> You Can Trust
-            </h1>
-            <p class="hero-desc">
-                ISO-certified ampoules crafted for the pharmaceutical industry. Available in multiple sizes and finishes, delivered reliably across Pakistan.
-            </p>
+            <div class="hero-eyebrow"><i class="fas fa-certificate"></i> Pakistan's Premier Glass Ampoule Manufacturer</div>
+            <h1 class="hero-title">Pharmaceutical Grade <span>Glass Ampoules</span> You Can Trust</h1>
+            <p class="hero-desc">ISO-certified ampoules crafted for the pharmaceutical industry. Available in multiple sizes and finishes, delivered reliably across Pakistan.</p>
             <div class="hero-btns">
-                <a href="#inquiry" class="btn btn-gold">
-                    <i class="fas fa-file-invoice"></i> Request Quote
-                </a>
-                <a href="#products" class="btn btn-outline-white">
-                    <i class="fas fa-box"></i> View Products
-                </a>
+                <a href="#inquiry" class="btn btn-gold"><i class="fas fa-file-invoice"></i> Request Quote</a>
+                <a href="#products" class="btn btn-outline-white"><i class="fas fa-box"></i> View Products</a>
             </div>
             <div class="hero-stats-row">
-                <div>
-                    <div class="hero-stat-num">5+</div>
-                    <div class="hero-stat-lbl">Product Sizes</div>
-                </div>
-                <div>
-                    <div class="hero-stat-num">500K+</div>
-                    <div class="hero-stat-lbl">Units / Month</div>
-                </div>
-                <div>
-                    <div class="hero-stat-num">100%</div>
-                    <div class="hero-stat-lbl">Quality Tested</div>
-                </div>
-                <div>
-                    <div class="hero-stat-num">ISO</div>
-                    <div class="hero-stat-lbl">Certified</div>
-                </div>
+                <div><div class="hero-stat-num">5+</div><div class="hero-stat-lbl">Product Sizes</div></div>
+                <div><div class="hero-stat-num">500K+</div><div class="hero-stat-lbl">Units / Month</div></div>
+                <div><div class="hero-stat-num">100%</div><div class="hero-stat-lbl">Quality Tested</div></div>
+                <div><div class="hero-stat-num">ISO</div><div class="hero-stat-lbl">Certified</div></div>
             </div>
         </div>
-
         <div class="hero-visual">
             <div class="ampoule-showcase">
                 <div class="showcase-title">Our Product Range</div>
                 <div class="amp-row" style="margin-top:2rem;">
-                    <div class="amp amp-size-sm">
-                        <div class="amp-cap"></div>
-                        <div class="amp-neck"></div>
-                        <div class="amp-body"></div>
-                        <div class="amp-label">1 ml</div>
-                    </div>
-                    <div class="amp amp-size-md">
-                        <div class="amp-cap"></div>
-                        <div class="amp-neck"></div>
-                        <div class="amp-body"></div>
-                        <div class="amp-label">2 ml</div>
-                    </div>
-                    <div class="amp amp-size-md">
-                        <div class="amp-cap"></div>
-                        <div class="amp-neck"></div>
-                        <div class="amp-body amber-fill"></div>
-                        <div class="amp-label">5 ml</div>
-                    </div>
-                    <div class="amp amp-size-lg">
-                        <div class="amp-cap"></div>
-                        <div class="amp-neck"></div>
-                        <div class="amp-body amber-fill"></div>
-                        <div class="amp-label">10 ml</div>
-                    </div>
-                    <div class="amp amp-size-xl">
-                        <div class="amp-cap"></div>
-                        <div class="amp-neck"></div>
-                        <div class="amp-body"></div>
-                        <div class="amp-label">20 ml</div>
-                    </div>
+                    <div class="amp amp-size-sm"><div class="amp-cap"></div><div class="amp-neck"></div><div class="amp-body"></div><div class="amp-label">1 ml</div></div>
+                    <div class="amp amp-size-md"><div class="amp-cap"></div><div class="amp-neck"></div><div class="amp-body"></div><div class="amp-label">2 ml</div></div>
+                    <div class="amp amp-size-md"><div class="amp-cap"></div><div class="amp-neck"></div><div class="amp-body amber-fill"></div><div class="amp-label">5 ml</div></div>
+                    <div class="amp amp-size-lg"><div class="amp-cap"></div><div class="amp-neck"></div><div class="amp-body amber-fill"></div><div class="amp-label">10 ml</div></div>
+                    <div class="amp amp-size-xl"><div class="amp-cap"></div><div class="amp-neck"></div><div class="amp-body"></div><div class="amp-label">20 ml</div></div>
                 </div>
                 <div class="showcase-badges">
                     <span class="s-badge"><i class="fas fa-tint" style="color:var(--gold-lt);margin-right:.35rem;"></i>Clear Glass</span>
@@ -647,7 +238,6 @@
     </div>
 </section>
 
-<!-- ═══ TRUST STRIP ════════════════════════════════════ -->
 <div class="trust-strip">
     <div class="trust-strip-inner">
         <div class="trust-item"><i class="fas fa-award"></i> ISO 9001:2015 Certified</div>
@@ -662,7 +252,6 @@
     </div>
 </div>
 
-<!-- ═══ FEATURES ════════════════════════════════════════ -->
 <section class="features-section" id="features">
     <div class="container">
         <div class="section-header-block center">
@@ -671,42 +260,17 @@
             <p class="section-subtitle">We combine precision manufacturing with rigorous quality control to deliver packaging that meets the highest pharma standards.</p>
         </div>
         <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon-wrap"><i class="fas fa-award"></i></div>
-                <h3>ISO Certified Quality</h3>
-                <p>Our manufacturing processes and products are certified to ISO 9001:2015 and comply with international pharmacopeial standards.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon-wrap"><i class="fas fa-truck-fast"></i></div>
-                <h3>Nationwide Delivery</h3>
-                <p>Fast, insured delivery across all major cities in Pakistan with proper cushioning and moisture protection for fragile ampoules.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon-wrap"><i class="fas fa-tags"></i></div>
-                <h3>Competitive Pricing</h3>
-                <p>Volume-based pricing with tiered discounts for bulk orders. Flexible payment terms available for regular customers.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon-wrap"><i class="fas fa-microscope"></i></div>
-                <h3>Rigorous QC Testing</h3>
-                <p>Every batch undergoes hydrolytic resistance, breakage force, and dimensional tolerance testing before dispatch.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon-wrap"><i class="fas fa-palette"></i></div>
-                <h3>Custom Printing &amp; White Label</h3>
-                <p>Full printing service for your branding. Screen printing and self-adhesive labels available on both clear and amber glass.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon-wrap"><i class="fas fa-headset"></i></div>
-                <h3>Dedicated Support</h3>
-                <p>A dedicated account manager for each client. From sample approval to batch delivery — we handle every step with you.</p>
-            </div>
+            <div class="feature-card"><div class="feature-icon-wrap"><i class="fas fa-award"></i></div><h3>ISO Certified Quality</h3><p>Our manufacturing processes and products are certified to ISO 9001:2015 and comply with international pharmacopeial standards.</p></div>
+            <div class="feature-card"><div class="feature-icon-wrap"><i class="fas fa-truck-fast"></i></div><h3>Nationwide Delivery</h3><p>Fast, insured delivery across all major cities in Pakistan with proper cushioning and moisture protection for fragile ampoules.</p></div>
+            <div class="feature-card"><div class="feature-icon-wrap"><i class="fas fa-tags"></i></div><h3>Competitive Pricing</h3><p>Volume-based pricing with tiered discounts for bulk orders. Flexible payment terms available for regular customers.</p></div>
+            <div class="feature-card"><div class="feature-icon-wrap"><i class="fas fa-microscope"></i></div><h3>Rigorous QC Testing</h3><p>Every batch undergoes hydrolytic resistance, breakage force, and dimensional tolerance testing before dispatch.</p></div>
+            <div class="feature-card"><div class="feature-icon-wrap"><i class="fas fa-palette"></i></div><h3>Custom Printing &amp; White Label</h3><p>Full printing service for your branding. Screen printing and self-adhesive labels available on both clear and amber glass.</p></div>
+            <div class="feature-card"><div class="feature-icon-wrap"><i class="fas fa-headset"></i></div><h3>Dedicated Support</h3><p>A dedicated account manager for each client. From sample approval to batch delivery — we handle every step with you.</p></div>
         </div>
     </div>
 </section>
 
-<!-- ═══ PRODUCTS ══════════════════════════════════════ -->
-    
+<!-- ✅ PRODUCTS SECTION (FIXED) -->
 <section class="products-section" id="products">
     <div class="container">
         <div class="section-header-block center">
@@ -714,38 +278,9 @@
             <h2 class="section-title">Glass Ampoules &amp; Services</h2>
             <p class="section-subtitle">Choose from our wide range of pharmaceutical-grade glass ampoules.</p>
         </div>
-        <div class="variants-grid">
-            {% for variant in product.variants %}
-            <div class="variant-option">
-                <span class="variant-name">
-                    <span class="color-dot color-{% if 'amber' in variant.color|lower %}amber{% else %}transparent{% endif %}"></span>
-                    {{ variant.color }}
-                </span>
-            </div>
-            {% endfor %}
-        </div>
-        <!-- Group products by size (1cc, 2cc, 3cc, etc.) -->
-        {% set grouped_by_size = {} %}
-        {% for product in products %}
-            {% if product.product_type != 'service' %}
-                {% set size = product.name.split(' ')[0] if ' ' in product.name else 'Other' %}
-                {% if size not in grouped_by_size %}
-                    {% set _ = grouped_by_size.update({size: []}) %}
-                {% endif %}
-                {% set _ = grouped_by_size[size].append(product) %}
-            {% endif %}
-        {% endfor %}
-        
-        <!-- Sort sizes numerically (1cc → 10cc) -->
-        {% set sorted_sizes = [] %}
-        {% for size in grouped_by_size.keys() %}
-            {% set num = size|replace('cc','')|replace('in','')|int %}
-            {% set _ = sorted_sizes.append((num, size)) %}
-        {% endfor %}
-        {% set sorted_sizes = sorted_sizes|sort(attribute=0) %}
         
         <div class="products-grid">
-            {% for num, size in sorted_sizes %}
+            {% for size in sorted_sizes %}
             <div class="product-card">
                 <div class="product-thumb">
                     <i class="fas fa-prescription-bottle-alt"></i>
@@ -773,13 +308,9 @@
             {% endfor %}
         </div>
         
-        <!-- Services Section -->
-        {% set services = products|selectattr('product_type', 'equalto', 'service')|list %}
         {% if services %}
         <div style="margin-top: 4rem;">
-            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--gold);">
-                Additional Services
-            </h3>
+            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--gold);">Additional Services</h3>
             <div class="products-grid">
                 {% for service in services %}
                 <div class="product-card">
@@ -788,9 +319,7 @@
                     </div>
                     <div class="product-body">
                         <h3 class="product-name">{{ service.name }}</h3>
-                        {% if service.specification %}
-                        <p style="color: var(--gray-500); font-size: 0.9rem;">{{ service.specification }}</p>
-                        {% endif %}
+                        {% if service.specification %}<p style="color: var(--gray-500); font-size: 0.9rem;">{{ service.specification }}</p>{% endif %}
                     </div>
                 </div>
                 {% endfor %}
@@ -800,7 +329,6 @@
     </div>
 </section>
 
-<!-- ═══ QUOTE FORM ══════════════════════════════════════ -->
 <section class="quote-section" id="inquiry">
     <div class="container">
         <div class="section-header-block center" style="margin-bottom:2.5rem;">
@@ -810,103 +338,54 @@
         </div>
 
         <div class="quote-card">
-            <!-- Sidebar -->
             <div class="quote-sidebar">
                 <div class="qs-inner">
                     <div class="qs-tag"><i class="fas fa-envelope-open-text"></i> Contact Us</div>
                     <h3 class="qs-title">Let's Discuss Your Requirements</h3>
                     <p class="qs-desc">Whether standard sizes or custom pharmaceutical packaging, our team is ready to help you find the right solution.</p>
-
                     <div class="qs-contact-item">
                         <div class="qs-contact-icon"><i class="fas fa-map-marker-alt"></i></div>
-                        <div>
-                            <div class="qs-contact-label">Address</div>
-                            <div class="qs-contact-val">Malik Arshad Farm House (Malik Akram Street) Darbar e Kareemi, Stop; G.T Road Wah Cantt, Rawalpindi, Punjab, 47000</div>
-                        </div>
+                        <div><div class="qs-contact-label">Address</div><div class="qs-contact-val">Malik Arshad Farm House (Malik Akram Street) Darbar e Kareemi, Stop; G.T Road Wah Cantt, Rawalpindi, Punjab, 47000</div></div>
                     </div>
                     <div class="qs-contact-item">
                         <div class="qs-contact-icon"><i class="fas fa-phone"></i></div>
-                        <div>
-                            <div class="qs-contact-label">Phone</div>
-                            <div class="qs-contact-val">0340-5336238<br>0331-9980906</div>
-                        </div>
+                        <div><div class="qs-contact-label">Phone</div><div class="qs-contact-val">0340-5336238<br>0331-9980906</div></div>
                     </div>
                     <div class="qs-contact-item">
                         <div class="qs-contact-icon"><i class="fas fa-envelope"></i></div>
-                        <div>
-                            <div class="qs-contact-label">Email</div>
-                            <div class="qs-contact-val">jarraljunaid4@gmail.com</div>
-                        </div>
+                        <div><div class="qs-contact-label">Email</div><div class="qs-contact-val">jarraljunaid4@gmail.com</div></div>
                     </div>
                     <div class="qs-contact-item">
                         <div class="qs-contact-icon"><i class="fas fa-clock"></i></div>
-                        <div>
-                            <div class="qs-contact-label">Working Hours</div>
-                            <div class="qs-contact-val">Mon – Sat · 9 AM – 6 PM</div>
-                        </div>
+                        <div><div class="qs-contact-label">Working Hours</div><div class="qs-contact-val">Mon – Sat · 9 AM – 6 PM</div></div>
                     </div>
                     <hr class="qs-divider">
-                    <p style="color:rgba(255,255,255,.4);font-size:.8rem;">
-                        <i class="fas fa-shield-halved" style="color:var(--gold-lt);margin-right:.4rem;"></i>
-                        Your information is kept confidential and never shared with third parties.
-                    </p>
+                    <p style="color:rgba(255,255,255,.4);font-size:.8rem;"><i class="fas fa-shield-halved" style="color:var(--gold-lt);margin-right:.4rem;"></i>Your information is kept confidential and never shared with third parties.</p>
                 </div>
             </div>
 
-            <!-- Form -->
             <div class="quote-form-wrap">
                 <div class="qf-title">Send Your Inquiry</div>
                 <div class="qf-subtitle">All fields marked <span class="required">*</span> are required.</div>
-
                 <form id="inquiryForm" action="{{ url_for('main.submit_inquiry') }}" method="POST">
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Your Name <span class="required">*</span></label>
-                            <input type="text" name="customer_name" class="form-control" placeholder="Full name" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Company Name <span class="required">*</span></label>
-                            <input type="text" name="business_name" class="form-control" placeholder="Pharmaceutical company" required>
-                        </div>
+                        <div class="form-group"><label>Your Name <span class="required">*</span></label><input type="text" name="customer_name" class="form-control" placeholder="Full name" required></div>
+                        <div class="form-group"><label>Company Name <span class="required">*</span></label><input type="text" name="business_name" class="form-control" placeholder="Pharmaceutical company" required></div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Phone Number <span class="required">*</span></label>
-                            <input type="tel" name="phone" class="form-control" placeholder="03XX XXXXXXX" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Email Address</label>
-                            <input type="email" name="email" class="form-control" placeholder="you@company.com">
-                        </div>
+                        <div class="form-group"><label>Phone Number <span class="required">*</span></label><input type="tel" name="phone" class="form-control" placeholder="03XX XXXXXXX" required></div>
+                        <div class="form-group"><label>Email Address</label><input type="email" name="email" class="form-control" placeholder="you@company.com"></div>
                     </div>
-
                     <div class="form-group">
                         <label>Select Products &amp; Variants <span class="required">*</span></label>
-                        <p style="font-size:.8rem;color:var(--gray-500);margin-bottom:.75rem;">
-                            <i class="fas fa-info-circle"></i> Click a variant to select it, then enter the quantity needed.
-                        </p>
+                        <p style="font-size:.8rem;color:var(--gray-500);margin-bottom:.75rem;"><i class="fas fa-info-circle"></i> Click a variant to select it, then enter the quantity needed.</p>
                         
-                        <!-- Group products by size in form (1cc → 10cc) -->
                         {% set form_grouped = {} %}
-                        {% for p in products %}
-                            {% if p.product_type != 'service' %}
-                                {% set size = p.name.split(' ')[0] if ' ' in p.name else 'Other' %}
-                                {% if size not in form_grouped %}
-                                    {% set _ = form_grouped.update({size: []}) %}
-                                {% endif %}
-                                {% set _ = form_grouped[size].append(p) %}
-                            {% endif %}
+                        {% for size in sorted_sizes %}
+                            {% set _ = form_grouped.update({size: grouped_by_size[size]}) %}
                         {% endfor %}
                         
-                        {% set form_sorted = [] %}
-                        {% for size in form_grouped.keys() %}
-                            {% set num = size|replace('cc','')|replace('in','')|int %}
-                            {% set _ = form_sorted.append((num, size)) %}
-                        {% endfor %}
-                        {% set form_sorted = form_sorted|sort(attribute=0) %}
-                        
-                        <!-- Display grouped products in form -->
-                        {% for num, size in form_sorted %}
+                        {% for size in sorted_sizes %}
                         <div class="product-group">
                             <h4 class="product-group-title">Glass Ampoule {{ size }}</h4>
                             <p class="product-group-capacity">{{ size|replace('cc','') }}ml capacity</p>
@@ -926,15 +405,8 @@
                         </div>
                         {% endfor %}
                     </div>
-
-                    <div class="form-group">
-                        <label>Additional Requirements</label>
-                        <textarea name="notes" class="form-control" rows="3" placeholder="Specific sizes, printing needs, delivery timeline, payment terms..."></textarea>
-                    </div>
-
-                    <button type="submit" class="btn-submit" id="submitBtn">
-                        <i class="fas fa-paper-plane"></i> Submit Inquiry
-                    </button>
+                    <div class="form-group"><label>Additional Requirements</label><textarea name="notes" class="form-control" rows="3" placeholder="Specific sizes, printing needs, delivery timeline, payment terms..."></textarea></div>
+                    <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-paper-plane"></i> Submit Inquiry</button>
                     <p class="form-note"><i class="fas fa-lock"></i> Your data is secure and confidential</p>
                 </form>
             </div>
@@ -942,167 +414,55 @@
     </div>
 </section>
 
-<!-- ═══ FOOTER ══════════════════════════════════════════ -->
 <footer class="footer">
     <div class="container">
         <div class="footer-grid">
-            <div>
-                <div class="footer-brand">
-                    <img src="/static/logo.png" alt="Ampoulex">
-                </div>
-                <p class="footer-about">Pakistan's leading manufacturer of pharmaceutical-grade glass ampoules. Precision crafted, ISO certified, reliably delivered.</p>
-                <div class="footer-social">
-                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-whatsapp"></i></a>
-                </div>
-            </div>
-            <div>
-                <div class="footer-heading">Quick Links</div>
-                <ul class="footer-links">
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#features">Why Choose Us</a></li>
-                    <li><a href="#products">Products</a></li>
-                    <li><a href="#inquiry">Get a Quote</a></li>
-                </ul>
-            </div>
-            <div>
-                <div class="footer-heading">Products</div>
-                <ul class="footer-links">
-                    <li><a href="#products">Clear Glass Ampoules</a></li>
-                    <li><a href="#products">Amber Glass Ampoules</a></li>
-                    <li><a href="#products">Printed Ampoules</a></li>
-                    <li><a href="#products">White Label Services</a></li>
-                </ul>
-            </div>
-            <div>
-                <div class="footer-heading">Contact</div>
-                <ul class="footer-links">
-                    <li class="no-link"><i class="fas fa-map-marker-alt"></i> Plot 45, Industrial Area, Lahore</li>
-                    <li class="no-link"><i class="fas fa-phone"></i> +92 42 12345678</li>
-                    <li class="no-link"><i class="fas fa-envelope"></i> info@ampoulex.pk</li>
-                    <li class="no-link"><i class="fas fa-clock"></i> Mon–Sat, 9AM–6PM</li>
-                </ul>
-            </div>
+            <div><div class="footer-brand"><img src="/static/logo.png" alt="Ampoulex"></div><p class="footer-about">Pakistan's leading manufacturer of pharmaceutical-grade glass ampoules. Precision crafted, ISO certified, reliably delivered.</p><div class="footer-social"><a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a><a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a><a href="#" class="social-link"><i class="fab fa-whatsapp"></i></a></div></div>
+            <div><div class="footer-heading">Quick Links</div><ul class="footer-links"><li><a href="#home">Home</a></li><li><a href="#features">Why Choose Us</a></li><li><a href="#products">Products</a></li><li><a href="#inquiry">Get a Quote</a></li></ul></div>
+            <div><div class="footer-heading">Products</div><ul class="footer-links"><li><a href="#products">Clear Glass Ampoules</a></li><li><a href="#products">Amber Glass Ampoules</a></li><li><a href="#products">Printed Ampoules</a></li><li><a href="#products">White Label Services</a></li></ul></div>
+            <div><div class="footer-heading">Contact</div><ul class="footer-links"><li class="no-link"><i class="fas fa-map-marker-alt"></i> Plot 45, Industrial Area, Lahore</li><li class="no-link"><i class="fas fa-phone"></i> +92 42 12345678</li><li class="no-link"><i class="fas fa-envelope"></i> info@ampoulex.pk</li><li class="no-link"><i class="fas fa-clock"></i> Mon–Sat, 9AM–6PM</li></ul></div>
         </div>
-        <div class="footer-bottom">
-            <p>&copy; {{ current_year }} <strong>Ampoulex</strong>. All rights reserved. &nbsp;·&nbsp; Manufactured in Pakistan</p>
-        </div>
+        <div class="footer-bottom"><p>&copy; {{ current_year }} <strong>Ampoulex</strong>. All rights reserved. &nbsp;·&nbsp; Manufactured in Pakistan</p></div>
     </div>
 </footer>
 
-<!-- Toast -->
-<div id="toast" class="toast">
-    <div class="toast-icon" id="toast-icon"><i class="fas fa-check-circle" style="color:var(--green);"></i></div>
-    <div>
-        <div class="toast-title" id="toast-title">Success!</div>
-        <div class="toast-msg" id="toast-message"></div>
-    </div>
-</div>
+<div id="toast" class="toast"><div class="toast-icon" id="toast-icon"><i class="fas fa-check-circle" style="color:var(--green);"></i></div><div><div class="toast-title" id="toast-title">Success!</div><div class="toast-msg" id="toast-message"></div></div></div>
 
 <script>
-    /* Burger menu */
     const burger = document.getElementById('burger');
     const navLinks = document.getElementById('navLinks');
-    burger.addEventListener('click', () => {
-        burger.classList.toggle('open');
-        navLinks.classList.toggle('open');
-    });
-    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
-        burger.classList.remove('open');
-        navLinks.classList.remove('open');
-    }));
-
-    /* Navbar scroll */
-    window.addEventListener('scroll', () => {
-        document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
-    });
-
-    /* Toggle quantity field */
+    burger.addEventListener('click', () => { burger.classList.toggle('open'); navLinks.classList.toggle('open'); });
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { burger.classList.remove('open'); navLinks.classList.remove('open'); }));
+    window.addEventListener('scroll', () => { document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50); });
     function toggleQty(vid) {
         const chk = document.getElementById(`inq-${vid}`);
         const qty = document.getElementById(`qty-${vid}`);
         const pid = document.getElementById(`pid-${vid}`);
         const label = document.querySelector(`label[for="inq-${vid}"]`);
-        if (chk.checked) {
-            qty.style.display = 'block';
-            qty.required = true;
-            pid.disabled = false;
-            label.style.borderColor = 'var(--navy)';
-            label.style.background = 'rgba(12,35,64,.08)';
-            setTimeout(() => qty.focus(), 100);
-        } else {
-            qty.style.display = 'none';
-            qty.required = false;
-            qty.value = '';
-            pid.disabled = true;
-            label.style.borderColor = '';
-            label.style.background = '';
-        }
+        if (chk.checked) { qty.style.display = 'block'; qty.required = true; pid.disabled = false; label.style.borderColor = 'var(--navy)'; label.style.background = 'rgba(12,35,64,.08)'; setTimeout(() => qty.focus(), 100); }
+        else { qty.style.display = 'none'; qty.required = false; qty.value = ''; pid.disabled = true; label.style.borderColor = ''; label.style.background = ''; }
     }
-
-    /* Clear error on input */
-    document.querySelectorAll('.qty-input, .form-control').forEach(input => {
-        input.addEventListener('input', () => input.classList.remove('error'));
-    });
-
-    /* Form submission */
+    document.querySelectorAll('.qty-input, .form-control').forEach(input => { input.addEventListener('input', () => input.classList.remove('error')); });
     document.getElementById('inquiryForm').addEventListener('submit', function(e) {
         const btn = document.getElementById('submitBtn');
         const checked = document.querySelectorAll('.variant-checkbox:checked');
-        if (checked.length === 0) {
-            e.preventDefault();
-            showToast('Please select a product', 'Choose at least one variant before submitting.', 'error');
-            return;
-        }
+        if (checked.length === 0) { e.preventDefault(); showToast('Please select a product', 'Choose at least one variant before submitting.', 'error'); return; }
         let hasError = false;
-        checked.forEach(chk => {
-            const vid = chk.getAttribute('data-vid');
-            const qty = document.getElementById(`qty-${vid}`);
-            if (!qty.value || parseInt(qty.value) < 1) {
-                hasError = true;
-                qty.classList.add('error');
-            }
-        });
-        if (hasError) {
-            e.preventDefault();
-            showToast('Quantity missing', 'Enter a valid quantity for all selected variants.', 'error');
-            return;
-        }
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner"></span> Submitting...';
+        checked.forEach(chk => { const vid = chk.getAttribute('data-vid'); const qty = document.getElementById(`qty-${vid}`); if (!qty.value || parseInt(qty.value) < 1) { hasError = true; qty.classList.add('error'); } });
+        if (hasError) { e.preventDefault(); showToast('Quantity missing', 'Enter a valid quantity for all selected variants.', 'error'); return; }
+        btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Submitting...';
     });
-
-    /* Toast */
     function showToast(title, message, type = 'success') {
         const toast = document.getElementById('toast');
         const icon = document.getElementById('toast-icon');
         document.getElementById('toast-title').textContent = title;
         document.getElementById('toast-message').textContent = message;
-        icon.innerHTML = type === 'success'
-            ? '<i class="fas fa-check-circle" style="color:var(--green);font-size:1.4rem;"></i>'
-            : '<i class="fas fa-exclamation-circle" style="color:#e53e3e;font-size:1.4rem;"></i>';
+        icon.innerHTML = type === 'success' ? '<i class="fas fa-check-circle" style="color:var(--green);font-size:1.4rem;"></i>' : '<i class="fas fa-exclamation-circle" style="color:#e53e3e;font-size:1.4rem;"></i>';
         toast.className = `toast toast-${type} show`;
         setTimeout(() => toast.classList.remove('show'), 5000);
     }
-
-    /* Flask flash messages */
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                showToast('{{ category.title() }}', '{{ message }}', '{{ category }}');
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    /* Smooth scroll */
-    document.querySelectorAll('a[href^="#"]').forEach(a => {
-        a.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-    });
+    {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}showToast('{{ category.title() }}', '{{ message }}', '{{ category }}');{% endfor %}{% endif %}{% endwith %}
+    document.querySelectorAll('a[href^="#"]').forEach(a => { a.addEventListener('click', function(e) { e.preventDefault(); const target = document.querySelector(this.getAttribute('href')); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); });
 </script>
 </body>
 </html>
