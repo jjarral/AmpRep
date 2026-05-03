@@ -701,10 +701,7 @@ def product_catalogue():
             grouped_products[capacity].append(product)
     
     # Sort by capacity numerically (FIXED)
-    sorted_capacities = sorted(
-        grouped_products.keys(), 
-        key=lambda x: int(x.replace('CC', ''))  # ✅ Case matches
-    )
+    sorted_capacities = sorted(grouped_products.keys(), key=lambda x: int(''.join(filter(str.isdigit, x))))
     
     return render_template('customer/catalogue.html', 
                           grouped_products=grouped_products,
