@@ -383,5 +383,20 @@ def create_app():
     app.logger.info("🗺️ Registering routes...")
     app.logger.info(f"📋 Total templates documented: {TOTAL_TEMPLATES}")
     app.logger.info("✅ Routes registered successfully.")
-    
+        # ────────────────────────────────────────────────────────────────
+    # 🌐 Inject Business Settings into ALL templates automatically
+    # ───────────────────────────────────────────────────────────────
+    @app.context_processor
+    def inject_business_settings():
+        try:
+            settings = BusinessSettings.query.first()
+            if not settings:
+                # Create default if table is empty
+                settings = BusinessSettings()
+                db.session.add(settings)
+                db.session.commit()
+            return dict(business=settings)
+        except Exception:
+            # Fallback during first deploy/migration
+            return dict(business=BusinessSettings())
     return app
