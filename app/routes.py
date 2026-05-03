@@ -3078,40 +3078,29 @@ def generate_product_labels(id):
 
 @main_bp.route('/settings', methods=['GET', 'POST'])
 @login_required
+@main_bp.route('/settings', methods=['GET', 'POST'])
+@login_required
 def settings():
+    settings = BusinessSettings.query.first()
+    if not settings:
+        settings = BusinessSettings()
+        db.session.add(settings)
+        db.session.commit()
+
     if request.method == 'POST':
-        try:
-            settings_data = {
-                'company_name': request.form.get('company_name', ''),
-                'company_ntn': request.form.get('company_ntn', ''),
-                'company_gst': request.form.get('company_gst', ''),
-                'company_secp': request.form.get('company_secp', ''),
-                'company_drap': request.form.get('company_drap', ''),
-                'company_iso': request.form.get('company_iso', ''),
-                'company_address': request.form.get('company_address', ''),
-                'company_phone': request.form.get('company_phone', ''),
-                'company_email': request.form.get('company_email', ''),
-                'company_website': request.form.get('company_website', ''),
-                'invoice_footer': request.form.get('invoice_footer', '')
-            }
-            
-            for key, value in settings_data.items():
-                setting = CompanySetting.query.filter_by(key=key).first()
-                if setting:
-                    setting.value = value
-                else:
-                    setting = CompanySetting(key=key, value=value)
-                    db.session.add(setting)
-            
-            db.session.commit()
-            flash('Settings updated successfully!', 'success')
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+        settings.company_name = request.form.get('company_name', settings.company_name)
+        settings.phone_1 = request.form.get('phone_1', settings.phone_1)
+        settings.phone_2 = request.form.get('phone_2', settings.phone_2)
+        settings.email = request.form.get('email', settings.email)
+        settings.website = request.form.get('website', settings.website)
+        settings.address = request.form.get('address', settings.address)
+        settings.ntn = request.form.get('ntn', settings.ntn)
+        settings.strn = request.form.get('strn', settings.strn)
         
+        db.session.commit()
+        flash('✅ Business settings updated successfully!', 'success')
         return redirect(url_for('main.settings'))
-    
-    settings = {s.key: s.value for s in CompanySetting.query.all()}
+
     return render_template('settings/index.html', settings=settings)
 
 
