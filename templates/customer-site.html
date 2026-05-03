@@ -62,7 +62,7 @@
         .section-header-block.center { text-align: center; }
         .section-header-block.center .section-subtitle { margin: 0 auto; }
 
-        /* ── Buttons ────────────────────────────── */
+        /* ── Buttons ───────────────────────────── */
         .btn {
             display: inline-flex; align-items: center; gap: .5rem;
             font-weight: 600; border-radius: 50px;
@@ -264,7 +264,7 @@
         .products-section { padding: 6rem 0; background: var(--white); }
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
             gap: 2rem;
         }
         .product-card {
@@ -274,65 +274,63 @@
         }
         .product-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
         .product-thumb {
-            height: 160px;
+            height: 140px;
             background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
-            display: flex; align-items: center; justify-content: center; gap: 1rem;
+            display: flex; align-items: center; justify-content: center;
             position: relative; overflow: hidden;
         }
-        .product-thumb::after {
-            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
-            background: linear-gradient(transparent, rgba(0,0,0,.15));
-        }
-        .mini-amp {
-            display: flex; flex-direction: column; align-items: center;
-        }
-        .mini-amp-cap { width: 10px; height: 7px; background: var(--gold); border-radius: 3px 3px 0 0; }
-        .mini-amp-neck { width: 4px; height: 6px; background: rgba(200,220,255,.4); }
-        .mini-amp-body {
-            background: rgba(200,225,255,.35);
-            border: 1px solid rgba(200,225,255,.5);
-            border-radius: 4px 4px 8px 8px;
-        }
-        .mini-amp-body.am { background: rgba(245,185,80,.35); border-color: rgba(245,185,80,.5); }
-        .product-type-badge {
-            position: absolute; top: 1rem; right: 1rem; z-index: 1;
-            background: rgba(200,168,75,.2); border: 1px solid var(--gold);
-            color: var(--gold-lt); padding: .25rem .7rem; border-radius: 50px;
-            font-size: .7rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+        .product-thumb i {
+            font-size: 4rem;
+            color: rgba(255,255,255,0.3);
         }
         .product-body { padding: 1.75rem; }
-        .product-name { font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: .35rem; }
-        .product-spec { color: var(--gray-500); font-size: .88rem; margin-bottom: .25rem; }
-        .product-spec i { color: var(--gold); margin-right: .25rem; width: 14px; }
-        .variants-divider { border: none; border-top: 1px solid var(--gray-100); margin: 1.25rem 0 1rem; }
-        .variants-label { font-size: .78rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--gray-500); margin-bottom: .75rem; }
-        .variants-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: .6rem;
+        .product-name { font-size: 1.25rem; font-weight: 700; color: var(--navy); margin-bottom: .5rem; }
+        .product-capacity { color: var(--gray-500); font-size: .9rem; margin-bottom: 1.25rem; }
+        .variants-label {
+            font-size: .8rem;
+            font-weight: 600;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            color: var(--gray-500);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
-        .variant-checkbox { display: none; }
-        .variant-label {
-            display: block; padding: .65rem .75rem;
-            border: 1.5px solid var(--gray-100); border-radius: var(--radius);
-            cursor: pointer; text-align: center; transition: var(--transition);
+        .variants-label i { color: var(--gold); }
+        .variants-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+        .variant-option {
+            padding: 0.75rem;
+            border: 1.5px solid var(--gray-100);
+            border-radius: var(--radius);
+            text-align: center;
+            transition: var(--transition);
             background: var(--off-white);
         }
-        .variant-label:hover { border-color: var(--navy-lt); background: rgba(12,35,64,.04); }
-        .variant-checkbox:checked + .variant-label {
-            border-color: var(--navy); background: rgba(12,35,64,.07);
+        .variant-option:hover {
+            border-color: var(--navy-lt);
+            background: rgba(12,35,64,.04);
         }
-        .color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: .3rem; border: 1px solid var(--gray-300); }
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.4rem;
+            border: 1px solid var(--gray-300);
+            vertical-align: middle;
+        }
         .color-transparent { background: #c8e8f8; }
         .color-amber { background: #f59e0b; }
-        .variant-price { font-size: .78rem; font-weight: 700; color: var(--navy); margin-top: .3rem; }
-        .qty-input {
-            display: none; width: 100%; margin-top: .45rem; padding: .45rem .6rem;
-            border: 1.5px solid var(--navy-lt); border-radius: 8px;
-            text-align: center; font-family: inherit; font-size: .88rem;
-            background: var(--white);
+        .variant-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gray-700);
         }
-        .qty-input.show { display: block; }
-        .qty-input.error { border-color: #e53e3e; }
 
         /* ── Quote Section ────────────────────────── */
         .quote-section { padding: 6rem 0; background: var(--off-white); }
@@ -405,8 +403,8 @@
             background: var(--off-white); border: 1px solid var(--gray-100);
             border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem;
         }
-        .product-group-title { font-size: .95rem; font-weight: 700; color: var(--navy); margin-bottom: .25rem; }
-        .product-group-spec { font-size: .82rem; color: var(--gray-500); }
+        .product-group-title { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem; }
+        .product-group-capacity { font-size: 0.85rem; color: var(--gray-500); margin-bottom: 0.75rem; }
         .btn-submit {
             width: 100%; padding: 1rem;
             background: var(--navy); color: var(--white);
@@ -494,6 +492,7 @@
             .form-row { grid-template-columns: 1fr; gap: 0; }
             .quote-form-wrap { padding: 2rem 1.5rem; }
             .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .products-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -510,7 +509,7 @@
             <li><a href="{{ url_for('main.index') }}">Home</a></li>
             <li><a href="#features">Why Us</a></li>
             <li><a href="#products">Product Catalogue</a></li>
-            <li><a href="#inquiry">Request Quote</a></li>
+            <li><a href="#inquiry" class="nav-cta">Request Quote</a></li>
         </ul>
         
         <button class="burger" id="burger" aria-label="Menu">
@@ -522,6 +521,7 @@
 <!-- ═══ HERO ══════════════════════════════════════════ -->
 <section class="hero" id="home">
     <div class="hero-grid">
+        <!-- Text -->
         <div class="hero-text">
             <div class="hero-eyebrow">
                 <i class="fas fa-certificate"></i>
@@ -561,6 +561,7 @@
             </div>
         </div>
 
+        <!-- Visual -->
         <div class="hero-visual">
             <div class="ampoule-showcase">
                 <div class="showcase-title">Our Product Range</div>
@@ -664,8 +665,7 @@
     </div>
 </section>
 
-<!-- ═══ PRODUCTS ════════════════════════════════════════ -->
-<!-- ═══ PRODUCTS ════════════════════════════════════════ -->
+<!-- ═══ PRODUCTS ═══════════════════════════════════════ -->
 <section class="products-section" id="products">
     <div class="container">
         <div class="section-header-block center">
@@ -686,7 +686,7 @@
             {% endif %}
         {% endfor %}
         
-        <!-- Sort sizes numerically -->
+        <!-- Sort sizes numerically (1cc → 10cc) -->
         {% set sorted_sizes = [] %}
         {% for size in grouped_by_size.keys() %}
             {% set num = size|replace('cc','')|replace('in','')|int %}
@@ -698,30 +698,23 @@
             {% for num, size in sorted_sizes %}
             <div class="product-card">
                 <div class="product-thumb">
-                    <i class="fas fa-flask" style="font-size: 4rem; color: rgba(255,255,255,0.3);"></i>
+                    <i class="fas fa-flask"></i>
                 </div>
                 <div class="product-body">
                     <h3 class="product-name">Glass Ampoule {{ size }}</h3>
-                    <p style="color: var(--gray-500); font-size: 0.9rem; margin-bottom: 1rem;">
-                        {{ size|replace('cc','') }}ml capacity
-                    </p>
+                    <p class="product-capacity">{{ size|replace('cc','') }}ml capacity</p>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <span style="color: var(--gray-500); font-size: 0.85rem;">
-                            <i class="fas fa-swatchbook" style="margin-right: 0.3rem;"></i>Available Variants:
-                        </span>
+                    <div class="variants-label">
+                        <i class="fas fa-swatchbook"></i>Available Variants:
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="variants-grid">
                         {% for product in grouped_by_size[size] %}
-                        <div style="text-align: center; padding: 0.75rem; background: var(--off-white); border-radius: 8px;">
-                            <div style="margin-bottom: 0.5rem;">
+                        <div class="variant-option">
+                            <span class="variant-name">
                                 <span class="color-dot color-{% if 'amber' in product.color|lower %}amber{% else %}transparent{% endif %}"></span>
-                                <span style="font-size: 0.85rem; font-weight: 600;">{{ product.color }}</span>
-                            </div>
-                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--navy);">
-                                PKR {{ "%.2f"|format(product.base_price) }}
-                            </div>
+                                {{ product.color }}
+                            </span>
                         </div>
                         {% endfor %}
                     </div>
@@ -741,43 +734,12 @@
                 {% for service in services %}
                 <div class="product-card">
                     <div class="product-thumb" style="background: linear-gradient(135deg, var(--gold) 0%, var(--gold-lt) 100%);">
-                        <i class="fas fa-paint-brush" style="font-size: 4rem; color: rgba(255,255,255,0.6);"></i>
+                        <i class="fas fa-paint-brush" style="color: rgba(255,255,255,0.6);"></i>
                     </div>
                     <div class="product-body">
                         <h3 class="product-name">{{ service.name }}</h3>
                         {% if service.specification %}
                         <p style="color: var(--gray-500); font-size: 0.9rem;">{{ service.specification }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</section>
-        
-        <!-- Services section -->
-        {% if 'services' in grouped %}
-        <div class="product-group" style="margin-top: 4rem;">
-            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--gold);">
-                Additional Services
-            </h3>
-            <div class="products-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
-                {% for product in grouped['services'] %}
-                <div class="product-card">
-                    <div class="product-thumb" style="background: linear-gradient(135deg, var(--gold) 0%, var(--gold-lt) 100%);">
-                        <span class="product-type-badge" style="background: rgba(12,35,64,.2); border-color: var(--navy); color: var(--navy);">
-                            Service
-                        </span>
-                        <i class="fas fa-paint-brush" style="font-size:3.5rem;color:rgba(255,255,255,.6);"></i>
-                    </div>
-                    <div class="product-body">
-                        <div class="product-name">{{ product.name }}</div>
-                        {% if product.specification %}
-                        <div class="product-spec">
-                            <i class="fas fa-info-circle"></i>{{ product.specification }}
-                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -888,26 +850,25 @@
                         
                         {% set form_sorted = [] %}
                         {% for size in form_grouped.keys() %}
-                            {% set num = size|replace('cc','')|int %}
+                            {% set num = size|replace('cc','')|replace('in','')|int %}
                             {% set _ = form_sorted.append((num, size)) %}
                         {% endfor %}
                         {% set form_sorted = form_sorted|sort(attribute=0) %}
                         
                         <!-- Display grouped products in form -->
                         {% for num, size in form_sorted %}
-                        <div style="margin-bottom: 1.5rem; padding: 1rem; background: var(--off-white); border-radius: var(--radius); border: 1px solid var(--gray-100);">
-                            <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 0.75rem;">
-                                {{ size }} Ampoules
-                            </h4>
-                            <div class="variants-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+                        <div class="product-group">
+                            <h4 class="product-group-title">Glass Ampoule {{ size }}</h4>
+                            <p class="product-group-capacity">{{ size|replace('cc','') }}ml capacity</p>
+                            <div class="variants-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
                                 {% for product in form_grouped[size] %}
                                 <div>
                                     <input type="checkbox" id="inq-{{ product.id }}" class="variant-checkbox" data-vid="{{ product.id }}" onchange="toggleQty({{ product.id }})">
-                                    <label for="inq-{{ product.id }}" class="variant-label">
+                                    <label for="inq-{{ product.id }}" class="variant-label" style="display:block; width:100%; padding:0.75rem; border:1.5px solid var(--gray-100); border-radius:var(--radius); cursor:pointer; text-align:center; transition:var(--transition); background:var(--off-white);">
                                         <span class="color-dot color-{% if product.color|lower == 'amber' %}amber{% else %}transparent{% endif %}"></span>
-                                        <span style="font-size:.82rem;font-weight:600;">{{ product.color }}</span>
+                                        <span style="font-size:.85rem;font-weight:600;">{{ product.color }}</span>
                                     </label>
-                                    <input type="number" id="qty-{{ product.id }}" name="qty_{{ product.id }}" class="form-control qty-input" placeholder="Qty" min="1" style="display:none;">
+                                    <input type="number" id="qty-{{ product.id }}" name="qty_{{ product.id }}" class="form-control" placeholder="Qty" min="1" style="display:none; margin-top:0.5rem;">
                                     <input type="hidden" name="product_ids" id="pid-{{ product.id }}" value="{{ product.id }}" disabled>
                                 </div>
                                 {% endfor %}
@@ -1031,7 +992,7 @@
     }
 
     /* Clear error on input */
-    document.querySelectorAll('.qty-input').forEach(input => {
+    document.querySelectorAll('.qty-input, .form-control').forEach(input => {
         input.addEventListener('input', () => input.classList.remove('error'));
     });
 
