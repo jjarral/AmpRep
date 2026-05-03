@@ -387,17 +387,33 @@ def create_app():
         # ────────────────────────────────────────────────────────────────
     # 🌐 Inject Business Settings into ALL templates automatically
     # ───────────────────────────────────────────────────────────────
-    @app.context_processor
-    def inject_business_settings():
-        try:
-            settings = BusinessSettings.query.first()
-            if not settings:
-                # Create default if table is empty
-                settings = BusinessSettings()
-                db.session.add(settings)
-                db.session.commit()
-            return dict(business=settings)
-        except Exception:
-            # Fallback during first deploy/migration
-            return dict(business=BusinessSettings())
+    # ────────────────────────────────────────────────────────────────
+# 🌐 Inject Business Settings into ALL templates automatically
+# ───────────────────────────────────────────────────────────────
+@app.context_processor
+def inject_business_settings():
+    try:
+        # 🔥 LAZY IMPORT: Only import when function runs
+        from .models import BusinessSettings
+        
+        settings = BusinessSettings.query.first()
+        if not settings:
+            settings = BusinessSettings()
+            db.session.add(settings)
+            db.session.commit()
+        return dict(business=settings)
+    except Exception as e:
+        # Fallback during first deploy/migration
+        app.logger.warning(f"⚠️ Business settings fallback: {e}")
+        # Return a simple object with default values
+        class DefaultSettings:
+            company_name = 'AMPOULEX'
+            phone_1 = '0340-5336238'
+            phone_2 = '0331-9980906'
+            email = 'jarraljunaid4@gmail.com'
+            website = 'www.ampoulex.com'
+            address = 'Malik Arshad Farm House (Malik Akram Street) Darbar e Kareemi, Stop; G.T Road Wah Cantt, Rawalpindi, Punjab, 47000'
+            ntn = '2812596-7'
+            strn = '37406-5984131-3'
+        return dict(business=DefaultSettings())
     return app
