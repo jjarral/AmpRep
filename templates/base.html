@@ -5,800 +5,363 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Ampoulex{% endblock %} | Business Management</title>
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js" defer></script>
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     
-    <!-- ═══ Ampoulex Theme: Navy + Gold ═══ -->
     <style>
         :root {
-            --ax-navy:     #0c2340;
-            --ax-navy-md:  #163257;
-            --ax-navy-lt:  #1e4a7c;
-            --ax-gold:     #c8a84b;
-            --ax-gold-lt:  #e6cc7a;
-            --ax-green:    #0d8a5f;
-            --ax-red:      #dc2626;
-            --ax-off-white:#f6f8fc;
-            --ax-gray-100: #eef1f7;
-            --ax-gray-300: #ccd3df;
-            --ax-gray-500: #6b7a99;
-            --ax-gray-700: #2d3a52;
-            --ax-text:     #1a243a;
-            --ax-radius:   10px;
-            --ax-shadow:   0 2px 12px rgba(12,35,64,.07);
-            --ax-shadow-md:0 6px 24px rgba(12,35,64,.12);
-            --ax-navbar-h: 57px;
+            --ax-navy: #0c2340; --ax-navy-md: #163257; --ax-navy-lt: #1e4a7c;
+            --ax-gold: #c8a84b; --ax-gold-lt: #e6cc7a; --ax-green: #0d8a5f;
+            --ax-red: #dc2626; --ax-off-white: #f6f8fc; --ax-gray-100: #eef1f7;
+            --ax-gray-300: #ccd3df; --ax-gray-500: #6b7a99; --ax-gray-700: #2d3a52;
+            --ax-text: #1a243a; --ax-radius: 10px; --ax-shadow: 0 2px 12px rgba(12,35,64,.07);
+            --ax-shadow-md: 0 6px 24px rgba(12,35,64,.12);
         }
-
         body, .wrapper { font-family: 'Inter', sans-serif !important; }
-        h1,h2,h3,h4,h5,h6,.card-title,.info-box-text,.info-box-number,.small-box .inner h3 { font-family: 'Inter', sans-serif !important; }
-
-        /* ── Top Navbar ─────────────────────── */
-        .main-header.navbar {
-            position: sticky !important; top: 0 !important; z-index: 1030 !important;
-            background: var(--ax-navy) !important;
-            border: none !important;
-            box-shadow: 0 2px 16px rgba(12,35,64,.25) !important;
-        }
-        .main-header .nav-link { color: rgba(255,255,255,.75) !important; font-size: .88rem; font-weight: 500; }
-        .main-header .nav-link:hover { color: var(--ax-gold-lt) !important; }
-        .main-header .nav-link i { color: rgba(255,255,255,.55); }
-        .main-header .nav-link:hover i { color: var(--ax-gold-lt); }
-        .main-header .badge { font-size: .65rem; }
-
-        /* Dropdown */
-        .main-header .dropdown-menu {
-            border: 1px solid var(--ax-gray-100); border-radius: var(--ax-radius);
-            box-shadow: var(--ax-shadow-md); padding: .35rem 0;
-        }
-        .main-header .dropdown-item { font-size: .88rem; padding: .5rem 1rem; font-weight: 500; }
-        .main-header .dropdown-item:hover { background: var(--ax-off-white); color: var(--ax-navy); }
-        .main-header .dropdown-item.text-danger:hover { background: #fef2f2; }
-
-        /* ── Sidebar ────────────────────────── */
+        
+        /* ── Sidebar: Full Height, Fixed Position ── */
         .main-sidebar {
-            position: fixed !important; height: 100vh !important;
-            overflow-y: auto !important; z-index: 1040 !important; top: var(--ax-navbar-h) !important;
-            background: var(--ax-navy) !important;
+            position: fixed !important; top: 3.5rem !important; bottom: 0 !important;
+            height: calc(100vh - 3.5rem) !important; overflow-y: auto !important;
+            z-index: 1040 !important; background: var(--ax-navy) !important; width: 250px !important;
         }
-        .sidebar-dark-primary .sidebar { background: var(--ax-navy) !important; }
-
-        .brand-link {
-            background: linear-gradient(135deg, #071829 0%, var(--ax-navy) 100%) !important;
-            border-bottom: 1px solid rgba(200,168,75,.15) !important;
-        }
-
-        /* Sidebar scrollbar */
-        .sidebar {
-            overflow-y: auto; scrollbar-width: thin;
-            scrollbar-color: rgba(200,168,75,.2) transparent;
-        }
+        .sidebar { padding-bottom: 2rem !important; }
         .sidebar::-webkit-scrollbar { width: 4px; }
         .sidebar::-webkit-scrollbar-thumb { background: rgba(200,168,75,.2); border-radius: 4px; }
-
-        /* User panel */
-        .user-panel { padding-bottom: 8px !important; margin-bottom: 4px !important; margin-top: 8px !important; }
-        .user-panel .info a { color: var(--ax-gold-lt) !important; font-weight: 600 !important; font-size: .85rem; }
-        .user-panel .info small { color: rgba(255,255,255,.4) !important; }
-
-        /* Nav headers */
+        
+        /* ── Navbar ── */
+        .main-header.navbar {
+            position: sticky !important; top: 0 !important; z-index: 1050 !important;
+            background: var(--ax-navy) !important; border: none !important;
+            box-shadow: 0 2px 16px rgba(12,35,64,.25) !important; height: 3.5rem !important;
+        }
+        .main-header .nav-link { color: rgba(255,255,255,.8) !important; font-size: .9rem; }
+        .main-header .nav-link:hover { color: var(--ax-gold-lt) !important; }
+        
+        /* ── Brand ── */
+        .brand-link {
+            background: linear-gradient(135deg, #071829, var(--ax-navy)) !important;
+            border-bottom: 1px solid rgba(200,168,75,.15) !important;
+            height: 3.5rem !important; display: flex !important; align-items: center !important;
+        }
+        .brand-text { font-size: 1.1rem !important; letter-spacing: 1px !important; color: #fff !important; }
+        
+        /* ── User Panel ── */
+        .user-panel { padding: 10px 15px !important; border-bottom: 1px solid rgba(255,255,255,.1) !important; }
+        .user-panel .info a { color: var(--ax-gold-lt) !important; font-weight: 600 !important; }
+        
+        /* ── Navigation ── */
         .nav-sidebar .nav-header {
-            padding: 12px 10px 4px 14px !important;
-            font-size: 10px !important; letter-spacing: .1em !important;
-            color: var(--ax-gold) !important; font-weight: 700 !important;
+            padding: 12px 15px 6px !important; font-size: 10px !important; letter-spacing: .1em !important;
+            color: var(--ax-gold) !important; font-weight: 700 !important; text-transform: uppercase;
         }
-
-        /* Nav links */
         .nav-sidebar .nav-link {
-            padding: 6px 10px 6px 15px !important; font-size: 13px !important;
-            color: rgba(255,255,255,.7) !important; border-radius: 6px !important;
-            margin: 0 8px 1px !important; transition: all .15s !important;
+            padding: 8px 15px !important; font-size: 13px !important; color: rgba(255,255,255,.75) !important;
+            border-radius: 6px !important; margin: 2px 8px !important; transition: all .15s !important;
         }
-        .nav-sidebar .nav-link:hover {
-            background: rgba(255,255,255,.06) !important; color: #fff !important;
+        .nav-sidebar .nav-link:hover { background: rgba(255,255,255,.08) !important; color: #fff !important; }
+        .nav-sidebar .nav-link.active,
+        .nav-sidebar > .nav-item > .nav-link.active {
+            background: rgba(200,168,75,.15) !important; color: var(--ax-gold-lt) !important;
         }
-        .nav-sidebar .nav-link.active {
-            background: rgba(200,168,75,.15) !important;
-            color: var(--ax-gold-lt) !important;
-        }
-        .sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
-            background: rgba(200,168,75,.15) !important;
-            color: var(--ax-gold-lt) !important;
-        }
-        .nav-sidebar .nav-icon {
-            font-size: 13px !important; margin-right: 6px !important;
-            width: 1.2rem !important; color: inherit !important;
-        }
-        .nav-sidebar > .nav-item > .nav-link { margin-bottom: 1px !important; }
-
-        /* Treeview children */
-        .nav-treeview { background: rgba(0,0,0,.12) !important; border-radius: 0 0 6px 6px !important; margin: 0 8px !important; }
-        .nav-treeview .nav-link {
-            padding: 4px 10px 4px 28px !important; font-size: 12.5px !important;
-            color: rgba(255,255,255,.6) !important;
-        }
-        .nav-treeview .nav-link:hover { color: #fff !important; background: rgba(255,255,255,.04) !important; }
-        .nav-treeview .nav-link.active { color: var(--ax-gold-lt) !important; background: rgba(200,168,75,.1) !important; }
-        .nav-treeview .nav-icon { font-size: 11px !important; }
-
-        /* ── Content Area ───────────────────── */
-        .content-wrapper { background: var(--ax-off-white) !important; }
-
+        .nav-sidebar .nav-icon { font-size: 14px !important; margin-right: 8px !important; width: 1.3rem !important; }
+        
+        /* ── Treeview ── */
+        .nav-treeview { background: rgba(0,0,0,.1) !important; border-radius: 0 0 6px 6px !important; margin: 0 8px 4px !important; }
+        .nav-treeview .nav-link { padding: 6px 15px 6px 32px !important; font-size: 12.5px !important; color: rgba(255,255,255,.65) !important; }
+        .nav-treeview .nav-link:hover { color: #fff !important; background: rgba(255,255,255,.05) !important; }
+        .nav-treeview .nav-link.active { color: var(--ax-gold-lt) !important; background: rgba(200,168,75,.12) !important; }
+        
+        /* ── Content Area ── */
+        .content-wrapper { background: var(--ax-off-white) !important; margin-left: 250px !important; min-height: 100vh !important; }
         .content-header {
-            position: sticky; top: var(--ax-navbar-h); z-index: 1020;
-            background: var(--ax-off-white) !important; padding: .85rem 1rem !important;
-            margin-bottom: .75rem; border-bottom: 1px solid var(--ax-gray-100) !important;
+            position: sticky; top: 3.5rem; z-index: 1020; background: var(--ax-off-white) !important;
+            padding: 1rem 1.5rem !important; margin-bottom: 1rem; border-bottom: 1px solid var(--ax-gray-100) !important;
         }
-        .content-header h1 { font-size: 1.3rem !important; font-weight: 700 !important; color: var(--ax-navy) !important; }
-        .content-header .breadcrumb { font-size: .82rem; }
-        .content-header .breadcrumb-item a { color: var(--ax-gold) !important; font-weight: 500; }
-        .content-header .breadcrumb-item.active { color: var(--ax-gray-500); }
-
-        .content { padding: .75rem 1.25rem !important; }
-
-        /* ── Cards ──────────────────────────── */
-        .card {
-            border: 1px solid var(--ax-gray-100) !important;
-            border-radius: var(--ax-radius) !important;
-            box-shadow: var(--ax-shadow) !important;
-        }
-        .card-header {
-            background: #fff !important; border-bottom: 1px solid var(--ax-gray-100) !important;
-            padding: .85rem 1.25rem !important;
-        }
-        .card-header .card-title { font-size: .95rem !important; font-weight: 700 !important; color: var(--ax-navy) !important; }
-        .card-header .card-title i { color: var(--ax-gold); margin-right: .35rem; }
+        .content-header h1 { font-size: 1.4rem !important; font-weight: 700 !important; color: var(--ax-navy) !important; }
+        .content { padding: 1rem 1.5rem !important; }
+        
+        /* ── Cards ── */
+        .card { border: 1px solid var(--ax-gray-100) !important; border-radius: var(--ax-radius) !important; box-shadow: var(--ax-shadow) !important; }
+        .card-header { background: #fff !important; border-bottom: 1px solid var(--ax-gray-100) !important; padding: 1rem 1.25rem !important; }
+        .card-header .card-title { font-size: 1rem !important; font-weight: 700 !important; color: var(--ax-navy) !important; }
         .card-body { padding: 1.25rem !important; }
-        .card-footer { background: var(--ax-off-white) !important; border-top: 1px solid var(--ax-gray-100) !important; }
-
-        /* Card tools */
-        .card-tools .btn-tool { color: var(--ax-gray-500); }
-        .card-tools .btn-tool:hover { color: var(--ax-navy); }
-
-        /* ── Small Boxes (stat cards) ────────── */
-        .small-box { border-radius: var(--ax-radius) !important; overflow: hidden; }
-        .small-box.bg-success { background: linear-gradient(135deg, #0d8a5f, #14b879) !important; }
-        .small-box.bg-primary { background: linear-gradient(135deg, var(--ax-navy), var(--ax-navy-lt)) !important; }
-        .small-box.bg-warning { background: linear-gradient(135deg, #b8941f, var(--ax-gold)) !important; }
-        .small-box.bg-info    { background: linear-gradient(135deg, #0369a1, #0ea5e9) !important; }
-        .small-box .inner h3 { font-weight: 800 !important; }
-        .small-box .small-box-footer { font-weight: 600; font-size: .82rem; }
-
-        /* ── Info Boxes ─────────────────────── */
-        .info-box { border-radius: var(--ax-radius) !important; border: 1px solid var(--ax-gray-100); box-shadow: var(--ax-shadow); }
-
-        /* ── Buttons ────────────────────────── */
-        .btn { font-weight: 600 !important; border-radius: 8px !important; font-size: .88rem !important; transition: all .2s; }
-        .btn-primary {
-            background: var(--ax-navy) !important; border-color: var(--ax-navy) !important; color: #fff !important;
-        }
-        .btn-primary:hover, .btn-primary:focus {
-            background: var(--ax-navy-md) !important; border-color: var(--ax-navy-md) !important;
-            transform: translateY(-1px); box-shadow: 0 4px 12px rgba(12,35,64,.25);
-        }
+        
+        /* ── Buttons ── */
+        .btn-primary { background: var(--ax-navy) !important; border-color: var(--ax-navy) !important; }
+        .btn-primary:hover { background: var(--ax-navy-md) !important; border-color: var(--ax-navy-md) !important; }
         .btn-success { background: var(--ax-green) !important; border-color: var(--ax-green) !important; }
-        .btn-success:hover { background: #0b7a53 !important; border-color: #0b7a53 !important; }
         .btn-warning { background: var(--ax-gold) !important; border-color: var(--ax-gold) !important; color: var(--ax-navy) !important; }
-        .btn-warning:hover { background: var(--ax-gold-lt) !important; border-color: var(--ax-gold-lt) !important; }
-        .btn-danger { background: #dc2626 !important; border-color: #dc2626 !important; }
-        .btn-info { background: var(--ax-navy-lt) !important; border-color: var(--ax-navy-lt) !important; }
-        .btn-outline-primary { color: var(--ax-navy) !important; border-color: var(--ax-navy) !important; }
-        .btn-outline-primary:hover { background: var(--ax-navy) !important; color: #fff !important; }
-        .btn-sm { font-size: .8rem !important; padding: .3rem .75rem !important; }
-
-        /* ── Tables ─────────────────────────── */
-        .table { font-size: .88rem; }
-        .table thead th {
-            background: var(--ax-off-white) !important; border-bottom: 2px solid var(--ax-gray-100) !important;
-            font-size: .78rem; font-weight: 700; text-transform: uppercase;
-            letter-spacing: .05em; color: var(--ax-gray-500) !important; padding: .65rem .75rem;
-        }
-        .table td { padding: .65rem .75rem; vertical-align: middle !important; color: var(--ax-text); border-color: var(--ax-gray-100) !important; }
+        
+        /* ── Tables ── */
+        .table thead th { background: var(--ax-off-white) !important; font-size: .8rem; font-weight: 700; text-transform: uppercase; color: var(--ax-gray-500) !important; }
+        .table td { padding: .75rem; vertical-align: middle !important; border-color: var(--ax-gray-100) !important; }
         .table-striped tbody tr:nth-of-type(odd) { background: rgba(246,248,252,.6) !important; }
-        .table-hover tbody tr:hover { background: rgba(200,168,75,.04) !important; }
-        .table .btn-sm { padding: .2rem .55rem !important; font-size: .75rem !important; }
-
-        /* ── Forms ──────────────────────────── */
-        .form-control {
-            border: 1.5px solid var(--ax-gray-100) !important; border-radius: 8px !important;
-            font-size: .9rem !important; padding: .55rem .85rem !important;
-            transition: border-color .2s, box-shadow .2s;
-        }
-        .form-control:focus {
-            border-color: var(--ax-navy-lt) !important;
-            box-shadow: 0 0 0 3px rgba(22,50,87,.1) !important;
-        }
-        .form-group label { font-size: .85rem; font-weight: 600; color: var(--ax-gray-700); }
-        .custom-select { border: 1.5px solid var(--ax-gray-100) !important; border-radius: 8px !important; }
-        .input-group-text { background: var(--ax-off-white); border-color: var(--ax-gray-100); font-size: .85rem; }
-
-        /* ── Badges & Status ────────────────── */
-        .badge { font-weight: 700; letter-spacing: .03em; font-size: .72rem; }
+        .table-hover tbody tr:hover { background: rgba(200,168,75,.05) !important; }
+        
+        /* ── Forms ── */
+        .form-control { border: 1.5px solid var(--ax-gray-100) !important; border-radius: 8px !important; font-size: .9rem !important; }
+        .form-control:focus { border-color: var(--ax-navy-lt) !important; box-shadow: 0 0 0 3px rgba(22,50,87,.1) !important; }
+        
+        /* ── Badges ── */
         .badge-primary { background: var(--ax-navy) !important; }
         .badge-success { background: var(--ax-green) !important; }
         .badge-warning { background: var(--ax-gold) !important; color: var(--ax-navy) !important; }
-        .badge-info { background: var(--ax-navy-lt) !important; }
         .badge-danger { background: var(--ax-red) !important; }
-
-        .status-badge { padding: 4px 12px; border-radius: 50px; font-size: .72rem; font-weight: 700; letter-spacing: .03em; }
-        .status-new { background: #dbeafe; color: #1e40af; }
-        .status-followup { background: #fef3c7; color: #92400e; }
-        .status-closed { background: #d1fae5; color: #065f46; }
-        .status-converted { background: #ede9fe; color: #6d28d9; }
-
-        .badge-low-stock { background: #fee2e2; color: #dc2626; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
-
-        /* ── Alerts ─────────────────────────── */
-        .alert { border-radius: var(--ax-radius) !important; border: none !important; font-size: .88rem; font-weight: 500; }
-        .alert-success { background: #d1fae5 !important; color: #065f46 !important; }
-        .alert-danger, .alert-error { background: #fee2e2 !important; color: #991b1b !important; }
-        .alert-warning { background: #fef3c7 !important; color: #92400e !important; }
-        .alert-info { background: #dbeafe !important; color: #1e40af !important; }
-
-        /* ── Pagination ─────────────────────── */
-        .page-link { color: var(--ax-navy); font-weight: 600; font-size: .85rem; border-color: var(--ax-gray-100); }
-        .page-item.active .page-link { background: var(--ax-navy) !important; border-color: var(--ax-navy) !important; }
-        .page-link:hover { background: var(--ax-off-white); color: var(--ax-navy-lt); }
-
-        /* ── Modal ──────────────────────────── */
-        .modal-header { background: var(--ax-navy); color: #fff; border-radius: var(--ax-radius) var(--ax-radius) 0 0; }
-        .modal-header .modal-title { font-weight: 700; font-size: 1rem; }
-        .modal-header .close { color: #fff; text-shadow: none; opacity: .7; }
-        .modal-header .close:hover { opacity: 1; }
-        .modal-content { border-radius: var(--ax-radius) !important; border: none; box-shadow: var(--ax-shadow-md); }
-
-        /* ── Footer ─────────────────────────── */
+        
+        /* ── Footer ── */
         .main-footer {
             background: var(--ax-navy) !important; color: rgba(255,255,255,.6) !important;
-            border: none !important; font-size: .82rem; padding: .75rem 1rem;
+            border: none !important; font-size: .85rem; padding: 1rem 1.5rem; margin-left: 250px !important;
         }
-        .main-footer strong { color: var(--ax-gold-lt) !important; }
-        .main-footer .float-right { color: rgba(255,255,255,.4) !important; }
-
-        /* ── Timeline (order view) ──────────── */
-        .timeline { position: relative; padding: 20px 0; }
-        .timeline-item { display: flex; margin-bottom: 20px; position: relative; }
-        .timeline-marker {
-            width: 20px; height: 20px; border-radius: 50%;
-            margin-right: 15px; flex-shrink: 0;
-            border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,.2);
+        
+        /* ── Mobile Responsive ── */
+        @media (max-width: 768px) {
+            .main-sidebar { transform: translateX(-100%); transition: transform .3s; }
+            .sidebar-open .main-sidebar { transform: translateX(0); }
+            .content-wrapper, .main-footer { margin-left: 0 !important; }
         }
-        .timeline-marker.active { opacity: 1; }
-        .timeline-marker:not(.active) { background: var(--ax-gray-300) !important; opacity: .5; }
-        .timeline-content { flex: 1; padding: 10px; background: var(--ax-off-white); border-radius: 8px; }
-        .timeline-content h6 { margin: 0; color: var(--ax-navy); font-weight: 700; }
-        .timeline-content p { margin: 5px 0 0; color: var(--ax-gray-500); font-size: .9rem; }
-
-        /* ── DataTables overrides ────────────── */
-        .dataTables_wrapper .dataTables_filter input { border-radius: 8px !important; border: 1.5px solid var(--ax-gray-100) !important; }
-        .dataTables_wrapper .dataTables_length select { border-radius: 8px !important; border: 1.5px solid var(--ax-gray-100) !important; }
-
-        /* ── Misc polish ────────────────────── */
-        a { color: var(--ax-navy-lt); }
-        a:hover { color: var(--ax-navy); text-decoration: none; }
-        .text-primary { color: var(--ax-navy) !important; }
-        .text-success { color: var(--ax-green) !important; }
-        .text-warning { color: var(--ax-gold) !important; }
-        .text-muted { color: var(--ax-gray-500) !important; }
-        .bg-primary { background: var(--ax-navy) !important; }
-
-        /* Callout */
-        .callout { border-radius: var(--ax-radius); }
-        .callout.callout-info { border-left-color: var(--ax-navy-lt); }
-        .callout.callout-warning { border-left-color: var(--ax-gold); }
-        .callout.callout-success { border-left-color: var(--ax-green); }
-        .callout.callout-danger { border-left-color: var(--ax-red); }
-
-        /* Progress bars */
-        .progress { border-radius: 50px; height: .5rem; background: var(--ax-gray-100); }
-        .progress-bar { border-radius: 50px; }
-        .bg-success .progress-bar, .progress-bar-success { background: var(--ax-green) !important; }
-        .bg-primary .progress-bar, .progress-bar-primary { background: var(--ax-navy) !important; }
-
-        /* Scrollbar for content */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--ax-gray-300); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--ax-gray-500); }
+        
+        /* ── Animations ── */
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+        .badge-low-stock { animation: pulse 2s infinite; }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
 <div class="wrapper">
+
     <!-- Navbar -->
-    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <nav class="main-header navbar navbar-expand navbar-dark">
         <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a>
-            </li>
+            <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a></li>
         </ul>
-        
         <ul class="navbar-nav ml-auto">
-            <!-- Low Stock Alert -->
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('main.products') }}" title="Low Stock Alerts">
-                    <i class="fas fa-exclamation-triangle text-danger"></i>
-                    <span id="low-stock-badge" class="badge badge-danger" style="display: none;">0</span>
+                <a class="nav-link" href="{{ url_for('main.products') }}" title="Low Stock">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    {% if low_stock_count is defined and low_stock_count > 0 %}
+                    <span class="badge badge-danger badge-sm">{{ low_stock_count }}</span>
+                    {% endif %}
                 </a>
             </li>
-            
-            <!-- Inquiry Count -->
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('main.inquiries') }}" title="New Inquiries">
+                <a class="nav-link" href="{{ url_for('main.inquiries') }}" title="Inquiries">
                     <i class="fas fa-envelope"></i>
-                    <span id="inquiry-badge" class="badge badge-warning" style="display: none;">0</span>
+                    <span id="inquiry-badge" class="badge badge-warning badge-sm" style="display:none">0</span>
                 </a>
             </li>
-            
-            <!-- Customer Site Link -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('main.customer_site') }}" target="_blank">
-                    <i class="fas fa-globe"></i> Customer Site
-                </a>
-            </li>
-            
-            <!-- User Dropdown -->
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.customer_site') }}" target="_blank"><i class="fas fa-globe"></i> Site</a></li>
             <li class="nav-item dropdown">
-                <a class="nav-link" data-toggle="dropdown" href="#">
-                    <i class="fas fa-user"></i> {{ current_user.username }}
+                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fas fa-user mr-1"></i> {{ current_user.username }}
                 </a>
-                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                    <a href="{{ url_for('main.settings') }}" class="dropdown-item">
-                        <i class="fas fa-cog mr-2"></i> Settings
-                    </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a href="{{ url_for('main.settings') }}" class="dropdown-item"><i class="fas fa-cog mr-2"></i> Settings</a>
                     <div class="dropdown-divider"></div>
-                    <a href="{{ url_for('main.logout') }}" class="dropdown-item text-danger">
-                        <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                    </a>
+                    <a href="{{ url_for('main.logout') }}" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt mr-2"></i> Logout</a>
                 </div>
             </li>
         </ul>
     </nav>
 
-    <!-- Main Sidebar -->
+    <!-- Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
-        <a href="{{ url_for('main.dashboard') }}" class="brand-link" style="padding: 8px 15px; display:flex; align-items:center; gap:10px;">
-            <img src="/static/logo-transparent.png" alt="Ampoulex" style="height:38px; width:auto; filter: invert(1) brightness(2);">
-            <span class="brand-text font-weight-light" style="font-size:16px; letter-spacing:1px;">Ampoulex</span>
+        <a href="{{ url_for('main.dashboard') }}" class="brand-link">
+            <img src="/static/logo-transparent.png" alt="Ampoulex" class="brand-image" style="opacity:.9; filter:invert(1); height:32px;">
+            <span class="brand-text font-weight-light">Ampoulex</span>
         </a>
-        
         <div class="sidebar">
-            <!-- User Panel -->
-            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+            <div class="user-panel mt-2 pb-2 d-flex">
                 <div class="info">
                     <a href="#" class="d-block">{{ current_user.username }}</a>
                     <small class="text-muted">{{ current_user.role|title }}</small>
                 </div>
             </div>
-            
-            <!-- Sidebar Menu -->
-            <nav class="mt-1">
-                <ul class="nav nav-pills nav-sidebar flex-column nav-compact nav-child-indent" data-widget="treeview" data-accordion="false" role="menu">
-
-                    <!-- ── Dashboard ── -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column nav-compact nav-child-indent" data-widget="treeview" role="menu">
+                    
+                    <!-- Dashboard -->
                     <li class="nav-item">
                         <a href="{{ url_for('main.dashboard') }}" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
                             <i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p>
                         </a>
                     </li>
 
-                    <!-- ══ SALES & CRM ══ -->
-                    <li class="nav-header">SALES &amp; CRM</li>
-
+                    <!-- SALES & CRM -->
+                    <li class="nav-header">SALES & CRM</li>
                     <li class="nav-item has-treeview {% if 'inquiry' in request.endpoint or 'order' in request.endpoint %}menu-open{% endif %}">
                         <a href="#" class="nav-link {% if 'inquiry' in request.endpoint or 'order' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-shopping-cart"></i><p>Sales &amp; Orders<i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon fas fa-shopping-cart"></i><p>Sales & Orders <i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.inquiries') }}" class="nav-link {% if 'inquiry' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-envelope"></i><p>Inquiries</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.orders') }}" class="nav-link {% if 'order' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-file-invoice"></i><p>Orders</p>
-                                </a>
-                            </li>
+                            <li class="nav-item"><a href="{{ url_for('main.inquiries') }}" class="nav-link {% if 'inquiry' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-envelope"></i><p>Inquiries</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.orders') }}" class="nav-link {% if 'order' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-file-invoice"></i><p>Orders</p></a></li>
                         </ul>
                     </li>
+                    <li class="nav-item"><a href="{{ url_for('main.customers') }}" class="nav-link {% if 'customer' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-user-tie"></i><p>Customers</p></a></li>
+                    <li class="nav-item"><a href="{{ url_for('main.painting_dashboard') }}" class="nav-link {% if 'painting' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-palette"></i><p>Painting Service</p></a></li>
 
-                    <li class="nav-item">
-                        <a href="{{ url_for('main.customers') }}" class="nav-link {% if 'customer' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-user-tie"></i><p>Customers</p>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="{{ url_for('main.painting_dashboard') }}" class="nav-link {% if 'painting' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-palette"></i><p>Painting Service</p>
-                        </a>
-                    </li>
-
-                    <!-- ══ PRODUCTION ══ -->
+                    <!-- PRODUCTION -->
                     <li class="nav-header">PRODUCTION</li>
-
-                    <li class="nav-item">
-                        <a href="{{ url_for('main.products') }}" class="nav-link {% if 'product' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-box"></i>
-                            <p>Products{% if low_stock_count is defined and low_stock_count > 0 %}<span class="right badge badge-danger">{{ low_stock_count }}</span>{% endif %}</p>
-                        </a>
-                    </li>
-
+                    <li class="nav-item"><a href="{{ url_for('main.products') }}" class="nav-link {% if 'product' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-box"></i><p>Products {% if low_stock_count is defined and low_stock_count > 0 %}<span class="right badge badge-danger">{{ low_stock_count }}</span>{% endif %}</p></a></li>
                     <li class="nav-item has-treeview {% if 'production' in request.endpoint or 'raw_material' in request.endpoint %}menu-open{% endif %}">
                         <a href="#" class="nav-link {% if 'production' in request.endpoint or 'raw_material' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-industry"></i><p>Manufacturing<i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon fas fa-industry"></i><p>Manufacturing <i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.raw_materials') }}" class="nav-link {% if 'raw_material' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-cubes"></i><p>Raw Materials</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.production_batches') }}" class="nav-link {% if 'production_batch' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-layer-group"></i><p>Batches</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.production_reports') }}" class="nav-link {% if 'production_reports' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-chart-bar"></i><p>Production Reports</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.material_consumption_report') }}" class="nav-link {% if 'material_consumption' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-file-alt"></i><p>Material Consumption</p>
-                                </a>
-                            </li>
+                            <li class="nav-item"><a href="{{ url_for('main.raw_materials') }}" class="nav-link {% if 'raw_material' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-cubes"></i><p>Raw Materials</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.production_batches') }}" class="nav-link {% if 'production_batch' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-layer-group"></i><p>Batches</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.production_reports') }}" class="nav-link {% if 'production_reports' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-chart-bar"></i><p>Production Reports</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.material_consumption_report') }}" class="nav-link {% if 'material_consumption' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-file-alt"></i><p>Material Consumption</p></a></li>
                         </ul>
                     </li>
+                    <li class="nav-item"><a href="{{ url_for('main.qc_parameters') }}" class="nav-link {% if 'qc' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-microscope"></i><p>Quality Control</p></a></li>
 
-                    <li class="nav-item">
-                        <a href="{{ url_for('main.qc_parameters') }}" class="nav-link {% if 'qc' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-microscope"></i><p>Quality Control</p>
-                        </a>
-                    </li>
-
-                    <!-- ══ SUPPLY CHAIN ══ -->
+                    <!-- SUPPLY CHAIN -->
                     <li class="nav-header">SUPPLY CHAIN</li>
-
-                    <li class="nav-item has-treeview {% if 'supplier' in request.endpoint or 'purchase_order' in request.endpoint or 'goods_receipt' in request.endpoint %}menu-open{% endif %}">
-                        <a href="#" class="nav-link {% if 'supplier' in request.endpoint or 'purchase_order' in request.endpoint or 'goods_receipt' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-truck"></i><p>Procurement<i class="right fas fa-angle-left"></i></p>
+                    <li class="nav-item has-treeview {% if 'supplier' in request.endpoint or 'purchase' in request.endpoint or 'goods' in request.endpoint %}menu-open{% endif %}">
+                        <a href="#" class="nav-link {% if 'supplier' in request.endpoint or 'purchase' in request.endpoint or 'goods' in request.endpoint %}active{% endif %}">
+                            <i class="nav-icon fas fa-truck"></i><p>Procurement <i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.suppliers') }}" class="nav-link {% if 'supplier' in request.endpoint and 'invoice' not in request.endpoint and 'purchase' not in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-address-book"></i><p>Suppliers</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.purchase_orders') }}" class="nav-link {% if 'purchase_order' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-file-invoice"></i><p>Purchase Orders</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.goods_receipts') }}" class="nav-link {% if 'goods_receipt' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-dolly"></i><p>Goods Receipts</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.supplier_invoices') }}" class="nav-link {% if 'supplier_invoice' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-file-invoice-dollar"></i><p>Supplier Invoices</p>
-                                </a>
-                            </li>
+                            <li class="nav-item"><a href="{{ url_for('main.suppliers') }}" class="nav-link {% if 'supplier' in request.endpoint and 'invoice' not in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-address-book"></i><p>Suppliers</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.purchase_orders') }}" class="nav-link {% if 'purchase_order' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-file-invoice"></i><p>Purchase Orders</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.goods_receipts') }}" class="nav-link {% if 'goods_receipt' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-dolly"></i><p>Goods Receipts</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.supplier_invoices') }}" class="nav-link {% if 'supplier_invoice' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-file-invoice-dollar"></i><p>Supplier Invoices</p></a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item has-treeview {% if 'warehouse' in request.endpoint or 'stock' in request.endpoint or 'batch' in request.endpoint %}menu-open{% endif %}">
+                        <a href="#" class="nav-link {% if 'warehouse' in request.endpoint or 'stock' in request.endpoint or 'batch' in request.endpoint %}active{% endif %}">
+                            <i class="nav-icon fas fa-warehouse"></i><p>Inventory <i class="right fas fa-angle-left"></i></p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item"><a href="{{ url_for('main.warehouses') }}" class="nav-link {% if 'warehouse' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-store"></i><p>Warehouses</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.stock_transfers') }}" class="nav-link {% if 'stock_transfer' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-exchange-alt"></i><p>Stock Transfers</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.material_batches') }}" class="nav-link {% if 'material_batch' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-boxes"></i><p>Material Batches</p></a></li>
                         </ul>
                     </li>
 
-                    <li class="nav-item has-treeview {% if 'warehouse' in request.endpoint or 'stock_transfer' in request.endpoint or 'material_batch' in request.endpoint %}menu-open{% endif %}">
-                        <a href="#" class="nav-link {% if 'warehouse' in request.endpoint or 'stock_transfer' in request.endpoint or 'material_batch' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-warehouse"></i><p>Inventory<i class="right fas fa-angle-left"></i></p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.warehouses') }}" class="nav-link {% if 'warehouse' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-store"></i><p>Warehouses</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.stock_transfers') }}" class="nav-link {% if 'stock_transfer' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-exchange-alt"></i><p>Stock Transfers</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.material_batches') }}" class="nav-link {% if 'material_batch' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-boxes"></i><p>Material Batches</p>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <!-- ══ HUMAN RESOURCES ══ -->
+                    <!-- HUMAN RESOURCES -->
                     <li class="nav-header">HUMAN RESOURCES</li>
-
                     <li class="nav-item has-treeview {% if 'payroll' in request.endpoint or 'employee' in request.endpoint or 'attendance' in request.endpoint or 'timesheet' in request.endpoint or 'leave' in request.endpoint or 'payment' in request.endpoint or 'shift' in request.endpoint %}menu-open{% endif %}">
                         <a href="#" class="nav-link {% if 'payroll' in request.endpoint or 'employee' in request.endpoint or 'attendance' in request.endpoint or 'timesheet' in request.endpoint or 'leave' in request.endpoint or 'payment' in request.endpoint or 'shift' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-users"></i><p>HR &amp; Payroll<i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon fas fa-users"></i><p>HR & Payroll <i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.payroll') }}" class="nav-link {% if request.endpoint == 'main.payroll' %}active{% endif %}">
-                                    <i class="nav-icon fas fa-id-badge"></i><p>Employees</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.shifts') }}" class="nav-link {% if 'shift' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-business-time"></i><p>Shifts</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.attendance') }}" class="nav-link {% if 'attendance' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-clipboard-check"></i><p>Attendance</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.timesheets') }}" class="nav-link {% if 'timesheet' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-clock"></i><p>Timesheets</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.leave_requests') }}" class="nav-link {% if 'leave' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-calendar-minus"></i><p>Leave Requests</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.payroll_run') }}" class="nav-link {% if request.endpoint == 'main.payroll_run' %}active{% endif %}">
-                                    <i class="nav-icon fas fa-play-circle"></i><p>Run Payroll</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.payroll_payments') }}" class="nav-link {% if request.endpoint == 'main.payroll_payments' %}active{% endif %}">
-                                    <i class="nav-icon fas fa-money-bill"></i><p>Salary Payments</p>
-                                </a>
-                            </li>
+                            <li class="nav-item"><a href="{{ url_for('main.payroll') }}" class="nav-link {% if request.endpoint == 'main.payroll' %}active{% endif %}"><i class="nav-icon fas fa-id-badge"></i><p>Employees</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.shifts') }}" class="nav-link {% if 'shift' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-business-time"></i><p>Shifts</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.attendance') }}" class="nav-link {% if 'attendance' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-clipboard-check"></i><p>Attendance</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.timesheets') }}" class="nav-link {% if 'timesheet' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-clock"></i><p>Timesheets</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.leave_requests') }}" class="nav-link {% if 'leave' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-calendar-minus"></i><p>Leave Requests</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.payroll_run') }}" class="nav-link {% if request.endpoint == 'main.payroll_run' %}active{% endif %}"><i class="nav-icon fas fa-play-circle"></i><p>Run Payroll</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.payroll_payments') }}" class="nav-link {% if request.endpoint == 'main.payroll_payments' %}active{% endif %}"><i class="nav-icon fas fa-money-bill"></i><p>Salary Payments</p></a></li>
                         </ul>
                     </li>
 
-                    <!-- ══ FINANCE & ACCOUNTING ══ -->
-                    <li class="nav-header">FINANCE &amp; ACCOUNTING</li>
-
-                    <li class="nav-item">
-                        <a href="{{ url_for('main.expenses') }}" class="nav-link {% if 'expense' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-receipt"></i><p>Expenses</p>
-                        </a>
-                    </li>
-
-                    <li class="nav-item has-treeview {% if 'accounting' in request.endpoint and 'dashboard' not in request.endpoint %}menu-open{% endif %}">
+                    <!-- FINANCE & ACCOUNTING -->
+                    <li class="nav-header">FINANCE & ACCOUNTING</li>
+                    <li class="nav-item"><a href="{{ url_for('main.expenses') }}" class="nav-link {% if 'expense' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-receipt"></i><p>Expenses</p></a></li>
+                    <li class="nav-item has-treeview {% if 'accounting' in request.endpoint %}menu-open{% endif %}">
                         <a href="#" class="nav-link {% if 'accounting' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-calculator"></i><p>Accounting<i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon fas fa-calculator"></i><p>Accounting <i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.accounting_dashboard') }}" class="nav-link {% if request.endpoint == 'main.accounting_dashboard' %}active{% endif %}">
-                                    <i class="nav-icon fas fa-tachometer-alt"></i><p>Overview</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.chart_of_accounts') }}" class="nav-link {% if 'chart_of_accounts' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-list"></i><p>Chart of Accounts</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.journal_entries') }}" class="nav-link {% if 'journal_entr' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-book"></i><p>Journal Entries</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.general_ledger') }}" class="nav-link {% if 'general_ledger' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-book-open"></i><p>General Ledger</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.trial_balance') }}" class="nav-link {% if 'trial_balance' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-balance-scale"></i><p>Trial Balance</p>
-                                </a>
-                            </li>
+                            <li class="nav-item"><a href="{{ url_for('main.accounting_dashboard') }}" class="nav-link {% if request.endpoint == 'main.accounting_dashboard' %}active{% endif %}"><i class="nav-icon fas fa-tachometer-alt"></i><p>Overview</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.chart_of_accounts') }}" class="nav-link {% if 'chart_of_accounts' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-list"></i><p>Chart of Accounts</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.journal_entries') }}" class="nav-link {% if 'journal_entr' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-book"></i><p>Journal Entries</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.general_ledger') }}" class="nav-link {% if 'general_ledger' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-book-open"></i><p>General Ledger</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.trial_balance') }}" class="nav-link {% if 'trial_balance' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-balance-scale"></i><p>Trial Balance</p></a></li>
                         </ul>
                     </li>
-
                     <li class="nav-item has-treeview {% if 'voucher' in request.endpoint %}menu-open{% endif %}">
                         <a href="#" class="nav-link {% if 'voucher' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-file-invoice-dollar"></i><p>Vouchers<i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon fas fa-file-invoice-dollar"></i><p>Vouchers <i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.payment_vouchers') }}" class="nav-link {% if 'payment_voucher' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-money-bill-wave"></i><p>Payment Vouchers</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.receipt_vouchers') }}" class="nav-link {% if 'receipt_voucher' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-hand-holding-usd"></i><p>Receipt Vouchers</p>
-                                </a>
-                            </li>
+                            <li class="nav-item"><a href="{{ url_for('main.payment_vouchers') }}" class="nav-link {% if 'payment_voucher' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-money-bill-wave"></i><p>Payment Vouchers</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.receipt_vouchers') }}" class="nav-link {% if 'receipt_voucher' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-hand-holding-usd"></i><p>Receipt Vouchers</p></a></li>
                         </ul>
                     </li>
-
                     <li class="nav-item has-treeview {% if 'bank' in request.endpoint %}menu-open{% endif %}">
                         <a href="#" class="nav-link {% if 'bank' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-university"></i><p>Banking<i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon fas fa-university"></i><p>Banking <i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.bank_accounts') }}" class="nav-link {% if request.endpoint == 'main.bank_accounts' %}active{% endif %}">
-                                    <i class="nav-icon fas fa-piggy-bank"></i><p>Bank Accounts</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.bank_reconciliation') }}" class="nav-link {% if 'bank_reconciliation' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-exchange-alt"></i><p>Reconciliation</p>
-                                </a>
-                            </li>
+                            <li class="nav-item"><a href="{{ url_for('main.bank_accounts') }}" class="nav-link {% if request.endpoint == 'main.bank_accounts' %}active{% endif %}"><i class="nav-icon fas fa-piggy-bank"></i><p>Bank Accounts</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.bank_reconciliation') }}" class="nav-link {% if 'bank_reconciliation' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-exchange-alt"></i><p>Reconciliation</p></a></li>
                         </ul>
                     </li>
-
-                    <li class="nav-item">
-                        <a href="{{ url_for('main.fixed_assets_list') }}" class="nav-link {% if 'fixed_asset' in request.endpoint or request.path.startswith('/assets') %}active{% endif %}">
-                            <i class="nav-icon fas fa-industry"></i><p>Fixed Assets</p>
-                        </a>
-                    </li>
-
+                    <li class="nav-item"><a href="{{ url_for('main.fixed_assets_list') }}" class="nav-link {% if 'fixed_asset' in request.endpoint or request.path.startswith('/assets') %}active{% endif %}"><i class="nav-icon fas fa-industry"></i><p>Fixed Assets</p></a></li>
                     <li class="nav-item has-treeview {% if 'profit_loss' in request.endpoint or 'balance_sheet' in request.endpoint or 'cash_flow' in request.endpoint %}menu-open{% endif %}">
                         <a href="#" class="nav-link {% if 'profit_loss' in request.endpoint or 'balance_sheet' in request.endpoint or 'cash_flow' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-chart-line"></i><p>Financial Statements<i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon fas fa-chart-line"></i><p>Financial Statements <i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.profit_loss') }}" class="nav-link {% if 'profit_loss' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-chart-line"></i><p>Profit &amp; Loss</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.balance_sheet') }}" class="nav-link {% if 'balance_sheet' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-balance-scale"></i><p>Balance Sheet</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.cash_flow') }}" class="nav-link {% if 'cash_flow' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-water"></i><p>Cash Flow</p>
-                                </a>
-                            </li>
+                            <li class="nav-item"><a href="{{ url_for('main.profit_loss') }}" class="nav-link {% if 'profit_loss' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-chart-line"></i><p>Profit & Loss</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.balance_sheet') }}" class="nav-link {% if 'balance_sheet' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-balance-scale"></i><p>Balance Sheet</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.cash_flow') }}" class="nav-link {% if 'cash_flow' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-water"></i><p>Cash Flow</p></a></li>
                         </ul>
                     </li>
-
                     <li class="nav-item has-treeview {% if 'accounting_period' in request.endpoint or 'audit_log' in request.endpoint %}menu-open{% endif %}">
                         <a href="#" class="nav-link {% if 'accounting_period' in request.endpoint or 'audit_log' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-cogs"></i><p>Controls<i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon fas fa-cogs"></i><p>Controls <i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.accounting_periods') }}" class="nav-link {% if 'accounting_period' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-calendar-alt"></i><p>Accounting Periods</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.audit_log') }}" class="nav-link {% if 'audit_log' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-history"></i><p>Audit Log</p>
-                                </a>
-                            </li>
+                            <li class="nav-item"><a href="{{ url_for('main.accounting_periods') }}" class="nav-link {% if 'accounting_period' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-calendar-alt"></i><p>Accounting Periods</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.audit_log') }}" class="nav-link {% if 'audit_log' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-history"></i><p>Audit Log</p></a></li>
                         </ul>
                     </li>
 
-                    <!-- ══ TAX ══ -->
+                    <!-- TAX -->
                     <li class="nav-header">TAX</li>
-
                     <li class="nav-item has-treeview {% if 'tax' in request.endpoint or 'fbr' in request.endpoint %}menu-open{% endif %}">
                         <a href="#" class="nav-link {% if 'tax' in request.endpoint or 'fbr' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-file-contract"></i><p>FBR &amp; Tax<i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon fas fa-file-contract"></i><p>FBR & Tax <i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.fbr_invoices') }}" class="nav-link {% if 'fbr_invoice' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-file-invoice"></i><p>FBR Invoices</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.tax_returns') }}" class="nav-link {% if 'tax_return' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-undo"></i><p>Tax Returns</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.sales_tax_report') }}" class="nav-link {% if 'sales_tax' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-percentage"></i><p>Sales Tax Report</p>
-                                </a>
-                            </li>
+                            <li class="nav-item"><a href="{{ url_for('main.fbr_invoices') }}" class="nav-link {% if 'fbr_invoice' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-file-invoice"></i><p>FBR Invoices</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.tax_returns') }}" class="nav-link {% if 'tax_return' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-undo"></i><p>Tax Returns</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.sales_tax_report') }}" class="nav-link {% if 'sales_tax' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-percentage"></i><p>Sales Tax Report</p></a></li>
                         </ul>
                     </li>
 
-                    <!-- ══ ANALYTICS & REPORTS ══ -->
-                    <li class="nav-header">ANALYTICS &amp; REPORTS</li>
-
-                    <li class="nav-item">
-                        <a href="{{ url_for('main.analytics_dashboard') }}" class="nav-link {% if 'analytics' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-chart-pie"></i><p>Analytics</p>
-                        </a>
-                    </li>
-
+                    <!-- ANALYTICS & REPORTS -->
+                    <li class="nav-header">ANALYTICS & REPORTS</li>
+                    <li class="nav-item"><a href="{{ url_for('main.analytics_dashboard') }}" class="nav-link {% if 'analytics' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-chart-pie"></i><p>Analytics</p></a></li>
                     <li class="nav-item has-treeview {% if 'report' in request.endpoint and 'production' not in request.endpoint %}menu-open{% endif %}">
                         <a href="#" class="nav-link {% if 'report' in request.endpoint and 'production' not in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-chart-bar"></i><p>Reports<i class="right fas fa-angle-left"></i></p>
+                            <i class="nav-icon fas fa-chart-bar"></i><p>Reports <i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.reports_dashboard') }}" class="nav-link {% if request.endpoint == 'main.reports_dashboard' %}active{% endif %}">
-                                    <i class="nav-icon fas fa-th-large"></i><p>Reports Dashboard</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.sales_analysis_report') }}" class="nav-link {% if 'sales_analysis' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-chart-line"></i><p>Sales Analysis</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.inventory_valuation_report') }}" class="nav-link {% if 'inventory_valuation' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-boxes"></i><p>Inventory Valuation</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ url_for('main.production_efficiency_report') }}" class="nav-link {% if 'production_efficiency' in request.endpoint %}active{% endif %}">
-                                    <i class="nav-icon fas fa-industry"></i><p>Production Efficiency</p>
-                                </a>
-                            </li>
+                            <li class="nav-item"><a href="{{ url_for('main.reports_dashboard') }}" class="nav-link {% if request.endpoint == 'main.reports_dashboard' %}active{% endif %}"><i class="nav-icon fas fa-th-large"></i><p>Reports Dashboard</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.sales_analysis_report') }}" class="nav-link {% if 'sales_analysis' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-chart-line"></i><p>Sales Analysis</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.inventory_valuation_report') }}" class="nav-link {% if 'inventory_valuation' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-boxes"></i><p>Inventory Valuation</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.production_efficiency_report') }}" class="nav-link {% if 'production_efficiency' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-industry"></i><p>Production Efficiency</p></a></li>
                         </ul>
                     </li>
 
-                    <!-- ══ SYSTEM ══ -->
+                    <!-- SYSTEM -->
                     <li class="nav-header">SYSTEM</li>
-
-                    <li class="nav-item">
-                        <a href="{{ url_for('main.settings') }}" class="nav-link {% if 'settings' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-cog"></i><p>Settings</p>
-                        </a>
-                    </li>
-
-                    {% if current_user.is_authenticated and current_user.role == 'admin' %}
-                    <li class="nav-item">
-                        <a href="{{ url_for('main.admin_users') }}" class="nav-link {% if 'admin_user' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-users-cog"></i><p>User Management</p>
-                        </a>
-                    </li>
+                    <li class="nav-item"><a href="{{ url_for('main.settings') }}" class="nav-link {% if 'settings' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-cog"></i><p>Settings</p></a></li>
+                    {% if current_user.role == 'admin' %}
+                    <li class="nav-item"><a href="{{ url_for('main.admin_users') }}" class="nav-link {% if 'admin_user' in request.endpoint %}active{% endif %}"><i class="nav-icon fas fa-users-cog"></i><p>User Management</p></a></li>
                     {% endif %}
-
-                    {% if current_user.is_authenticated %}
-                    <li class="nav-item">
-                        <a href="{{ url_for('main.change_password') }}" class="nav-link {% if 'change_password' in request.endpoint %}active{% endif %}">
-                            <i class="nav-icon fas fa-key"></i><p>Change Password</p>
-                        </a>
-                    </li>
-                    {% endif %}
+                    <li class="nav-item"><a href="{{ url_for('main.change_password') }}" class="nav-link"><i class="nav-icon fas fa-key"></i><p>Change Password</p></a></li>
 
                 </ul>
             </nav>
         </div>
     </aside>
 
-    <!-- Content Wrapper -->
+    <!-- Content -->
     <div class="content-wrapper">
-        <!-- Content Header -->
         <div class="content-header">
             <div class="container-fluid">
                 <div class="row mb-2">
-                    <div class="col-sm-6">
-                        <h1 class="m-0">{% block page_title %}Dashboard{% endblock %}</h1>
-                    </div>
+                    <div class="col-sm-6"><h1 class="m-0">{% block page_title %}Dashboard{% endblock %}</h1></div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
                             <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Home</a></li>
@@ -808,23 +371,17 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Main Content -->
         <section class="content">
             <div class="container-fluid">
-                <!-- Flash Messages -->
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                         {% for category, message in messages %}
                         <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
-                            {{ message }}
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            {{ message }}<button type="button" class="close" data-dismiss="alert">&times;</button>
                         </div>
                         {% endfor %}
                     {% endif %}
                 {% endwith %}
-                
-                <!-- Page Content -->
                 {% block content %}{% endblock %}
             </div>
         </section>
@@ -832,72 +389,48 @@
 
     <!-- Footer -->
     <footer class="main-footer">
-        <strong>Copyright &copy; {{ current_year }} Ampoulex</strong>. All rights reserved.
+        <strong>Copyright &copy; {{ current_year }} <a href="{{ business.website }}">{{ business.company_name }}</a>.</strong> All rights reserved.
         <div class="float-right d-none d-sm-inline-block">
-            <b>Version</b> 3.0 (Phase 3)
+            <b>Version</b> 3.0
         </div>
     </footer>
+
 </div>
 
-<!-- jQuery -->
+<!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- AdminLTE App -->
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
-
-<!-- Socket.IO for Real-Time Updates (ONLY ONCE - REPLACE LINES 190-285) -->
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
 <script>
-    // Connect to Socket.IO server (only once - no duplicates)
-    if (typeof window.socket === 'undefined') {
-        window.socket = io('/admin', {
-            reconnection: true,
-            reconnectionAttempts: 5
-        });
-        
-        window.socket.on('connect', () => {
-            console.log('✅ Connected to real-time updates');
-        });
-        
-        window.socket.on('new_inquiry', function(data) {
-            console.log('📬 New inquiry:', data);
-            showToast('New Inquiry', `${data.customer} - ${data.business}`, 'info');
-        });
-        
-        window.socket.on('new_order', function(data) {
-            console.log('🛒 New order:', data);
-            showToast('New Order', `${data.customer} - PKR ${data.total}`, 'success');
-        });
-    }
-    
-    // Toast notification function
-    function showToast(title, message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-        toast.style.cssText = 'top: 70px; right: 20px; z-index: 9999; min-width: 300px;';
-        toast.innerHTML = `
-            <strong>${title}</strong><br>${message}
-            <button type="button" class="close" onclick="this.parentElement.remove()">&times;</button>
-        `;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 5000);
-    }
-
-    
-    // Update badges on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        updateInquiryBadge();
-        updateLowStockBadge();
-        
-        // Refresh badges every 30 seconds
-        setInterval(updateInquiryBadge, 30000);
-        setInterval(updateLowStockBadge, 30000);
-    });
+// Socket.IO - single connection guard
+if (typeof window.socket === 'undefined') {
+    window.socket = io('/admin', { reconnection: true, reconnectionAttempts: 5 });
+    window.socket.on('connect', () => console.log('✅ Real-time connected'));
+    window.socket.on('new_inquiry', d => showToast('📬 New Inquiry', `${d.customer} - ${d.business}`, 'info'));
+    window.socket.on('new_order', d => showToast('🛒 New Order', `${d.customer} - PKR ${d.total}`, 'success'));
+}
+function showToast(title, msg, type='info') {
+    const t = document.createElement('div');
+    t.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    t.style.cssText = 'top:70px; right:20px; z-index:9999; min-width:300px;';
+    t.innerHTML = `<strong>${title}</strong><br>${msg}<button type="button" class="close" onclick="this.parentElement.remove()">&times;</button>`;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 5000);
+}
+// Badge updates
+function updateInquiryBadge() {
+    fetch('/api/inquiries/count')
+        .then(r => r.json())
+        .then(d => {
+            const el = document.getElementById('inquiry-badge');
+            if (el && d.count > 0) { el.textContent = d.count; el.style.display = 'inline'; }
+        })
+        .catch(() => {});
+}
+document.addEventListener('DOMContentLoaded', () => { updateInquiryBadge(); setInterval(updateInquiryBadge, 30000); });
 </script>
-
 {% block extra_js %}{% endblock %}
 </body>
 </html>
