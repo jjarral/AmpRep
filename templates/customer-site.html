@@ -859,24 +859,25 @@
                         
                         <!-- Display grouped products in form -->
                         {% for num, size in form_sorted %}
-                        <div class="product-group">
-                            <h4 class="product-group-title">Glass Ampoule {{ size }}</h4>
-                            <p class="product-group-capacity">{{ size|replace('cc','') }}ml capacity</p>
-                            <div class="variants-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
-                                {% for product in form_grouped[size] %}
-                                <div>
-                                    <input type="checkbox" id="inq-{{ product.id }}" class="variant-checkbox" data-vid="{{ product.id }}" onchange="toggleQty({{ product.id }})">
-                                    <label for="inq-{{ product.id }}" class="variant-label" style="display:block; width:100%; padding:0.75rem; border:1.5px solid var(--gray-100); border-radius:var(--radius); cursor:pointer; text-align:center; transition:var(--transition); background:var(--off-white);">
-                                        <span class="color-dot color-{% if product.color|lower == 'amber' %}amber{% else %}transparent{% endif %}"></span>
-                                        <span style="font-size:.85rem;font-weight:600; margin-left:4px;">{{ product.color }}</span>
-                                    </label>
-                                    <input type="number" id="qty-{{ product.id }}" name="qty_{{ product.id }}" class="form-control" placeholder="Qty" min="1" style="display:none; margin-top:0.5rem;">
-                                    <input type="hidden" name="product_ids" id="pid-{{ product.id }}" value="{{ product.id }}" disabled>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endfor %}
+<div class="product-group">
+    <h4 class="product-group-title">Glass Ampoule {{ size }}</h4>
+    <p class="product-group-capacity">{{ size|replace('cc','') }}ml capacity</p>
+    <div class="variants-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));">
+        {% for product in form_grouped[size] %}
+        <div>
+            <!-- ✅ Changed to radio + grouped by size name -->
+            <input type="radio" id="inq-{{ product.id }}" name="variant_{{ size }}" class="variant-radio" data-vid="{{ product.id }}" onchange="handleVariantChange({{ product.id }})">
+            <label for="inq-{{ product.id }}" class="variant-label" style="display:block; width:100%; padding:0.75rem; border:1.5px solid var(--gray-100); border-radius:var(--radius); cursor:pointer; text-align:center; transition:var(--transition); background:var(--off-white);">
+                <span class="color-dot color-{% if product.color|lower == 'amber' %}amber{% else %}transparent{% endif %}"></span>
+                <span style="font-size:.85rem;font-weight:600; margin-left:4px;">{{ product.color }}</span>
+            </label>
+            <input type="number" id="qty-{{ product.id }}" name="qty_{{ product.id }}" class="form-control" placeholder="Qty" min="1" style="display:none; margin-top:0.5rem;">
+            <input type="hidden" name="product_ids" id="pid-{{ product.id }}" value="{{ product.id }}" disabled>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
                     </div>
 
                     <div class="form-group">
@@ -971,27 +972,34 @@
     });
 
     /* Toggle quantity field */
-    function toggleQty(vid) {
-        const chk = document.getElementById(`inq-${vid}`);
+    function handleVariantChange(selectedVid) {
+    // Hide all quantity inputs & reset styles
+    document.querySelectorAll('.variant-radio').forEach(radio => {
+        const vid = radio.getAttribute('data-vid');
         const qty = document.getElementById(`qty-${vid}`);
-        const pid = document.getElementById(`pid-${vid}`);
         const label = document.querySelector(`label[for="inq-${vid}"]`);
-        if (chk.checked) {
-            qty.style.display = 'block';
-            qty.required = true;
-            pid.disabled = false;
-            label.style.borderColor = 'var(--navy)';
-            label.style.background = 'rgba(12,35,64,.08)';
-            setTimeout(() => qty.focus(), 100);
-        } else {
-            qty.style.display = 'none';
-            qty.required = false;
-            qty.value = '';
-            pid.disabled = true;
-            label.style.borderColor = '';
-            label.style.background = '';
+        
+        if (qty) qty.style.display = 'none';
+        if (label) {
+            label.style.borderColor = 'var(--gray-100)';
+            label.style.background = 'var(--off-white)';
         }
+    });
+
+    // Show selected variant's quantity input
+    const qtyInput = document.getElementById(`qty-${selectedVid}`);
+    const pidInput = document.getElementById(`pid-${selectedVid}`);
+    const selectedLabel = document.querySelector(`label[for="inq-${selectedVid}"]`);
+    
+    if (qtyInput) {
+        qtyInput.style.display = 'block';
+        qtyInput.required = true;
+        pidInput.disabled = false;
+        selectedLabel.style.borderColor = 'var(--navy)';
+        selectedLabel.style.background = 'rgba(12,35,64,.08)';
+        setTimeout(() => qtyInput.focus(), 100);
     }
+}
 
     /* Clear error on input */
     document.querySelectorAll('.qty-input, .form-control').forEach(input => {
