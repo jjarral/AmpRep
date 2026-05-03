@@ -715,14 +715,14 @@
             <p class="section-subtitle">Choose from our wide range of pharmaceutical-grade glass ampoules.</p>
         </div>
         <div class="variants-grid">
-        {% for product in grouped_by_size[size] %}
-        <div class="variant-option">
-            <span class="variant-name">
-                <span class="color-dot color-{% if 'amber' in product.color|lower %}amber{% else %}transparent{% endif %}"></span>
-                <span>{{ product.color }}</span>
-            </span>
-        </div>
-        {% endfor %}
+            {% for variant in product.variants %}
+            <div class="variant-option">
+                <span class="variant-name">
+                    <span class="color-dot color-{% if 'amber' in variant.color|lower %}amber{% else %}transparent{% endif %}"></span>
+                    {{ variant.color }}
+                </span>
+            </div>
+            {% endfor %}
         </div>
         <!-- Group products by size (1cc, 2cc, 3cc, etc.) -->
         {% set grouped_by_size = {} %}
