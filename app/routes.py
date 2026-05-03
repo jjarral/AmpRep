@@ -3161,13 +3161,34 @@ def upload_logo():
 # ============================================================================
 # CUSTOMER-FACING WEBSITE
 # ============================================================================
-
 @main_bp.route('/customer-site')
 def customer_site():
-    """Customer site - Send RAW products so the template can group them by size (1cc, 2cc, etc)"""
-    # FIX: Query all products directly. The HTML template handles the grouping now.
+    """Customer site - Group products by size (1cc, 2cc, 3cc, etc.)"""
+    import re
+    
+    # Get all active products
     products = Product.query.filter_by(is_deleted=False).all()
-    return render_template('customer-site.html', products=products)
+    
+    # Group by size (extract "1cc", "2cc" from product name)
+    grouped_by_size = {}
+    for product in products:
+        # Extract size from name (e.g., "1cc" from "1cc Amber Glass Ampoule")
+        match = re.search(r'(\d+cc)', product.name, re.IGNORECASE)
+        if match:
+            size = match.group(1).upper()  # '1cc' -> '1CC'
+            if size not in grouped_by_size:
+                grouped_by_size[size] = []
+            grouped_by_size[size].append(product)
+    
+    # Sort sizes numerically: 1CC, 2CC, 3CC, 5CC, 10CC
+    sorted_sizes = sorted(
+        grouped_by_size.keys(),
+        key=lambda x: int(''.join(filter(str.isdigit, x)))
+    )
+    
+    return render_template('customer-site.html',
+                          grouped_by_size=grouped_by_size,
+                          sorted_sizes=sorted_sizes)
 
 @main_bp.route('/submit-inquiry', methods=['GET', 'POST'])
 def submit_inquiry():
