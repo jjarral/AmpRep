@@ -410,9 +410,9 @@ def inject_business_settings():
             company_name = 'AMPOULEX'
             phone_1 = '0340-5336238'
             phone_2 = '0331-9980906'
-            email = 'jarraljunaid4@gmail.com'
+            email = 'info@ampoulex.com'
             website = 'www.ampoulex.com'
-            address = 'Malik Arshad Farm House (Malik Akram Street) Darbar e Kareemi, Stop; G.T Road Wah Cantt, Rawalpindi, Punjab, 47000'
+            address = 'Malik Arshad Farm House (Malik Akram Street), Darbar-e-Kareemi Stop, G.T Road Wah Cantt, Rawalpindi, Punjab, 47000'
             ntn = '2812596-7'
             strn = '37406-5984131-3'
         return dict(business=DefaultSettings())
