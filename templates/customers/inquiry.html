@@ -96,15 +96,24 @@
         </div>
 
         <!-- Contact Info -->
-        <div class="mt-8 text-center">
-            <p class="text-gray-600">Or contact us directly:</p>
-            <div class="mt-2 space-x-6">
-                <a href="tel:0340-5336238" class="text-indigo-600 hover:text-indigo-900 font-semibold">
-                    📞 0340-5336238
+        <div class="mt-8 text-center bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <p class="text-gray-700 font-medium mb-3">Or contact {{ business.company_name }} directly:</p>
+            
+            <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-4">
+                <a href="tel:{{ business.phone_1 }}" class="text-indigo-600 hover:text-indigo-800 font-semibold transition">
+                    📞 {{ business.phone_1 }}
                 </a>
-                <a href="mailto:jarraljunaid4@gmail.com" class="text-indigo-600 hover:text-indigo-900 font-semibold">
-                    ✉️ jarraljunaid4@gmail.com
+                <a href="tel:{{ business.phone_2 }}" class="text-indigo-600 hover:text-indigo-800 font-semibold transition">
+                    📱 {{ business.phone_2 }}
                 </a>
+                <a href="mailto:{{ business.email }}" class="text-indigo-600 hover:text-indigo-800 font-semibold transition">
+                    ✉️ {{ business.email }}
+                </a>
+            </div>
+            
+            <div class="border-t border-gray-200 pt-4 mt-2">
+                <p class="text-sm text-gray-600">{{ business.address }}</p>
+                <p class="text-xs text-gray-500 mt-2">NTN: {{ business.ntn }} | STRN: {{ business.strn }} | Web: {{ business.website }}</p>
             </div>
         </div>
     </div>
