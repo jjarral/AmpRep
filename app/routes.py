@@ -483,8 +483,29 @@ def check_and_create_stock_alerts():
 
 @main_bp.route('/', methods=['GET', 'POST'])
 def index():
-    grouped_products = group_products_by_base()
-    return render_template('customer-site.html', products=grouped_products)
+    products = Product.query.filter_by(is_deleted=False).all()
+    
+    # Group products by size (1cc, 2cc, etc.)
+    grouped_by_size = {}
+    for p in products:
+        if p.product_type == 'service':
+            continue
+        # Extract size (e.g., "1cc" from "1cc Clear Ampoule")
+        size = p.name.split(' ')[0] if ' ' in p.name else 'Other'
+        if size not in grouped_by_size:
+            grouped_by_size[size] = []
+        grouped_by_size[size].append(p)
+        
+    # Sort sizes numerically (1cc -> 2cc -> 3cc -> 5cc -> 10cc)
+    sorted_sizes = sorted(grouped_by_size.keys(), key=lambda x: int(''.join(filter(str.isdigit, x))))
+    
+    # Separate services
+    services = [p for p in products if p.product_type == 'service']
+    
+    return render_template('customer-site.html', 
+                           sorted_sizes=sorted_sizes, 
+                           grouped_by_size=grouped_by_size,
+                           services=services)
 
 @main_bp.route('/login', methods=['GET', 'POST'])
 def login():
