@@ -684,20 +684,16 @@ def admin_reset_password(user_id):
 @main_bp.route('/catalogue')
 def product_catalogue():
     """Display products grouped by size with variants."""
-    from sqlalchemy import func, extract
+    from sqlalchemy import func
+    import re
     
     # Get all active products
-    products = Product.query.filter_by(is_active=True).order_by(
-        # Extract capacity from name (1cc, 2cc, etc.)
-        func.cast(func.substring(Product.name, 1, func.position('cc' in Product.name) + 1), db.Integer),
-        Product.color
-    ).all()
+    products = Product.query.filter_by(is_active=True).all()
     
-    # Group by capacity
+    # Group by capacity using Python (not SQLAlchemy)
     grouped_products = {}
     for product in products:
         # Extract capacity (e.g., "1cc" from "1cc Clear Ampoule")
-        import re
         match = re.search(r'(\d+cc)', product.name, re.IGNORECASE)
         if match:
             capacity = match.group(1).upper()
@@ -705,11 +701,13 @@ def product_catalogue():
                 grouped_products[capacity] = []
             grouped_products[capacity].append(product)
     
-    # Sort by capacity
-    sorted_capacities = sorted(grouped_products.keys(), 
-                               key=lambda x: int(x.replace('cc', '')))
+    # Sort by capacity numerically
+    sorted_capacities = sorted(
+        grouped_products.keys(), 
+        key=lambda x: int(x.replace('cc', ''))
+    )
     
-    return render_template('customers/catalogue.html', 
+    return render_template('customer/catalogue.html', 
                           grouped_products=grouped_products,
                           sorted_capacities=sorted_capacities)
 
