@@ -34,7 +34,7 @@ TEMPLATES = {
     'products': ['products/index.html', 'products/form.html', 'products/bom.html', 'products/labels.html'],
     'inquiries': ['inquiries/index.html', 'inquiries/form.html', 'inquiries/edit.html', 'inquiries/invoice.html'],
     'orders': ['orders/index.html', 'orders/form.html', 'orders/view.html', 'orders/edit.html', 'orders/invoice.html'],
-    'customers': ['customers/index.html', 'customers/form.html', 'customers/painting_pricing.html', 'customers/merge.html'],
+    'customers': ['customers/index.html', 'customers/form.html', 'customers/painting_pricing.html', 'customers/merge.html', 'customers/catalogue.html', 'customers/inquiry.html'],
     'suppliers': ['suppliers/index.html', 'suppliers/form.html', 'suppliers/history.html'],
     'purchase_orders': ['purchase_orders/index.html', 'purchase_orders/form.html', 'purchase_orders/view.html', 'purchase_orders/receive.html'],
     'goods_receipts': ['goods_receipts/index.html', 'goods_receipts/view.html'],
