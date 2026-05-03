@@ -20,230 +20,59 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Initialize extensions
+# Initialize extensions at module level (required for Flask app factory)
 db = SQLAlchemy()
 login_manager = LoginManager()
 socketio = SocketIO(cors_allowed_origins="*")
-from .models import User
 
 # ============================================================================
 # 📋 COMPLETE TEMPLATE LIST (ALL 108 TEMPLATES)
 # ============================================================================
-# This documents ALL templates used in routes.py for reference
-# ============================================================================
 TEMPLATES = {
-    # Root Templates (3)
-    'root': [
-        'customer-site.html',
-        'dashboard.html',
-        'base.html',
-    ],
-    
-    # Authentication (1)
-    'auth': [
-        'auth/login.html',
-    ],
-    
-    # Products (4)
-    'products': [
-        'products/index.html',
-        'products/form.html',
-        'products/bom.html',
-        'products/labels.html',
-    ],
-    
-    # Inquiries (4)
-    'inquiries': [
-        'inquiries/index.html',
-        'inquiries/form.html',
-        'inquiries/edit.html',
-        'inquiries/invoice.html',
-    ],
-    
-    # Orders (5)
-    'orders': [
-        'orders/index.html',
-        'orders/form.html',
-        'orders/view.html',
-        'orders/edit.html',
-        'orders/invoice.html',
-    ],
-    
-    # Customers (4)
-    'customers': [
-        'customers/index.html',
-        'customers/form.html',
-        'customers/painting_pricing.html',
-        'customers/merge.html',
-    ],
-    
-    # Suppliers (3)
-    'suppliers': [
-        'suppliers/index.html',
-        'suppliers/form.html',
-        'suppliers/history.html',
-    ],
-    
-    # Purchase Orders (4)
-    'purchase_orders': [
-        'purchase_orders/index.html',
-        'purchase_orders/form.html',
-        'purchase_orders/view.html',
-        'purchase_orders/receive.html',
-    ],
-    
-    # Goods Receipts (2)
-    'goods_receipts': [
-        'goods_receipts/index.html',
-        'goods_receipts/view.html',
-    ],
-    
-    # Warehouses (3)
-    'warehouses': [
-        'warehouses/index.html',
-        'warehouses/form.html',
-        'warehouses/stock.html',
-    ],
-    
-    # Stock Transfers (3)
-    'stock_transfers': [
-        'stock_transfers/index.html',
-        'stock_transfers/form.html',
-        'stock_transfers/view.html',
-    ],
-    
-    # Material Batches (1)
-    'material_batches': [
-        'material_batches/index.html',
-    ],
-    
-    # Supplier Invoices (2)
-    'supplier_invoices': [
-        'supplier_invoices/index.html',
-        'supplier_invoices/form.html',
-    ],
-    
-    # Production (6)
-    'production': [
-        'production/dashboard.html',
-        'production/batches.html',
-        'production/batch_form.html',
-        'production/batch_view.html',
-        'production/batch_complete.html',
-        'production/reports.html',
-    ],
-    
-    # Materials (2)
-    'materials': [
-        'materials/index.html',
-        'materials/form.html',
-    ],
-    
-    # Quality Control (8)
-    'qc': [
-        'qc/parameters.html',
-        'qc/parameter_form.html',
-        'qc/results_form.html',
-        'qc/complaints.html',
-        'qc/complaint_form.html',
-        'qc/capa.html',
-        'qc/calibration.html',
-        'qc/coa.html',
-    ],
-    
-    # Reports (6)
-    'reports': [
-        'reports/dashboard.html',
-        'reports/sales_analysis.html',
-        'reports/inventory_valuation.html',
-        'reports/customer_purchase_history.html',
-        'reports/production_efficiency.html',
-        'reports/material_consumption.html',
-    ],
-    
-    # Analytics (1)
-    'analytics': [
-        'analytics/dashboard.html',
-    ],
-    
-    # Settings (1)
-    'settings': [
-        'settings/index.html',
-    ],
-    
-    # Payroll/Employees (10)
-    'payroll': [
-        'payroll/index.html',
-        'payroll/form.html',
-        'payroll/attendance.html',
-        'payroll/attendance_history.html',
-        'payroll/timesheets.html',
-        'payroll/timesheet_form.html',
-        'payroll/leave_requests.html',
-        'payroll/leave_form.html',
-        'payroll/payments.html',
-        'payroll/payment_form.html',
-    ],
-    
-    # Expenses (2)
-    'expenses': [
-        'expenses/index.html',
-        'expenses/form.html',
-    ],
-    
-    # Accounting (17)
-    'accounting': [
-        'accounting/index.html',
-        'accounting/dashboard.html',
-        'accounting/chart_of_accounts.html',
-        'accounting/account_form.html',
-        'accounting/journal_entries.html',
-        'accounting/journal_entry_form.html',
-        'accounting/journal_entry_view.html',
-        'accounting/general_ledger.html',
-        'accounting/trial_balance.html',
-        'accounting/payment_vouchers.html',
-        'accounting/payment_voucher_form.html',
-        'accounting/payment_voucher_view.html',
-        'accounting/receipt_vouchers.html',
-        'accounting/receipt_voucher_form.html',
-        'accounting/receipt_voucher_view.html',
-        'accounting/bank_accounts.html',
-        'accounting/bank_reconciliation.html',
-        'accounting/audit_log.html',
-        'accounting/periods.html',
-        'accounting/period_form.html',
-    ],
-    
-    # Financials (3)
-    'financials': [
-        'financials/profit_loss.html',
-        'financials/balance_sheet.html',
-        'financials/cash_flow.html',
-    ],
-    
-    # Painting Service (7)
-    'painting': [
-        'painting/dashboard.html',
-        'painting/prices.html',
-        'painting/price_form.html',
-        'painting/orders.html',
-        'painting/order_form.html',
-        'painting/order_view.html',
-        'painting/invoice.html',
-    ],
-    
-    # Tax/FBR (4)
-    'tax': [
-        'tax/fbr_invoices.html',
-        'tax/returns.html',
-        'tax/return_form.html',
-        'tax/reports/sales_tax.html',
-    ],
+    'root': ['customer-site.html', 'dashboard.html', 'base.html'],
+    'auth': ['auth/login.html'],
+    'products': ['products/index.html', 'products/form.html', 'products/bom.html', 'products/labels.html'],
+    'inquiries': ['inquiries/index.html', 'inquiries/form.html', 'inquiries/edit.html', 'inquiries/invoice.html'],
+    'orders': ['orders/index.html', 'orders/form.html', 'orders/view.html', 'orders/edit.html', 'orders/invoice.html'],
+    'customers': ['customers/index.html', 'customers/form.html', 'customers/painting_pricing.html', 'customers/merge.html'],
+    'suppliers': ['suppliers/index.html', 'suppliers/form.html', 'suppliers/history.html'],
+    'purchase_orders': ['purchase_orders/index.html', 'purchase_orders/form.html', 'purchase_orders/view.html', 'purchase_orders/receive.html'],
+    'goods_receipts': ['goods_receipts/index.html', 'goods_receipts/view.html'],
+    'warehouses': ['warehouses/index.html', 'warehouses/form.html', 'warehouses/stock.html'],
+    'stock_transfers': ['stock_transfers/index.html', 'stock_transfers/form.html', 'stock_transfers/view.html'],
+    'material_batches': ['material_batches/index.html'],
+    'supplier_invoices': ['supplier_invoices/index.html', 'supplier_invoices/form.html'],
+    'production': ['production/dashboard.html', 'production/batches.html', 'production/batch_form.html', 'production/batch_view.html', 'production/batch_complete.html', 'production/reports.html'],
+    'materials': ['materials/index.html', 'materials/form.html'],
+    'qc': ['qc/parameters.html', 'qc/parameter_form.html', 'qc/results_form.html', 'qc/complaints.html', 'qc/complaint_form.html', 'qc/capa.html', 'qc/calibration.html', 'qc/coa.html'],
+    'reports': ['reports/dashboard.html', 'reports/sales_analysis.html', 'reports/inventory_valuation.html', 'reports/customer_purchase_history.html', 'reports/production_efficiency.html', 'reports/material_consumption.html'],
+    'analytics': ['analytics/dashboard.html'],
+    'settings': ['settings/index.html'],
+    'payroll': ['payroll/index.html', 'payroll/form.html', 'payroll/attendance.html', 'payroll/attendance_history.html', 'payroll/timesheets.html', 'payroll/timesheet_form.html', 'payroll/leave_requests.html', 'payroll/leave_form.html', 'payroll/payments.html', 'payroll/payment_form.html'],
+    'expenses': ['expenses/index.html', 'expenses/form.html'],
+    'accounting': ['accounting/index.html', 'accounting/dashboard.html', 'accounting/chart_of_accounts.html', 'accounting/account_form.html', 'accounting/journal_entries.html', 'accounting/journal_entry_form.html', 'accounting/journal_entry_view.html', 'accounting/general_ledger.html', 'accounting/trial_balance.html', 'accounting/payment_vouchers.html', 'accounting/payment_voucher_form.html', 'accounting/payment_voucher_view.html', 'accounting/receipt_vouchers.html', 'accounting/receipt_voucher_form.html', 'accounting/receipt_voucher_view.html', 'accounting/bank_accounts.html', 'accounting/bank_reconciliation.html', 'accounting/audit_log.html', 'accounting/periods.html', 'accounting/period_form.html'],
+    'financials': ['financials/profit_loss.html', 'financials/balance_sheet.html', 'financials/cash_flow.html'],
+    'painting': ['painting/dashboard.html', 'painting/prices.html', 'painting/price_form.html', 'painting/orders.html', 'painting/order_form.html', 'painting/order_view.html', 'painting/invoice.html'],
+    'tax': ['tax/fbr_invoices.html', 'tax/returns.html', 'tax/return_form.html', 'tax/reports/sales_tax.html'],
 }
 
-# Total: 108 templates
 TOTAL_TEMPLATES = sum(len(templates) for templates in TEMPLATES.values())
+
+
+def _is_local_environment() -> bool:
+    """Detect if running on localhost/local development."""
+    if os.environ.get('FLASK_ENV') == 'development':
+        return True
+    if os.environ.get('DEBUG') in ('1', 'true', 'True', True):
+        return True
+    cloud_indicators = [
+        'VERCEL', 'VERCEL_REGION', 'GAE_ENV', 'GOOGLE_CLOUD_PROJECT',
+        'AWS_LAMBDA_FUNCTION_NAME', 'DYNO', 'KUBERNETES_SERVICE_HOST',
+    ]
+    if any(os.environ.get(ind) for ind in cloud_indicators):
+        return False
+    return True
+
 
 def create_app():
     PROJECT_ROOT = Path(__file__).parent.parent
@@ -254,7 +83,7 @@ def create_app():
                 template_folder=str(TEMPLATES_FOLDER),
                 static_folder=str(STATIC_DIR))
     
-    # Apply ProxyFix for Cloud Run / reverse proxy (trusts X-Forwarded-For headers)
+    # Apply ProxyFix for reverse proxy
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     # Configuration
@@ -269,25 +98,21 @@ def create_app():
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 
     # ────────────────────────────────────────────────────────────────
-    # 🗄️ Database Configuration: Postgres for prod, SQLite for localhost
+    # 🗄️ Database Configuration
     # ────────────────────────────────────────────────────────────────
-
-    # Check ALL common Postgres connection string variable names
     db_url = (
         os.environ.get('DATABASE_URL') 
         or os.environ.get('NEON_DATABASE_URL')
-        or os.environ.get('POSTGRES_URL')           # Vercel Neon integration
-        or os.environ.get('POSTGRES_PRISMA_URL')    # Vercel Neon integration  
-        or os.environ.get('DATABASE_PRIVATE_URL')   # Alternative
+        or os.environ.get('POSTGRES_URL')
+        or os.environ.get('POSTGRES_PRISMA_URL')
+        or os.environ.get('DATABASE_PRIVATE_URL')
     )
 
-    # DEBUG: Log what we found (remove after testing)
     app.logger.info(f"🔍 Env check: DATABASE_URL={bool(os.environ.get('DATABASE_URL'))}, "
                     f"POSTGRES_URL={bool(os.environ.get('POSTGRES_URL'))}, "
                     f"VERCEL={bool(os.environ.get('VERCEL'))}")
 
     if db_url and isinstance(db_url, str) and 'postgres' in db_url:
-        # ✅ Production: Postgres/Neon
         if 'connect_timeout' not in db_url:
             sep = '&' if '?' in db_url else '?'
             db_url += f"{sep}connect_timeout=10"
@@ -300,7 +125,6 @@ def create_app():
         app.logger.info(f"🔗 Connected to Postgres: {db_url.split('@')[-1].split('?')[0]}")
         
     elif _is_local_environment():
-        # ✅ Local development: SQLite fallback
         sqlite_path = PROJECT_ROOT / 'ampoulex.db'
         db_url = f"sqlite:///{sqlite_path}"
         app.config['SQLALCHEMY_DATABASE_URI'] = db_url
@@ -308,14 +132,14 @@ def create_app():
         app.logger.info(f"🗄️ Using local SQLite: {sqlite_path}")
         
     else:
-        # ❌ Production/Cloud without DATABASE_URL → show helpful error
         available_vars = [k for k in os.environ.keys() if 'POSTGRES' in k or 'DATABASE' in k or 'NEON' in k]
         raise RuntimeError(
             f'DATABASE_URL or NEON_DATABASE_URL must be set for production deployment.\n'
             f'Found these related env vars: {available_vars if available_vars else "NONE"}\n'
             f'Fix: Go to Vercel Dashboard → Settings → Environment Variables → Add DATABASE_URL'
         )
-    app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     app.config['SESSION_COOKIE_HTTPONLY'] = True
 
     # Initialize extensions
@@ -325,13 +149,48 @@ def create_app():
     
     login_manager.login_view = 'main.login'
     login_manager.login_message_category = 'info'
-    
-    # Make datetime and current_year available in all templates
+
+    # ────────────────────────────────────────────────────────────────
+    # 🔐 Flask-Login: User loader (MUST be inside create_app)
+    # ────────────────────────────────────────────────────────────────
+    @login_manager.user_loader
+    def load_user(user_id):
+        from .models import User  # Lazy import to avoid circular dependency
+        return User.query.get(int(user_id))
+
+    # ────────────────────────────────────────────────────────────────
+    # 🌐 Context Processors (MUST be inside create_app)
+    # ────────────────────────────────────────────────────────────────
     @app.context_processor
     def inject_globals():
         return dict(datetime=datetime, timedelta=timedelta, current_year=datetime.utcnow().year)
-    
-    # Dev proxy: forward /__mockup/* to Vite dev server on port 3001
+
+    @app.context_processor
+    def inject_business_settings():
+        try:
+            from .models import BusinessSettings  # Lazy import
+            settings = BusinessSettings.query.first()
+            if not settings:
+                settings = BusinessSettings()
+                db.session.add(settings)
+                db.session.commit()
+            return dict(business=settings)
+        except Exception as e:
+            app.logger.warning(f"⚠️ Business settings fallback: {e}")
+            class DefaultSettings:
+                company_name = 'AMPOULEX'
+                phone_1 = '0340-5336238'
+                phone_2 = '0331-9980906'
+                email = 'jarraljunaid4@gmail.com'
+                website = 'www.ampoulex.com'
+                address = 'Malik Arshad Farm House (Malik Akram Street), Darbar-e-Kareemi Stop, G.T Road Wah Cantt, Rawalpindi, Punjab, 47000'
+                ntn = '2812596-7'
+                strn = '37406-5984131-3'
+            return dict(business=DefaultSettings())
+
+    # ────────────────────────────────────────────────────────────────
+    # 🔧 Dev Proxy Route
+    # ────────────────────────────────────────────────────────────────
     @app.route('/__mockup/', defaults={'path': ''})
     @app.route('/__mockup/<path:path>')
     def mockup_proxy(path):
@@ -350,19 +209,22 @@ def create_app():
         except urllib.error.URLError:
             return Response("Mockup sandbox not running", status=503)
 
-    # Register blueprints
+    # ────────────────────────────────────────────────────────────────
+    # 🗺️ Register Blueprints
+    # ────────────────────────────────────────────────────────────────
     from app.routes import main_bp
     app.register_blueprint(main_bp)
     
-    # Create tables and admin user
+    # ────────────────────────────────────────────────────────────────
+    # 🏗️ Database Setup (tables + admin user)
+    # ────────────────────────────────────────────────────────────────
     with app.app_context():
         try:
             app.logger.info("🏗️ Creating/Verifying tables...")
             db.create_all()
             app.logger.info("✅ Tables verified/created.")
             
-            # Create admin user if not exists
-            from app.models import User
+            from .models import User  # Lazy import
             if not User.query.filter_by(username='admin').first():
                 admin = User(
                     username='admin',
@@ -384,36 +246,5 @@ def create_app():
     app.logger.info("🗺️ Registering routes...")
     app.logger.info(f"📋 Total templates documented: {TOTAL_TEMPLATES}")
     app.logger.info("✅ Routes registered successfully.")
-        # ────────────────────────────────────────────────────────────────
-    # 🌐 Inject Business Settings into ALL templates automatically
-    # ───────────────────────────────────────────────────────────────
-    # ────────────────────────────────────────────────────────────────
-# 🌐 Inject Business Settings into ALL templates automatically
-# ───────────────────────────────────────────────────────────────
-@app.context_processor
-def inject_business_settings():
-    try:
-        # 🔥 LAZY IMPORT: Only import when function runs
-        from .models import BusinessSettings
-        
-        settings = BusinessSettings.query.first()
-        if not settings:
-            settings = BusinessSettings()
-            db.session.add(settings)
-            db.session.commit()
-        return dict(business=settings)
-    except Exception as e:
-        # Fallback during first deploy/migration
-        app.logger.warning(f"⚠️ Business settings fallback: {e}")
-        # Return a simple object with default values
-        class DefaultSettings:
-            company_name = 'AMPOULEX'
-            phone_1 = '0340-5336238'
-            phone_2 = '0331-9980906'
-            email = 'info@ampoulex.com'
-            website = 'www.ampoulex.com'
-            address = 'Malik Arshad Farm House (Malik Akram Street), Darbar-e-Kareemi Stop, G.T Road Wah Cantt, Rawalpindi, Punjab, 47000'
-            ntn = '2812596-7'
-            strn = '37406-5984131-3'
-        return dict(business=DefaultSettings())
-    return app
+    
+    return app  # ✅ CORRECT PLACEMENT: End of create_app()
