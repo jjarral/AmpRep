@@ -682,7 +682,7 @@ def admin_reset_password(user_id):
         flash(f'Password reset for "{user.username}". They must change it on next login.', 'success')
     return redirect(url_for('main.admin_users'))
 
-@main_bp.route('/catalogue')
+@main_bp.route('customers/catalogue')
 def product_catalogue():
     """Display products grouped by size with variants."""
     import re
@@ -708,7 +708,7 @@ def product_catalogue():
                           sorted_capacities=sorted_capacities)
 
 
-@main_bp.route('/inquiry', methods=['GET', 'POST'])
+@main_bp.route('customers/inquiry', methods=['GET', 'POST'])
 def inquiry():
     """Customer inquiry form."""
     import re
