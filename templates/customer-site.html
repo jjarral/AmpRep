@@ -500,11 +500,12 @@
 <body>
 
 <!-- ═══ NAVBAR ═══════════════════════════════════════ -->
+<!-- In templates/customer-site.html navbar -->
 <ul class="nav-links" id="navLinks">
-    <li><a href="{{ url_for('main.index') }}">Home</a></li>
+    <li><a href="#home">Home</a></li>
     <li><a href="#features">Why Us</a></li>
-    <li><a href="{{ url_for('main.product_catalogue') }}">Product Catalogue</a></li>
-    <li><a href="{{ url_for('main.inquiry') }}">Request Quote</a></li>
+    <li><a href="#catalogue">Product Catalogue</a></li>  <!-- Changed -->
+    <li><a href="#inquiry">Request Quote</a></li>        <!-- Changed -->
 </ul>
 
 <!-- ═══ HERO ══════════════════════════════════════════ -->
