@@ -483,7 +483,9 @@ def check_and_create_stock_alerts():
 
 @main_bp.route('/', methods=['GET', 'POST'])
 def index():
+    """Root route - Send RAW products"""
     products = Product.query.filter_by(is_deleted=False).all()
+    return render_template('customer-site.html', products=products)
     
     # Group products by size (1cc, 2cc, etc.)
     grouped_by_size = {}
@@ -3162,9 +3164,10 @@ def upload_logo():
 
 @main_bp.route('/customer-site')
 def customer_site():
-    grouped_products = group_products_by_base()
-    return render_template('customer-site.html', products=grouped_products)
-
+    """Customer site - Send RAW products so the template can group them by size (1cc, 2cc, etc)"""
+    # FIX: Query all products directly. The HTML template handles the grouping now.
+    products = Product.query.filter_by(is_deleted=False).all()
+    return render_template('customer-site.html', products=products)
 
 @main_bp.route('/submit-inquiry', methods=['GET', 'POST'])
 def submit_inquiry():
