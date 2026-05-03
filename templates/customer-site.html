@@ -665,89 +665,97 @@
 </section>
 
 <!-- ═══ PRODUCTS ════════════════════════════════════════ -->
+<!-- ═══ PRODUCTS ════════════════════════════════════════ -->
 <section class="products-section" id="products">
     <div class="container">
         <div class="section-header-block center">
             <span class="section-tag"><i class="fas fa-box-open"></i> Product Catalogue</span>
             <h2 class="section-title">Glass Ampoules &amp; Services</h2>
-            <p class="section-subtitle">Choose from our range of pharmaceutical-grade glass ampoules and custom packaging solutions.</p>
+            <p class="section-subtitle">Choose from our wide range of pharmaceutical-grade glass ampoules.</p>
         </div>
         
-        <!-- Group products by size (1cc → 10cc) -->
-        {% set grouped = {} %}
-        {% for p in products %}
-            {% if p.product_type != 'service' %}
-                {% set size = p.name.split(' ')[0] if ' ' in p.name else 'Other' %}
-                {% if size not in grouped %}
-                    {% set _ = grouped.update({size: []}) %}
+        <!-- Group products by size (1cc, 2cc, 3cc, etc.) -->
+        {% set grouped_by_size = {} %}
+        {% for product in products %}
+            {% if product.product_type != 'service' %}
+                {% set size = product.name.split(' ')[0] if ' ' in product.name else 'Other' %}
+                {% if size not in grouped_by_size %}
+                    {% set _ = grouped_by_size.update({size: []}) %}
                 {% endif %}
-                {% set _ = grouped[size].append(p) %}
-            {% else %}
-                {% if 'services' not in grouped %}
-                    {% set _ = grouped.update({'services': []}) %}
-                {% endif %}
-                {% set _ = grouped['services'].append(p) %}
+                {% set _ = grouped_by_size[size].append(product) %}
             {% endif %}
         {% endfor %}
         
-        <!-- Sort sizes: 1cc, 2cc, 3cc, 5cc, 10cc -->
+        <!-- Sort sizes numerically -->
         {% set sorted_sizes = [] %}
-        {% for size in grouped.keys() %}
-            {% if size != 'services' %}
-                {% set num = size|replace('cc','')|int %}
-                {% set _ = sorted_sizes.append((num, size)) %}
-            {% endif %}
+        {% for size in grouped_by_size.keys() %}
+            {% set num = size|replace('cc','')|replace('in','')|int %}
+            {% set _ = sorted_sizes.append((num, size)) %}
         {% endfor %}
         {% set sorted_sizes = sorted_sizes|sort(attribute=0) %}
         
-        <!-- Display ampoules in ascending order -->
-        {% for num, size in sorted_sizes %}
-        <div class="product-group" style="margin-bottom: 3rem;">
-            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--gold);">
-                {{ size }} Glass Ampoules
-            </h3>
-            
-            <div class="products-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
-                {% for product in grouped[size] %}
-                <div class="product-card">
-                    <div class="product-thumb">
-                        <span class="product-type-badge">
-                            {% if product.color|lower == 'amber' %}Amber Glass{% else %}Clear Glass{% endif %}
+        <div class="products-grid">
+            {% for num, size in sorted_sizes %}
+            <div class="product-card">
+                <div class="product-thumb">
+                    <i class="fas fa-flask" style="font-size: 4rem; color: rgba(255,255,255,0.3);"></i>
+                </div>
+                <div class="product-body">
+                    <h3 class="product-name">Glass Ampoule {{ size }}</h3>
+                    <p style="color: var(--gray-500); font-size: 0.9rem; margin-bottom: 1rem;">
+                        {{ size|replace('cc','') }}ml capacity
+                    </p>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <span style="color: var(--gray-500); font-size: 0.85rem;">
+                            <i class="fas fa-swatchbook" style="margin-right: 0.3rem;"></i>Available Variants:
                         </span>
-                        <div class="mini-amp">
-                            <div class="mini-amp-cap" style="background: {% if product.color|lower == 'amber' %}#f59e0b{% else %}#c8e8f8{% endif %};"></div>
-                            <div class="mini-amp-neck"></div>
-                            <div class="mini-amp-body {% if product.color|lower == 'amber' %}am{% endif %}" style="width:18px;height:70px;"></div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        {% for product in grouped_by_size[size] %}
+                        <div style="text-align: center; padding: 0.75rem; background: var(--off-white); border-radius: 8px;">
+                            <div style="margin-bottom: 0.5rem;">
+                                <span class="color-dot color-{% if 'amber' in product.color|lower %}amber{% else %}transparent{% endif %}"></span>
+                                <span style="font-size: 0.85rem; font-weight: 600;">{{ product.color }}</span>
+                            </div>
+                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--navy);">
+                                PKR {{ "%.2f"|format(product.base_price) }}
+                            </div>
                         </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Services Section -->
+        {% set services = products|selectattr('product_type', 'equalto', 'service')|list %}
+        {% if services %}
+        <div style="margin-top: 4rem;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--gold);">
+                Additional Services
+            </h3>
+            <div class="products-grid">
+                {% for service in services %}
+                <div class="product-card">
+                    <div class="product-thumb" style="background: linear-gradient(135deg, var(--gold) 0%, var(--gold-lt) 100%);">
+                        <i class="fas fa-paint-brush" style="font-size: 4rem; color: rgba(255,255,255,0.6);"></i>
                     </div>
                     <div class="product-body">
-                        <div class="product-name">{{ product.name }}</div>
-                        {% if product.specification %}
-                        <div class="product-spec">
-                            <i class="fas fa-info-circle"></i>{{ product.specification }}
-                        </div>
+                        <h3 class="product-name">{{ service.name }}</h3>
+                        {% if service.specification %}
+                        <p style="color: var(--gray-500); font-size: 0.9rem;">{{ service.specification }}</p>
                         {% endif %}
-                        {% if product.dimensions %}
-                        <div class="product-spec">
-                            <i class="fas fa-ruler-combined"></i>{{ product.dimensions }}
-                        </div>
-                        {% endif %}
-                        <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-100);">
-                            <div style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">
-                                <i class="fas fa-check-circle" style="color: var(--green); margin-right: 0.25rem;"></i>
-                                USP Type I Borosilicate Glass
-                            </div>
-                            <div style="font-size: 0.8rem; color: var(--gray-500);">
-                                <i class="fas fa-check-circle" style="color: var(--green); margin-right: 0.25rem;"></i>
-                                Pharmaceutical Grade
-                            </div>
-                        </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
-        {% endfor %}
+        {% endif %}
+    </div>
+</section>
         
         <!-- Services section -->
         {% if 'services' in grouped %}
