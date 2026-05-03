@@ -500,22 +500,12 @@
 <body>
 
 <!-- ═══ NAVBAR ═══════════════════════════════════════ -->
-<nav class="navbar" id="navbar">
-    <div class="navbar-inner">
-        <a href="{{ url_for('main.index') }}" class="navbar-logo">
-            <img src="/static/logo.png" alt="Ampoulex">
-        </a>
-        <ul class="nav-links" id="navLinks">
-            <li><a href="{{ url_for('main.index') }}">Home</a></li>
-            <li><a href="#features">Why Us</a></li>
-            <li><a href="{{ url_for('main.product_catalogue') }}">Product Catalogue</a></li>
-            <li><a href="{{ url_for('main.inquiry') }}">Request Quote</a></li>
-        </ul>
-        <button class="burger" id="burger" aria-label="Menu">
-            <span></span><span></span><span></span>
-        </button>
-    </div>
-</nav>
+<ul class="nav-links" id="navLinks">
+    <li><a href="{{ url_for('main.index') }}">Home</a></li>
+    <li><a href="#features">Why Us</a></li>
+    <li><a href="{{ url_for('main.product_catalogue') }}">Product Catalogue</a></li>
+    <li><a href="{{ url_for('main.inquiry') }}">Request Quote</a></li>
+</ul>
 
 <!-- ═══ HERO ══════════════════════════════════════════ -->
 <section class="hero" id="home">
