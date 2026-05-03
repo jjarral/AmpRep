@@ -16,7 +16,6 @@ from flask_login import LoginManager
 from flask_socketio import SocketIO
 from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
-from .models import User
 
 # Load environment variables
 load_dotenv()
@@ -25,6 +24,7 @@ load_dotenv()
 db = SQLAlchemy()
 login_manager = LoginManager()
 socketio = SocketIO(cors_allowed_origins="*")
+from .models import User
 
 # ============================================================================
 # 📋 COMPLETE TEMPLATE LIST (ALL 108 TEMPLATES)
