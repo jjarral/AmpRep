@@ -3075,9 +3075,6 @@ def generate_product_labels(id):
 # ============================================================================
 # SETTINGS
 # ============================================================================
-
-@main_bp.route('/settings', methods=['GET', 'POST'])
-@login_required
 @main_bp.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
