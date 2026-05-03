@@ -709,7 +709,7 @@ def product_catalogue():
     sorted_capacities = sorted(grouped_products.keys(), 
                                key=lambda x: int(x.replace('cc', '')))
     
-    return render_template('customer/catalogue.html', 
+    return render_template('customers/catalogue.html', 
                           grouped_products=grouped_products,
                           sorted_capacities=sorted_capacities)
 
@@ -750,7 +750,7 @@ def inquiry():
         flash('Thank you for your inquiry! We will contact you soon.', 'success')
         return redirect(url_for('main.inquiry'))
     
-    return render_template('customer/inquiry.html',
+    return render_template('customers/inquiry.html',
                           grouped_products=grouped_products,
                           sorted_capacities=sorted_capacities)
 
