@@ -669,6 +669,7 @@
 </section>
 
 <!-- ═══ PRODUCTS ════════════════════════════════════════ -->
+<!-- ═══ PRODUCTS ════════════════════════════════════════ -->
 <section class="products-section" id="products">
     <div class="container">
         <div class="section-header-block center">
@@ -676,68 +677,106 @@
             <h2 class="section-title">Glass Ampoules &amp; Services</h2>
             <p class="section-subtitle">Choose from our range of pharmaceutical-grade glass ampoules and custom packaging solutions.</p>
         </div>
-        <div class="products-grid">
-            {% for product in products %}
-            <div class="product-card">
-                <div class="product-thumb">
-                    <span class="product-type-badge">
-                        {% if product.product_type == 'service' %}Service{% else %}Ampoule{% endif %}
-                    </span>
-                    {% if product.product_type != 'service' %}
+        
+        <!-- Group products by size -->
+        {% set grouped_products = {} %}
+        {% for product in products %}
+            {% if product.product_type != 'service' %}
+                {% set size = product.name.split(' ')[0] if ' ' in product.name else 'Other' %}
+                {% if size not in grouped_products %}
+                    {% set _ = grouped_products.update({size: []}) %}
+                {% endif %}
+                {% set _ = grouped_products[size].append(product) %}
+            {% else %}
+                {% if 'services' not in grouped_products %}
+                    {% set _ = grouped_products.update({'services': []}) %}
+                {% endif %}
+                {% set _ = grouped_products['services'].append(product) %}
+            {% endif %}
+        {% endfor %}
+        
+        <!-- Display grouped ampoules -->
+        {% for size in grouped_products|sort if size != 'services' %}
+        <div class="product-group" style="margin-bottom: 3rem;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--gold);">
+                {{ size }} Glass Ampoules
+            </h3>
+            
+            <div class="products-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+                {% for product in grouped_products[size] %}
+                <div class="product-card">
+                    <div class="product-thumb">
+                        <span class="product-type-badge">
+                            {% if product.color|lower == 'amber' %}Amber Glass{% else %}Clear Glass{% endif %}
+                        </span>
                         <div class="mini-amp">
-                            <div class="mini-amp-cap"></div>
+                            <div class="mini-amp-cap" style="background: {% if product.color|lower == 'amber' %}#f59e0b{% else %}#c8e8f8{% endif %};"></div>
                             <div class="mini-amp-neck"></div>
-                            <div class="mini-amp-body" style="width:18px;height:70px;"></div>
+                            <div class="mini-amp-body {% if product.color|lower == 'amber' %}am{% endif %}" style="width:18px;height:70px;"></div>
                         </div>
-                        <div class="mini-amp">
-                            <div class="mini-amp-cap"></div>
-                            <div class="mini-amp-neck"></div>
-                            <div class="mini-amp-body am" style="width:22px;height:90px;"></div>
+                    </div>
+                    <div class="product-body">
+                        <div class="product-name">{{ product.name }}</div>
+                        {% if product.specification %}
+                        <div class="product-spec">
+                            <i class="fas fa-info-circle"></i>{{ product.specification }}
                         </div>
-                        <div class="mini-amp">
-                            <div class="mini-amp-cap"></div>
-                            <div class="mini-amp-neck"></div>
-                            <div class="mini-amp-body" style="width:26px;height:110px;"></div>
+                        {% endif %}
+                        {% if product.dimensions %}
+                        <div class="product-spec">
+                            <i class="fas fa-ruler-combined"></i>{{ product.dimensions }}
                         </div>
-                    {% else %}
-                        <i class="fas fa-paint-brush" style="font-size:3.5rem;color:rgba(255,255,255,.25);"></i>
-                    {% endif %}
+                        {% endif %}
+                        <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-100);">
+                            <div style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">
+                                <i class="fas fa-check-circle" style="color: var(--green); margin-right: 0.25rem;"></i>
+                                USP Type I Borosilicate Glass
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--gray-500);">
+                                <i class="fas fa-check-circle" style="color: var(--green); margin-right: 0.25rem;"></i>
+                                Pharmaceutical Grade
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="product-body">
-                    <div class="product-name">{{ product.name }}</div>
-                    {% if product.specification %}
-                    <div class="product-spec">
-                        <i class="fas fa-info-circle"></i>{{ product.specification }}
-                    </div>
-                    {% endif %}
-                    {% if product.dimensions %}
-                    <div class="product-spec">
-                        <i class="fas fa-ruler-combined"></i>{{ product.dimensions }}
-                    </div>
-                    {% endif %}
-                    {% if product.variants %}
-                    <hr class="variants-divider">
-                    <div class="variants-label"><i class="fas fa-swatchbook" style="margin-right:.35rem;color:var(--gold);"></i>Available Variants</div>
-                    <div class="variants-grid">
-                        {% for variant in product.variants %}
-                        <div>
-                            <input type="checkbox" id="prod-{{ variant.id }}" class="variant-checkbox" data-vid="{{ variant.id }}">
-                            <label for="prod-{{ variant.id }}" class="variant-label">
-                                <span class="color-dot color-{{ variant.color|lower }}"></span>
-                                <span style="font-size:.82rem;font-weight:600;">{{ variant.color }}</span>
-                                <div class="variant-price">PKR {{ "%.2f"|format(variant.price) }}</div>
-                            </label>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
+        {% endfor %}
+        
+        <!-- Display services separately -->
+        {% if 'services' in grouped_products %}
+        <div class="product-group" style="margin-top: 4rem;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--gold);">
+                Additional Services
+            </h3>
+            
+            <div class="products-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+                {% for product in grouped_products['services'] %}
+                <div class="product-card">
+                    <div class="product-thumb" style="background: linear-gradient(135deg, var(--gold) 0%, var(--gold-lt) 100%);">
+                        <span class="product-type-badge" style="background: rgba(12,35,64,.2); border-color: var(--navy); color: var(--navy);">
+                            Service
+                        </span>
+                        <i class="fas fa-paint-brush" style="font-size:3.5rem;color:rgba(255,255,255,.6);"></i>
+                    </div>
+                    <div class="product-body">
+                        <div class="product-name">{{ product.name }}</div>
+                        {% if product.specification %}
+                        <div class="product-spec">
+                            <i class="fas fa-info-circle"></i>{{ product.specification }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </section>
 
+<!-- ═══ QUOTE FORM ══════════════════════════════════════ -->
 <!-- ═══ QUOTE FORM ══════════════════════════════════════ -->
 <section class="quote-section" id="inquiry">
     <div class="container">
@@ -759,28 +798,28 @@
                         <div class="qs-contact-icon"><i class="fas fa-map-marker-alt"></i></div>
                         <div>
                             <div class="qs-contact-label">Address</div>
-                            <div class="qs-contact-val">Plot 45, Industrial Area, Lahore</div>
+                            <div class="qs-contact-val">Malik Arshad Farm House (Malik Akram Street) Darbar e Kareemi, Stop; G.T Road Wah Cantt, Rawalpindi, Punjab, 47000</div>
                         </div>
                     </div>
                     <div class="qs-contact-item">
                         <div class="qs-contact-icon"><i class="fas fa-phone"></i></div>
                         <div>
                             <div class="qs-contact-label">Phone</div>
-                            <div class="qs-contact-val">+92 42 12345678</div>
+                            <div class="qs-contact-val">0340-5336238<br>0331-9980906</div>
                         </div>
                     </div>
                     <div class="qs-contact-item">
                         <div class="qs-contact-icon"><i class="fas fa-envelope"></i></div>
                         <div>
                             <div class="qs-contact-label">Email</div>
-                            <div class="qs-contact-val">info@ampoulex.pk</div>
+                            <div class="qs-contact-val">jarraljunaid4@gmail.com</div>
                         </div>
                     </div>
                     <div class="qs-contact-item">
                         <div class="qs-contact-icon"><i class="fas fa-clock"></i></div>
                         <div>
                             <div class="qs-contact-label">Working Hours</div>
-                            <div class="qs-contact-val">Mon – Sat &nbsp;·&nbsp; 9 AM – 6 PM</div>
+                            <div class="qs-contact-val">Mon – Sat · 9 AM – 6 PM</div>
                         </div>
                     </div>
                     <hr class="qs-divider">
@@ -810,7 +849,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Phone Number <span class="required">*</span></label>
-                            <input type="tel" name="phone" class="form-control" placeholder="+92 3XX XXXXXXX" required>
+                            <input type="tel" name="phone" class="form-control" placeholder="03XX XXXXXXX" required>
                         </div>
                         <div class="form-group">
                             <label>Email Address</label>
@@ -823,21 +862,35 @@
                         <p style="font-size:.8rem;color:var(--gray-500);margin-bottom:.75rem;">
                             <i class="fas fa-info-circle"></i> Click a variant to select it, then enter the quantity needed.
                         </p>
+                        
+                        <!-- Group products by size in form -->
+                        {% set form_grouped = {} %}
                         {% for product in products %}
-                        <div class="product-group">
-                            <div class="product-group-title">{{ product.name }}</div>
-                            <div class="product-group-spec">{{ product.specification }}</div>
-                            <div class="variants-grid" style="margin-top:.75rem;">
-                                {% for variant in product.variants %}
+                            {% if product.product_type != 'service' %}
+                                {% set size = product.name.split(' ')[0] if ' ' in product.name else 'Other' %}
+                                {% if size not in form_grouped %}
+                                    {% set _ = form_grouped.update({size: []}) %}
+                                {% endif %}
+                                {% set _ = form_grouped[size].append(product) %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <!-- Display grouped products -->
+                        {% for size in form_grouped|sort %}
+                        <div style="margin-bottom: 1.5rem; padding: 1rem; background: var(--off-white); border-radius: var(--radius); border: 1px solid var(--gray-100);">
+                            <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 0.75rem;">
+                                {{ size }} Ampoules
+                            </h4>
+                            <div class="variants-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+                                {% for product in form_grouped[size] %}
                                 <div>
-                                    <input type="checkbox" id="inq-{{ variant.id }}" class="variant-checkbox" data-vid="{{ variant.id }}" onchange="toggleQty({{ variant.id }})">
-                                    <label for="inq-{{ variant.id }}" class="variant-label">
-                                        <span class="color-dot color-{{ variant.color|lower }}"></span>
-                                        <span style="font-size:.82rem;font-weight:600;">{{ variant.color }}</span>
-                                        <div class="variant-price">PKR {{ "%.2f"|format(variant.price) }}</div>
+                                    <input type="checkbox" id="inq-{{ product.id }}" class="variant-checkbox" data-vid="{{ product.id }}" onchange="toggleQty({{ product.id }})">
+                                    <label for="inq-{{ product.id }}" class="variant-label">
+                                        <span class="color-dot color-{% if product.color|lower == 'amber' %}amber{% else %}transparent{% endif %}"></span>
+                                        <span style="font-size:.82rem;font-weight:600;">{{ product.color }}</span>
                                     </label>
-                                    <input type="number" id="qty-{{ variant.id }}" name="qty_{{ variant.id }}" class="form-control qty-input" placeholder="Qty" min="1" style="display:none;">
-                                    <input type="hidden" name="product_ids" id="pid-{{ variant.id }}" value="{{ variant.id }}" disabled>
+                                    <input type="number" id="qty-{{ product.id }}" name="qty_{{ product.id }}" class="form-control qty-input" placeholder="Qty" min="1" style="display:none;">
+                                    <input type="hidden" name="product_ids" id="pid-{{ product.id }}" value="{{ product.id }}" disabled>
                                 </div>
                                 {% endfor %}
                             </div>
