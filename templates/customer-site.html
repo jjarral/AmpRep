@@ -500,8 +500,6 @@
 <body>
 
 <!-- ═══ NAVBAR ═══════════════════════════════════════ -->
-<!-- In templates/customer-site.html -->
-<!-- ═══ NAVBAR ═══════════════════════════════════════ -->
 <nav class="navbar" id="navbar">
     <div class="navbar-inner">
         <a href="{{ url_for('main.index') }}" class="navbar-logo">
@@ -524,7 +522,6 @@
 <!-- ═══ HERO ══════════════════════════════════════════ -->
 <section class="hero" id="home">
     <div class="hero-grid">
-        <!-- Text -->
         <div class="hero-text">
             <div class="hero-eyebrow">
                 <i class="fas fa-certificate"></i>
@@ -564,7 +561,6 @@
             </div>
         </div>
 
-        <!-- Visual -->
         <div class="hero-visual">
             <div class="ampoule-showcase">
                 <div class="showcase-title">Our Product Range</div>
@@ -669,7 +665,6 @@
 </section>
 
 <!-- ═══ PRODUCTS ════════════════════════════════════════ -->
-<!-- ═══ PRODUCTS ════════════════════════════════════════ -->
 <section class="products-section" id="products">
     <div class="container">
         <div class="section-header-block center">
@@ -678,32 +673,42 @@
             <p class="section-subtitle">Choose from our range of pharmaceutical-grade glass ampoules and custom packaging solutions.</p>
         </div>
         
-        <!-- Group products by size -->
-        {% set grouped_products = {} %}
-        {% for product in products %}
-            {% if product.product_type != 'service' %}
-                {% set size = product.name.split(' ')[0] if ' ' in product.name else 'Other' %}
-                {% if size not in grouped_products %}
-                    {% set _ = grouped_products.update({size: []}) %}
+        <!-- Group products by size (1cc → 10cc) -->
+        {% set grouped = {} %}
+        {% for p in products %}
+            {% if p.product_type != 'service' %}
+                {% set size = p.name.split(' ')[0] if ' ' in p.name else 'Other' %}
+                {% if size not in grouped %}
+                    {% set _ = grouped.update({size: []}) %}
                 {% endif %}
-                {% set _ = grouped_products[size].append(product) %}
+                {% set _ = grouped[size].append(p) %}
             {% else %}
-                {% if 'services' not in grouped_products %}
-                    {% set _ = grouped_products.update({'services': []}) %}
+                {% if 'services' not in grouped %}
+                    {% set _ = grouped.update({'services': []}) %}
                 {% endif %}
-                {% set _ = grouped_products['services'].append(product) %}
+                {% set _ = grouped['services'].append(p) %}
             {% endif %}
         {% endfor %}
         
-        <!-- Display grouped ampoules -->
-        {% for size in grouped_products|sort if size != 'services' %}
+        <!-- Sort sizes: 1cc, 2cc, 3cc, 5cc, 10cc -->
+        {% set sorted_sizes = [] %}
+        {% for size in grouped.keys() %}
+            {% if size != 'services' %}
+                {% set num = size|replace('cc','')|int %}
+                {% set _ = sorted_sizes.append((num, size)) %}
+            {% endif %}
+        {% endfor %}
+        {% set sorted_sizes = sorted_sizes|sort(attribute=0) %}
+        
+        <!-- Display ampoules in ascending order -->
+        {% for num, size in sorted_sizes %}
         <div class="product-group" style="margin-bottom: 3rem;">
             <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--gold);">
                 {{ size }} Glass Ampoules
             </h3>
             
             <div class="products-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
-                {% for product in grouped_products[size] %}
+                {% for product in grouped[size] %}
                 <div class="product-card">
                     <div class="product-thumb">
                         <span class="product-type-badge">
@@ -744,15 +749,14 @@
         </div>
         {% endfor %}
         
-        <!-- Display services separately -->
-        {% if 'services' in grouped_products %}
+        <!-- Services section -->
+        {% if 'services' in grouped %}
         <div class="product-group" style="margin-top: 4rem;">
             <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--navy); margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--gold);">
                 Additional Services
             </h3>
-            
             <div class="products-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
-                {% for product in grouped_products['services'] %}
+                {% for product in grouped['services'] %}
                 <div class="product-card">
                     <div class="product-thumb" style="background: linear-gradient(135deg, var(--gold) 0%, var(--gold-lt) 100%);">
                         <span class="product-type-badge" style="background: rgba(12,35,64,.2); border-color: var(--navy); color: var(--navy);">
@@ -776,7 +780,6 @@
     </div>
 </section>
 
-<!-- ═══ QUOTE FORM ══════════════════════════════════════ -->
 <!-- ═══ QUOTE FORM ══════════════════════════════════════ -->
 <section class="quote-section" id="inquiry">
     <div class="container">
@@ -863,20 +866,27 @@
                             <i class="fas fa-info-circle"></i> Click a variant to select it, then enter the quantity needed.
                         </p>
                         
-                        <!-- Group products by size in form -->
+                        <!-- Group products by size in form (1cc → 10cc) -->
                         {% set form_grouped = {} %}
-                        {% for product in products %}
-                            {% if product.product_type != 'service' %}
-                                {% set size = product.name.split(' ')[0] if ' ' in product.name else 'Other' %}
+                        {% for p in products %}
+                            {% if p.product_type != 'service' %}
+                                {% set size = p.name.split(' ')[0] if ' ' in p.name else 'Other' %}
                                 {% if size not in form_grouped %}
                                     {% set _ = form_grouped.update({size: []}) %}
                                 {% endif %}
-                                {% set _ = form_grouped[size].append(product) %}
+                                {% set _ = form_grouped[size].append(p) %}
                             {% endif %}
                         {% endfor %}
                         
-                        <!-- Display grouped products -->
-                        {% for size in form_grouped|sort %}
+                        {% set form_sorted = [] %}
+                        {% for size in form_grouped.keys() %}
+                            {% set num = size|replace('cc','')|int %}
+                            {% set _ = form_sorted.append((num, size)) %}
+                        {% endfor %}
+                        {% set form_sorted = form_sorted|sort(attribute=0) %}
+                        
+                        <!-- Display grouped products in form -->
+                        {% for num, size in form_sorted %}
                         <div style="margin-bottom: 1.5rem; padding: 1rem; background: var(--off-white); border-radius: var(--radius); border: 1px solid var(--gray-100);">
                             <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 0.75rem;">
                                 {{ size }} Ampoules
