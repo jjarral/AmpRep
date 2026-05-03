@@ -373,7 +373,18 @@ class PayrollPayment(db.Model):
     
     employee = db.relationship('Employee', backref='payments')
     timesheet = db.relationship('Timesheet', backref='payments')
-
+class BusinessSettings(db.Model):
+    __tablename__ = 'business_settings'
+    
+    id = db.Column(db.Integer, primary_key=True, default=1)
+    company_name = db.Column(db.String(100), default='AMPOULEX')
+    phone_1 = db.Column(db.String(20), default='0340-5336238')
+    phone_2 = db.Column(db.String(20), default='0331-9980906')
+    email = db.Column(db.String(100), default='info@ampoulex.com')
+    website = db.Column(db.String(100), default='www.ampoulex.com')
+    address = db.Column(db.Text, default='Malik Arshad Farm House (Malik Akram Street) Darbar e Kareemi, Stop; G.T Road Wah Cantt, Rawalpindi, Punjab, 47000')
+    ntn = db.Column(db.String(50), default='2812596-7')
+    strn = db.Column(db.String(50), default='37406-5984131-3')
 # ============================================================================
 # PRODUCTION/MANUFACTURING MODELS (PHASE 3)
 # ============================================================================
