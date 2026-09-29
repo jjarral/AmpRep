@@ -113,6 +113,13 @@ def create_app():
                     f"VERCEL={bool(os.environ.get('VERCEL'))}")
 
     if db_url and isinstance(db_url, str) and 'postgres' in db_url:
+        # Vercel's Python runtime does not include psycopg3; use the bundled
+        # psycopg2 driver explicitly when SQLAlchemy receives a plain Postgres URL.
+        if db_url.startswith('postgres://'):
+            db_url = 'postgresql+psycopg2://' + db_url[len('postgres://'):]
+        elif db_url.startswith('postgresql://'):
+            db_url = 'postgresql+psycopg2://' + db_url[len('postgresql://'):]
+
         if 'connect_timeout' not in db_url:
             sep = '&' if '?' in db_url else '?'
             db_url += f"{sep}connect_timeout=10"
