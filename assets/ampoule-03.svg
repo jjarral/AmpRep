@@ -1,1 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-label="3 millilitre ampoule"><defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#7c8b8c" stop-opacity=".22"/><stop offset=".2" stop-color="#fff" stop-opacity=".92"/><stop offset=".5" stop-color="#d8e0df" stop-opacity=".25"/><stop offset=".8" stop-color="#fff" stop-opacity=".88"/><stop offset="1" stop-color="#778685" stop-opacity=".2"/></linearGradient><linearGradient id="a" x1="0" x2="1"><stop stop-color="#9a6429" stop-opacity=".45"/><stop offset=".25" stop-color="#f1d69c" stop-opacity=".8"/><stop offset=".52" stop-color="#b87729" stop-opacity=".3"/><stop offset=".82" stop-color="#f5dfaa" stop-opacity=".76"/><stop offset="1" stop-color="#8d5926" stop-opacity=".4"/></linearGradient></defs><ellipse cx="110" cy="202" rx="49" ry="5" fill="#3c2c1e" opacity=".09"/><g transform="translate(78 69)" stroke="#725d45" stroke-opacity=".72" stroke-width="1.5" stroke-linejoin="round"><path d="M20.5 3h23.0v9h-23.0z" fill="url(#g)"/><path d="M23.0 12v25c0 15-1 23-7 34l-8 14c-4 7-5 13-5 22v35c0 8 5 13 13 13h38c8 0 13-5 13-13V107c0-9-1-15-5-22l-8-14c-6-11-7-19-7-34V12" fill="url(#g)"/><path d="M23.0 12h17.9m-40.3 73h62.7m-53.8 10h43.5" fill="none"/><path d="M25.6 17v19m12.8-19v19m-30.7 63v18m35.8-18v18" stroke="#fff" stroke-opacity=".92" stroke-width="3" stroke-linecap="round"/></g><g fill="#8b704b" font-family="Arial,sans-serif" font-size="7" letter-spacing="1.5"><text x="110" y="16" text-anchor="middle">GLASS / CLEAR</text><text x="110" y="214" text-anchor="middle">Ampoulex · 03 ML</text></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 500" role="img" aria-label="3 millilitre clear glass ampoule illustration">
+<defs>
+  <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a5c5d3" stop-opacity=".18"/><stop offset=".12" stop-color="#f7ffff" stop-opacity=".68"/><stop offset=".31" stop-color="#a4cbd7" stop-opacity=".13"/><stop offset=".51" stop-color="#f7ffff" stop-opacity=".22"/><stop offset=".76" stop-color="#f4ffff" stop-opacity=".7"/><stop offset="1" stop-color="#8eafbd" stop-opacity=".24"/></linearGradient>
+  <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f9ffff" stop-opacity=".92"/><stop offset="1" stop-color="#9ce0ec" stop-opacity=".35"/></linearGradient>
+  <radialGradient id="aura"><stop stop-color="#9ce0ec" stop-opacity=".18"/><stop offset="1" stop-color="#9ce0ec" stop-opacity="0"/></radialGradient>
+  <filter id="softGlow" x="-60%" y="-30%" width="220%" height="160%"><feGaussianBlur stdDeviation="10"/></filter>
+</defs>
+<ellipse cx="160" cy="453" rx="111" ry="27" fill="url(#aura)" filter="url(#softGlow)"/>
+<g transform="translate(160 11) scale(0.92 0.94) translate(-160 -11)">
+  <path d="M128 34 C128 20 139 11 160 11 C181 11 192 20 192 34 L192 111 C192 126 196 140 205 154 L226 187 C233 199 237 214 237 229 L237 452 C237 471 226 483 206 483 L114 483 C94 483 83 471 83 452 L83 229 C83 214 87 199 94 187 L115 154 C124 140 128 126 128 111 Z" fill="url(#glass)" stroke="#e6f5f2" stroke-opacity=".84" stroke-width="2.1" stroke-linejoin="round"/>
+  <path d="M130 34 C130 22 141 17 160 17 C179 17 190 22 190 34" fill="none" stroke="url(#rim)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M130 39 H190" fill="none" stroke="#f9ffff" stroke-opacity=".58" stroke-width="1.5"/>
+  <path d="M132 42 V109 C132 130 138 144 147 158" fill="none" stroke="#f9ffff" stroke-opacity=".68" stroke-width="3.4" stroke-linecap="round"/>
+  <path d="M188 45 V108 C188 128 183 143 175 157" fill="none" stroke="#9ce0ec" stroke-opacity=".38" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M113 158 C120 145 124 132 126 120" fill="none" stroke="#f9ffff" stroke-opacity=".3" stroke-width="1.2"/>
+  <path d="M108 169 H212" fill="none" stroke="#f9ffff" stroke-opacity=".24" stroke-width="1.2"/>
+  <path d="M89 221 V449 C89 465 98 475 114 475 H206 C222 475 231 465 231 449 V221" fill="none" stroke="#f9ffff" stroke-opacity=".65" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M96 242 V445 C96 458 102 466 115 466 H205" fill="none" stroke="#9ce0ec" stroke-opacity=".5" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M223 243 V444 C223 457 218 465 206 466" fill="none" stroke="#f9ffff" stroke-opacity=".52" stroke-width="2" stroke-linecap="round"/>
+  <path d="M84 451 C85 470 96 481 114 481 H206 C224 481 235 470 236 451" fill="none" stroke="url(#rim)" stroke-width="3.4" stroke-linecap="round"/>
+  <path d="M101 191 C96 201 94 212 94 226" fill="none" stroke="#f9ffff" stroke-opacity=".48" stroke-width="1.5"/>
+  <path d="M220 192 C226 203 228 214 228 229" fill="none" stroke="#9ce0ec" stroke-opacity=".5" stroke-width="1.5"/>
+</g>
+<path d="M57 415 H75 M245 415 H263" stroke="#9ce0ec" stroke-opacity=".45" stroke-width="1"/>
+</svg>
