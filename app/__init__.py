@@ -119,6 +119,10 @@ def create_app():
             db_url = 'postgresql+psycopg2://' + db_url[len('postgres://'):]
         elif db_url.startswith('postgresql://'):
             db_url = 'postgresql+psycopg2://' + db_url[len('postgresql://'):]
+        elif db_url.startswith('postgresql+psycopg://'):
+            db_url = 'postgresql+psycopg2://' + db_url[len('postgresql+psycopg://'):]
+        elif db_url.startswith('postgresql+psycopg3://'):
+            db_url = 'postgresql+psycopg2://' + db_url[len('postgresql+psycopg3://'):]
 
         if 'connect_timeout' not in db_url:
             sep = '&' if '?' in db_url else '?'
