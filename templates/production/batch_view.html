@@ -122,45 +122,45 @@
         <div class="row">
             <div class="col-md-12">
                 <h5><i class="fas fa-clipboard-check"></i> Quality Checks</h5>
-                {% if batch.quality_checks %}
+                {% if batch.qc_results %}
                 <table class="table table-sm">
                     <thead>
                         <tr>
-                            <th>Check Type</th>
+                            <th>Parameter</th>
                             <th>Result</th>
-                            <th>Checked Qty</th>
-                            <th>Passed</th>
-                            <th>Failed</th>
-                            <th>Checked By</th>
+                            <th>Measured value</th>
+                            <th>Unit</th>
+                            <th>Remarks</th>
+                            <th>Tested By</th>
                             <th>Date</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for check in batch.quality_checks %}
+                        {% for check in batch.qc_results %}
                         <tr>
-                            <td>{{ check.check_type }}</td>
+                            <td>{{ check.parameter.parameter_name }}</td>
                             <td>
-                                <span class="badge badge-{{ 'success' if check.check_result == 'pass' else 'danger' if check.check_result == 'fail' else 'warning' }}">
-                                    {{ check.check_result|title }}
+                                <span class="badge badge-{{ 'success' if check.result == 'pass' else 'danger' if check.result == 'fail' else 'warning' }}">
+                                    {{ check.result|title }}
                                 </span>
                             </td>
-                            <td>{{ check.checked_quantity }}</td>
-                            <td>{{ check.passed_quantity }}</td>
-                            <td class="text-danger">{{ check.failed_quantity }}</td>
-                            <td>{{ check.checked_by or '-' }}</td>
-                            <td>{{ check.checked_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ check.tested_value if check.tested_value is not none else '—' }}</td>
+                            <td>{{ check.parameter.unit or '—' }}</td>
+                            <td>{{ check.remarks or '—' }}</td>
+                            <td>{{ check.tested_by or '—' }}</td>
+                            <td>{{ check.test_date.strftime('%Y-%m-%d %H:%M') if check.test_date else '—' }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
                 {% else %}
-                <p class="text-muted">No quality checks recorded yet</p>
+                <p class="text-muted">No quality results recorded for this batch yet.</p>
                 {% endif %}
 
                 <!-- Add Quality Check Button -->
-                {% if batch.status == 'in_progress' %}
-                <a href="{{ url_for('main.add_quality_check', id=batch.id) }}" class="btn btn-sm btn-info mt-2">
-                    <i class="fas fa-plus"></i> Add Quality Check
+                {% if batch.status in ['in_progress', 'completed'] %}
+                <a href="{{ url_for('main.add_qc_results', batch_id=batch.id) }}" class="btn btn-sm btn-info mt-2">
+                    <i class="fas fa-plus"></i> Record quality results
                 </a>
                 {% endif %}
             </div>

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}New Receipt Voucher{% endblock %}
-{% block page_title %}New Receipt Voucher{% endblock %}
+{% block title %}{{ 'Edit' if voucher else 'New' }} Receipt Voucher{% endblock %}
+{% block page_title %}{{ 'Edit' if voucher else 'New' }} Receipt Voucher{% endblock %}
 {% block breadcrumb_active %}Receipt Vouchers{% endblock %}
 
 {% block content %}
@@ -8,13 +8,13 @@
     <div class="card-header">
         <h3 class="card-title"><i class="fas fa-plus"></i> New Receipt Voucher</h3>
     </div>
-    <form method="POST">
+    <form method="POST" action="{{ url_for('main.edit_receipt_voucher', id=voucher.id) if voucher else url_for('main.add_receipt_voucher') }}">
         <div class="card-body">
             <div class="row mb-4">
                 <div class="col-md-4">
                     <div class="form-group">
                         <label>Voucher Date *</label>
-                        <input type="date" name="voucher_date" class="form-control" required>
+                        <input type="date" name="voucher_date" class="form-control" value="{{ voucher.voucher_date.isoformat() if voucher else '' }}" required>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -22,9 +22,9 @@
                         <label>Payment Method *</label>
                         <select name="payment_method" class="form-control" required onchange="toggleBankField()">
                             <option value="">Select Method</option>
-                            <option value="cash">Cash</option>
-                            <option value="bank">Bank Transfer</option>
-                            <option value="cheque">Cheque</option>
+                            <option value="cash" {{ 'selected' if voucher and voucher.payment_method == 'cash' else '' }}>Cash</option>
+                            <option value="bank" {{ 'selected' if voucher and voucher.payment_method == 'bank' else '' }}>Bank Transfer</option>
+                            <option value="cheque" {{ 'selected' if voucher and voucher.payment_method == 'cheque' else '' }}>Cheque</option>
                         </select>
                     </div>
                 </div>
@@ -34,7 +34,7 @@
                         <select name="bank_account_id" class="form-control">
                             <option value="">Select Account</option>
                             {% for account in bank_accounts %}
-                            <option value="{{ account.id }}">{{ account.account_name }}</option>
+                            <option value="{{ account.id }}" {{ 'selected' if voucher and voucher.bank_account_id == account.id else '' }}>{{ account.account_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -45,7 +45,7 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Payer Name *</label>
-                        <input type="text" name="payer_name" class="form-control" required>
+                        <input type="text" name="payer_name" class="form-control" value="{{ voucher.payer_name if voucher else '' }}" required>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -53,8 +53,8 @@
                         <label>Payer Type</label>
                         <select name="payer_type" class="form-control">
                             <option value="">Select Type</option>
-                            <option value="customer">Customer</option>
-                            <option value="other">Other</option>
+                            <option value="customer" {{ 'selected' if voucher and voucher.payer_type == 'customer' else '' }}>Customer</option>
+                            <option value="other" {{ 'selected' if voucher and voucher.payer_type == 'other' else '' }}>Other</option>
                         </select>
                     </div>
                 </div>
@@ -64,7 +64,7 @@
                         <select name="customer_id" class="form-control">
                             <option value="">Select Customer</option>
                             {% for customer in customers %}
-                            <option value="{{ customer.id }}">{{ customer.name }} - {{ customer.business_name }}</option>
+                            <option value="{{ customer.id }}" {{ 'selected' if voucher and voucher.payer_id == customer.id else '' }}>{{ customer.name }} - {{ customer.business_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -73,13 +73,14 @@
             
             <div class="form-group">
                 <label>Description</label>
-                <textarea name="description" class="form-control" rows="2"></textarea>
+                <textarea name="description" class="form-control" rows="2">{{ voucher.description if voucher else '' }}</textarea>
             </div>
             
             <h5 class="mt-4"><i class="fas fa-list"></i> Receipt Lines</h5>
             <div class="table-responsive">
                 <table class="table table-bordered" id="receiptLinesTable">
                     <thead class="bg-light">
+                        {% for line in (voucher.lines if voucher else [none]) %}
                         <tr>
                             <th>Account</th>
                             <th>Description</th>
@@ -93,17 +94,17 @@
                                 <select name="account_id[]" class="form-control" required>
                                     <option value="">Select Account</option>
                                     {% for account in accounts %}
-                                    <option value="{{ account.id }}">
+                                    <option value="{{ account.id }}" {{ 'selected' if line and line.account_id == account.id else '' }}>
                                         {{ account.account_code }} - {{ account.account_name }}
                                     </option>
                                     {% endfor %}
                                 </select>
                             </td>
                             <td>
-                                <input type="text" name="line_description[]" class="form-control">
+                                <input type="text" name="line_description[]" class="form-control" value="{{ line.description if line else '' }}">
                             </td>
                             <td>
-                                <input type="number" name="amount[]" class="form-control" step="0.01" value="0" required>
+                                <input type="number" name="amount[]" class="form-control" step="0.01" min="0.01" value="{{ line.amount if line else '' }}" required>
                             </td>
                             <td>
                                 <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">
@@ -111,6 +112,7 @@
                                 </button>
                             </td>
                         </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="addLineRow()">
@@ -120,7 +122,7 @@
         </div>
         <div class="card-footer">
             <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Save Receipt
+                <i class="fas fa-save"></i> {{ 'Save changes' if voucher else 'Save Receipt' }}
             </button>
             <a href="{{ url_for('main.receipt_vouchers') }}" class="btn btn-secondary">
                 <i class="fas fa-times"></i> Cancel

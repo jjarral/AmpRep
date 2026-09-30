@@ -12,83 +12,153 @@
     
     <style>
     :root {
-        --ax-navy: #0c2340; --ax-navy-md: #163257; --ax-navy-lt: #1e4a7c;
-        --ax-gold: #c8a84b; --ax-gold-lt: #e6cc7a; --ax-green: #0d8a5f;
-        --ax-red: #dc2626; --ax-off-white: #f6f8fc; --ax-gray-100: #eef1f7;
-        --ax-gray-300: #ccd3df; --ax-gray-500: #6b7a99; --ax-gray-700: #2d3a52;
-        --ax-text: #1a243a; --ax-radius: 10px; --ax-shadow: 0 2px 12px rgba(12,35,64,.07);
-        --ax-shadow-md: 0 6px 24px rgba(12,35,64,.12);
+        --ax-ink: #11191d;
+        --ax-ink-soft: #192328;
+        --ax-ink-raised: #202c31;
+        --ax-paper: #f2f3ef;
+        --ax-white: #ffffff;
+        --ax-text: #172126;
+        --ax-muted: #647279;
+        --ax-line: #dce1de;
+        --ax-gold: #c39b48;
+        --ax-gold-bright: #e2c16e;
+        --ax-cyan: #53c6ca;
+        --ax-green: #167758;
+        --ax-red: #b8433f;
+        --ax-radius: 12px;
+        --ax-shadow: 0 8px 28px rgba(20, 32, 36, .07);
+        --ax-side-width: 264px;
+        --ax-top-height: 68px;
     }
-    body, .wrapper { font-family: 'Inter', sans-serif !important; }
+    * { scrollbar-color: #87938f transparent; }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body, .wrapper { font-family: 'Inter', sans-serif !important; color: var(--ax-text); }
+    body { min-width: 320px; background: var(--ax-paper) !important; overflow-x: hidden; }
+    .wrapper { min-height: 100vh; background: var(--ax-paper); }
 
-    /* ── KILL DOUBLE SCROLLBAR ── */
-    html, body { overflow: hidden !important; height: 100% !important; margin: 0 !important; }
-    .main-header.navbar { height: 3.5rem !important; }
-    .main-sidebar {
-        height: calc(100vh - 3.5rem) !important; overflow-y: auto !important; overflow-x: hidden !important;
-        background: var(--ax-navy) !important; width: 250px !important;
+    .skip-link { position: fixed; z-index: 3000; top: 8px; left: 8px; transform: translateY(-150%); background: #fff; color: #111; padding: 12px 16px; border-radius: 8px; box-shadow: var(--ax-shadow); }
+    .skip-link:focus { transform: translateY(0); }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--ax-cyan) !important; outline-offset: 2px; }
+
+    /* The shell has one document scroll area; the navigation scrolls only when needed. */
+    .main-header.navbar { position: fixed; z-index: 1040; inset: 0 0 auto 0; height: var(--ax-top-height); margin-left: 0 !important; padding: 0 28px; display: flex; align-items: center; background: var(--ax-ink) !important; border: 0; box-shadow: 0 1px 0 rgba(255,255,255,.08); }
+    .main-header .navbar-nav { align-items: center; flex-direction: row; }
+    .ax-menu-toggle { width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 10px; color: #f3f5f2 !important; background: rgba(255,255,255,.06); margin-right: 18px; cursor: pointer; }
+    .ax-menu-toggle:hover { background: rgba(255,255,255,.12); }
+    .ax-top-context { color: rgba(245,246,242,.72); font-size: .78rem; letter-spacing: .03em; }
+    .ax-top-context strong { display: block; margin-top: 3px; color: #fff; font-size: .94rem; font-weight: 600; letter-spacing: .01em; text-transform: none; }
+    .main-header .nav-link { min-height: 42px; padding: 10px 12px !important; border: 0; border-radius: 9px; color: rgba(255,255,255,.82) !important; font: inherit; cursor: pointer; }
+    .main-header .nav-link:hover { background: rgba(255,255,255,.08); color: #fff !important; }
+    .main-header .dropdown-toggle { max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .main-header .dropdown { position: relative; }
+    .main-header .dropdown-menu:not([hidden]) { display: block; top: calc(100% - 2px); right: 0; left: auto; z-index: 1050; }
+    .main-header .nav-link .badge { font-size: .65rem; vertical-align: top; }
+    .ax-site-link { border: 1px solid rgba(255,255,255,.16); font-size: .78rem; }
+    .ax-avatar { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin-right: 8px; border: 1px solid rgba(226,193,110,.5); border-radius: 50%; background: rgba(195,155,72,.16); color: var(--ax-gold-bright); font-size: .74rem; font-weight: 700; }
+
+    .main-sidebar { position: fixed !important; z-index: 1035; top: var(--ax-top-height) !important; bottom: 0; left: 0; width: var(--ax-side-width) !important; height: auto !important; overflow-y: auto !important; overflow-x: hidden !important; padding-bottom: 18px; background: var(--ax-ink) !important; border-right: 1px solid rgba(255,255,255,.07); box-shadow: none !important; transition: transform .24s ease; }
+    .brand-link { position: static !important; height: 78px; margin: 0 18px !important; padding: 0 4px !important; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,.1) !important; }
+    .brand-link .brand-image { float: none; width: 42px; height: 42px !important; max-height: none; margin: 0 !important; padding: 5px; object-fit: contain; opacity: 1; filter: none !important; background: #f4f2ec; border-radius: 11px; }
+    .brand-link .brand-text { color: #f7f6f1 !important; font-size: 1.05rem; font-weight: 700 !important; letter-spacing: .02em; }
+    .brand-text::after { content: 'OPERATIONS'; display: block; margin-top: 3px; color: var(--ax-gold-bright); font-size: .57rem; font-weight: 600; letter-spacing: .18em; }
+    .main-sidebar .sidebar { padding: 0 12px; }
+    .main-sidebar .user-panel { margin: 0 !important; padding: 16px 9px 14px !important; border-bottom: 1px solid rgba(255,255,255,.09); }
+    .user-panel .info { padding-left: 0; }
+    .user-panel .info a { color: #f5f5ef !important; font-size: .83rem; font-weight: 600 !important; }
+    .user-panel .info small { display: block; margin-top: 3px; color: rgba(239,241,236,.48) !important; font-size: .69rem; letter-spacing: .04em; }
+    .ax-nav-search { position: relative; margin: 14px 5px 12px; }
+    .ax-nav-search i { position: absolute; top: 12px; left: 12px; color: rgba(255,255,255,.42); font-size: .8rem; }
+    .ax-nav-search input { width: 100%; height: 38px; padding: 0 12px 0 34px; border: 1px solid rgba(255,255,255,.13); border-radius: 8px; outline: 0; background: rgba(255,255,255,.06); color: #fff; font: inherit; font-size: .75rem; }
+    .ax-nav-search input::placeholder { color: rgba(255,255,255,.45); }
+    .ax-nav-search input:focus { border-color: var(--ax-cyan); box-shadow: 0 0 0 2px rgba(83,198,202,.18); }
+    .ax-nav-search .search-hint { position: absolute; top: 8px; right: 9px; padding: 2px 5px; border: 1px solid rgba(255,255,255,.16); border-radius: 4px; color: rgba(255,255,255,.4); font-size: .58rem; }
+    .nav-sidebar { padding-bottom: 12px; }
+    .nav-sidebar .nav-header { padding: 18px 10px 6px !important; color: var(--ax-gold-bright) !important; font-size: .59rem !important; font-weight: 700 !important; letter-spacing: .16em !important; }
+    .nav-sidebar .nav-item { margin: 2px 0; }
+    .nav-sidebar .nav-link { min-height: 40px; margin: 0 !important; padding: 9px 10px !important; display: flex; align-items: center; border-radius: 8px !important; color: rgba(243,245,241,.69) !important; font-size: .77rem !important; transition: background .16s ease, color .16s ease; }
+    .nav-sidebar .nav-link:hover { background: rgba(255,255,255,.075) !important; color: #fff !important; }
+    .nav-sidebar .nav-link.active { background: rgba(195,155,72,.17) !important; color: #f2d48b !important; box-shadow: inset 2px 0 var(--ax-gold-bright); }
+    .nav-sidebar .nav-icon { width: 22px !important; margin-right: 10px !important; color: inherit; font-size: .82rem !important; text-align: center; }
+    .nav-sidebar .nav-link p { margin: 0; display: flex; flex: 1; align-items: center; justify-content: space-between; }
+    .nav-sidebar .nav-link .right { position: static; margin-left: 8px; color: rgba(255,255,255,.35); }
+    .nav-treeview { margin: 2px 0 7px !important; padding: 4px 0 4px 10px !important; border-left: 1px solid rgba(255,255,255,.12); background: transparent !important; }
+    .nav-sidebar .nav-treeview { display: none; }
+    .nav-sidebar .has-treeview.menu-open > .nav-treeview { display: block !important; }
+    .nav-treeview .nav-link { min-height: 34px; padding: 7px 10px !important; font-size: .73rem !important; }
+    .nav-treeview .nav-icon { font-size: .7rem !important; }
+    .nav-sidebar .menu-open > .nav-link { color: #fff !important; }
+    .ax-nav-empty { display: none; padding: 12px; color: rgba(255,255,255,.56); font-size: .76rem; }
+
+    .content-wrapper { min-height: 100vh !important; margin: 0 0 0 var(--ax-side-width) !important; padding-top: var(--ax-top-height); overflow: visible !important; background: var(--ax-paper) !important; }
+    .content-header { position: sticky; top: var(--ax-top-height); z-index: 1020; margin: 0 !important; padding: 24px 34px 14px !important; background: rgba(242,243,239,.95) !important; border-bottom: 1px solid var(--ax-line) !important; backdrop-filter: blur(14px); }
+    .content-header h1 { margin: 0 !important; color: var(--ax-text) !important; font-size: 1.42rem !important; font-weight: 700 !important; letter-spacing: -.035em; }
+    .breadcrumb { margin: 8px 0 0 !important; padding: 0 !important; background: transparent !important; font-size: .72rem; }
+    .breadcrumb-item a { color: var(--ax-muted); }
+    .breadcrumb-item.active { color: #26343a; font-weight: 600; }
+    .content { padding: 22px 34px 32px !important; }
+    .content > .container-fluid { padding: 0; }
+    .main-footer { margin: 0 0 0 var(--ax-side-width) !important; padding: 16px 34px !important; border: 0 !important; border-top: 1px solid var(--ax-line) !important; background: var(--ax-paper) !important; color: var(--ax-muted) !important; font-size: .72rem; }
+    .main-footer a { color: var(--ax-text); }
+    .card, .panel-card { border: 1px solid var(--ax-line) !important; border-radius: var(--ax-radius) !important; box-shadow: var(--ax-shadow) !important; background: var(--ax-white) !important; }
+    .card-header { padding: 16px 20px !important; border-bottom: 1px solid var(--ax-line) !important; background: #fff !important; }
+    .card-header .card-title, .card-title { color: var(--ax-text) !important; font-size: .95rem !important; font-weight: 700 !important; }
+    .card-body { padding: 20px; }
+    .btn { min-height: 38px; border-radius: 8px; font-size: .82rem; font-weight: 600; }
+    .btn-primary { background: var(--ax-ink) !important; border-color: var(--ax-ink) !important; }
+    .btn-primary:hover { background: #26363c !important; border-color: #26363c !important; }
+    .btn-success { background: var(--ax-green) !important; border-color: var(--ax-green) !important; }
+    .btn-warning { background: #e4c46f !important; border-color: #e4c46f !important; color: #231e13 !important; }
+    .form-control, .custom-select { min-height: 40px; border: 1px solid #cfd7d4 !important; border-radius: 8px !important; color: var(--ax-text); }
+    .form-control:focus, .custom-select:focus { border-color: #287e83 !important; box-shadow: 0 0 0 3px rgba(83,198,202,.18) !important; }
+    .table thead th { background: #f3f5f2 !important; border-top: 0; color: #59696e !important; font-size: .68rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+    .table td, .table th { vertical-align: middle; }
+    .badge-primary { background: var(--ax-ink) !important; }
+    .badge-success { background: #dcefe6 !important; color: #125c43 !important; }
+    .badge-warning { background: #f4e9c9 !important; color: #6d4b0c !important; }
+    .alert { border: 0; border-left: 3px solid currentColor; border-radius: 8px; }
+    .ax-scrim { display: none; }
+
+    @media (max-width: 900px) {
+        :root { --ax-side-width: 245px; }
+        .main-header.navbar { padding: 0 18px; }
+        .content-header { padding: 20px 22px 12px !important; }
+        .content { padding: 18px 22px 28px !important; }
+        .main-footer { padding: 14px 22px !important; }
     }
-    .content-wrapper {
-        height: calc(100vh - 3.5rem) !important; overflow-y: auto !important; overflow-x: hidden !important;
-        min-height: auto !important; background: var(--ax-off-white) !important; margin-left: 250px !important;
-    }
-    .main-sidebar::-webkit-scrollbar, .content-wrapper::-webkit-scrollbar { width: 4px; }
-    .main-sidebar::-webkit-scrollbar-thumb { background: rgba(200,168,75,.2); border-radius: 4px; }
-
-    /* ── REMOVE EMPTY SPACE ABOVE USER PANEL ── */
-    .brand-link { height: 3.5rem !important; margin-bottom: 0 !important; padding: 0 1rem !important; display: flex; align-items: center; }
-    .main-sidebar .user-panel { margin-top: 0 !important; padding: 8px 15px !important; border-bottom: 1px solid rgba(255,255,255,.1); }
-    .user-panel .info a { color: var(--ax-gold-lt) !important; font-weight: 600 !important; }
-
-    /* ── NAVIGATION & ACTIVE STATES ── */
-    .nav-sidebar .nav-header { padding: 12px 15px 6px !important; font-size: 10px !important; letter-spacing: .1em !important; color: var(--ax-gold) !important; font-weight: 700 !important; text-transform: uppercase; }
-    .nav-sidebar .nav-link { padding: 8px 15px !important; font-size: 13px !important; color: rgba(255,255,255,.75) !important; border-radius: 6px !important; margin: 2px 8px !important; transition: all .15s !important; }
-    .nav-sidebar .nav-link:hover { background: rgba(255,255,255,.08) !important; color: #fff !important; }
-    .nav-sidebar .nav-link.active { background: rgba(200,168,75,.15) !important; color: var(--ax-gold-lt) !important; }
-    .nav-sidebar .nav-icon { font-size: 14px !important; margin-right: 8px !important; width: 1.3rem !important; }
-    .nav-treeview { background: rgba(0,0,0,.1) !important; border-radius: 0 0 6px 6px !important; margin: 0 8px 4px !important; }
-    .nav-treeview .nav-link { padding: 6px 15px 6px 32px !important; font-size: 12.5px !important; color: rgba(255,255,255,.65) !important; }
-    .nav-treeview .nav-link.active { color: var(--ax-gold-lt) !important; background: rgba(200,168,75,.12) !important; }
-
-    /* ── CONTENT & COMPONENTS ── */
-    .content-header { position: sticky; top: 0; z-index: 1020; background: var(--ax-off-white) !important; padding: 1rem 1.5rem !important; margin-bottom: 1rem; border-bottom: 1px solid var(--ax-gray-100) !important; }
-    .content-header h1 { font-size: 1.4rem !important; font-weight: 700 !important; color: var(--ax-navy) !important; }
-    .content { padding: 1rem 1.5rem !important; }
-    .card { border: 1px solid var(--ax-gray-100) !important; border-radius: var(--ax-radius) !important; box-shadow: var(--ax-shadow) !important; background: #fff !important; }
-    .card-header { background: #fff !important; border-bottom: 1px solid var(--ax-gray-100) !important; padding: 1rem 1.25rem !important; }
-    .card-header .card-title { font-size: 1rem !important; font-weight: 700 !important; color: var(--ax-navy) !important; }
-    .btn-primary { background: var(--ax-navy) !important; border-color: var(--ax-navy) !important; }
-    .btn-success { background: var(--ax-green) !important; }
-    .btn-warning { background: var(--ax-gold) !important; color: var(--ax-navy) !important; }
-    .table thead th { background: var(--ax-off-white) !important; font-size: .8rem; font-weight: 700; text-transform: uppercase; color: var(--ax-gray-500) !important; }
-    .form-control { border: 1.5px solid var(--ax-gray-100) !important; border-radius: 8px !important; }
-    .form-control:focus { border-color: var(--ax-navy-lt) !important; box-shadow: 0 0 0 3px rgba(22,50,87,.1) !important; }
-    .badge-primary { background: var(--ax-navy) !important; }
-    .badge-success { background: var(--ax-green) !important; }
-    .badge-warning { background: var(--ax-gold) !important; color: var(--ax-navy) !important; }
-    .main-footer { background: var(--ax-navy) !important; color: rgba(255,255,255,.6) !important; padding: 1rem 1.5rem; margin-left: 250px !important; font-size: .85rem; }
-    
-    @media (max-width: 768px) {
-        .main-sidebar { transform: translateX(-100%); transition: transform .3s; }
-        .sidebar-open .main-sidebar { transform: translateX(0); }
+    @media (max-width: 767.98px) {
+        .main-sidebar { transform: translateX(-102%); width: min(290px, 86vw) !important; }
+        body.ax-nav-open .main-sidebar { transform: translateX(0); }
+        .ax-scrim { position: fixed; z-index: 1030; inset: var(--ax-top-height) 0 0; background: rgba(8,14,17,.55); }
+        body.ax-nav-open .ax-scrim { display: block; }
         .content-wrapper, .main-footer { margin-left: 0 !important; }
+        .main-header.navbar { padding: 0 12px; }
+        .ax-menu-toggle { margin-right: 10px; }
+        .ax-top-context { display: none; }
+        .main-header .nav-link { padding: 9px 8px !important; }
+        .ax-site-link span { display: none; }
+        .content-header { padding: 18px 17px 12px !important; }
+        .content { padding: 16px 14px 24px !important; }
+        .main-footer { padding: 13px 16px !important; }
     }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
-    .badge-low-stock { animation: pulse 2s infinite; }
-</style>
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+    }
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
+<a class="skip-link" href="#main-content">Skip to main content</a>
 <div class="wrapper">
 
     <!-- Navbar -->
-    <nav class="main-header navbar navbar-expand navbar-dark">
+    <nav class="main-header navbar navbar-expand navbar-dark" aria-label="Main toolbar">
         <ul class="navbar-nav">
-            <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a></li>
+            <li class="nav-item"><button class="nav-link ax-menu-toggle" id="ax-menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primary-navigation"><i class="fas fa-bars" aria-hidden="true"></i></button></li>
+            <li class="nav-item ax-top-context">Ampoulex <strong>Operations console</strong></li>
         </ul>
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('main.products') }}" title="Low Stock">
+                <a class="nav-link" href="{{ url_for('main.products') }}" title="Low stock" aria-label="Open products and stock alerts">
                     <i class="fas fa-exclamation-triangle text-warning"></i>
                     {% if low_stock_count is defined and low_stock_count > 0 %}
                     <span class="badge badge-danger badge-sm">{{ low_stock_count }}</span>
@@ -96,17 +166,17 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('main.inquiries') }}" title="Inquiries">
+                <a class="nav-link" href="{{ url_for('main.inquiries') }}" title="Inquiries" aria-label="Open customer inquiries">
                     <i class="fas fa-envelope"></i>
                     <span id="inquiry-badge" class="badge badge-warning badge-sm" style="display:none">0</span>
                 </a>
             </li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.customer_site') }}" target="_blank"><i class="fas fa-globe"></i> Site</a></li>
+            <li class="nav-item"><a class="nav-link ax-site-link" href="{{ url_for('main.customer_site') }}" target="_blank" rel="noopener noreferrer" aria-label="Open public website in a new tab"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> <span>Public site</span></a></li>
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">
-                    <i class="fas fa-user mr-1"></i> {{ current_user.username }}
-                </a>
-                <div class="dropdown-menu dropdown-menu-right">
+                <button class="nav-link dropdown-toggle" id="ax-account-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="ax-account-menu" aria-label="Account menu for {{ current_user.username }}">
+                    <span class="ax-avatar" aria-hidden="true">{{ current_user.username[:1]|upper }}</span>{{ current_user.username }}
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" id="ax-account-menu" hidden>
                     <a href="{{ url_for('main.settings') }}" class="dropdown-item"><i class="fas fa-cog mr-2"></i> Settings</a>
                     <div class="dropdown-divider"></div>
                     <a href="{{ url_for('main.logout') }}" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt mr-2"></i> Logout</a>
@@ -116,19 +186,25 @@
     </nav>
 
     <!-- Sidebar -->
-    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <aside class="main-sidebar sidebar-dark-primary elevation-4" id="primary-navigation" aria-label="Primary navigation">
         <a href="{{ url_for('main.dashboard') }}" class="brand-link">
-            <img src="/static/logo-transparent.png" alt="Ampoulex" class="brand-image" style="opacity:.9; filter:invert(1); height:32px;">
+            <img src="/static/logo-transparent.png" alt="" class="brand-image">
             <span class="brand-text font-weight-light">Ampoulex</span>
         </a>
         <div class="sidebar">
-            <div class="user-panel mt-2 pb-2 d-flex">
+            <div class="user-panel d-flex">
                 <div class="info">
-                    <a href="#" class="d-block">{{ current_user.username }}</a>
-                    <small class="text-muted">{{ current_user.role|title }}</small>
+                    <span class="d-block text-white">{{ current_user.username }}</span>
+                    <small>{{ current_user.role|title }} · Signed in</small>
                 </div>
             </div>
-            <nav class="mt-2">
+            <div class="ax-nav-search" role="search">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <label class="sr-only" for="ax-nav-filter">Find a section</label>
+                <input id="ax-nav-filter" type="search" placeholder="Find a section" autocomplete="off">
+                <span class="search-hint" aria-hidden="true">FILTER</span>
+            </div>
+            <nav class="mt-2" aria-label="Workspace sections">
                 <ul class="nav nav-pills nav-sidebar flex-column nav-compact nav-child-indent" data-widget="treeview" role="menu">
                     
                     <!-- Dashboard -->
@@ -305,13 +381,14 @@
     </aside>
 
     <!-- Content -->
-    <div class="content-wrapper">
+    <button class="ax-scrim" id="ax-nav-scrim" type="button" aria-label="Close navigation menu"></button>
+    <main class="content-wrapper" id="main-content" tabindex="-1">
         <div class="content-header">
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6"><h1 class="m-0">{% block page_title %}Dashboard{% endblock %}</h1></div>
                     <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
+                        <ol class="breadcrumb float-sm-right" aria-label="Breadcrumb">
                             <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Home</a></li>
                             <li class="breadcrumb-item active">{% block breadcrumb_active %}Dashboard{% endblock %}</li>
                         </ol>
@@ -324,8 +401,8 @@
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                         {% for category, message in messages %}
-                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
-                            {{ message }}<button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="status">
+                            {{ message }}<button type="button" class="close" data-dismiss="alert" aria-label="Dismiss message">&times;</button>
                         </div>
                         {% endfor %}
                     {% endif %}
@@ -333,7 +410,7 @@
                 {% block content %}{% endblock %}
             </div>
         </section>
-    </div>
+    </main>
 
     <!-- Footer -->
     <footer class="main-footer">
@@ -351,34 +428,7 @@
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 
-<script>
-// Socket.IO - single connection guard
-if (typeof window.socket === 'undefined') {
-    window.socket = io('/admin', { reconnection: true, reconnectionAttempts: 5 });
-    window.socket.on('connect', () => console.log('✅ Real-time connected'));
-    window.socket.on('new_inquiry', d => showToast('📬 New Inquiry', `${d.customer} - ${d.business}`, 'info'));
-    window.socket.on('new_order', d => showToast('🛒 New Order', `${d.customer} - PKR ${d.total}`, 'success'));
-}
-function showToast(title, msg, type='info') {
-    const t = document.createElement('div');
-    t.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-    t.style.cssText = 'top:70px; right:20px; z-index:9999; min-width:300px;';
-    t.innerHTML = `<strong>${title}</strong><br>${msg}<button type="button" class="close" onclick="this.parentElement.remove()">&times;</button>`;
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 5000);
-}
-// Badge updates
-function updateInquiryBadge() {
-    fetch('/api/inquiries/count')
-        .then(r => r.json())
-        .then(d => {
-            const el = document.getElementById('inquiry-badge');
-            if (el && d.count > 0) { el.textContent = d.count; el.style.display = 'inline'; }
-        })
-        .catch(() => {});
-}
-document.addEventListener('DOMContentLoaded', () => { updateInquiryBadge(); setInterval(updateInquiryBadge, 30000); });
-</script>
+<script src="{{ url_for('static', filename='admin-shell.js') }}" defer></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

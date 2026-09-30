@@ -3,192 +3,136 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login | Ampoulex</title>
+    <meta name="theme-color" content="#11191d">
+    <title>Sign in | Ampoulex</title>
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            display: flex; align-items: center; justify-content: center;
-            background: #0c2340;
-            background-image:
-                radial-gradient(ellipse 70% 50% at 30% 60%, rgba(30,74,124,.5), transparent 70%),
-                radial-gradient(ellipse 50% 70% at 80% 30%, rgba(200,168,75,.08), transparent 60%);
-            padding: 1.5rem;
-        }
-        .login-wrapper { width: 100%; max-width: 420px; }
-
-        .login-logo { text-align: center; margin-bottom: 2rem; }
-        .login-logo img { height: 100px; width: auto; }
-
-        .login-card {
-            background: #fff; border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,.3);
-            overflow: hidden;
-        }
-        .login-card-accent {
-            height: 4px;
-            background: linear-gradient(90deg, #c8a84b, #e6cc7a, #c8a84b);
-        }
-        .login-card-body { padding: 2.5rem 2rem 2rem; }
-
-        .login-heading {
-            font-size: 1.3rem; font-weight: 700; color: #0c2340;
-            margin-bottom: .25rem;
-        }
-        .login-sub {
-            font-size: .88rem; color: #6b7a99; margin-bottom: 2rem;
-        }
-
-        .form-group { margin-bottom: 1.25rem; }
-        .form-label {
-            display: block; font-size: .78rem; font-weight: 700;
-            color: #2d3a52; margin-bottom: .4rem;
-            letter-spacing: .03em; text-transform: uppercase;
-        }
-        .input-wrap {
-            display: flex; align-items: center;
-            border: 1.5px solid #eef1f7; border-radius: 10px;
-            background: #f6f8fc; transition: all .2s; overflow: hidden;
-        }
-        .input-wrap:focus-within {
-            border-color: #1e4a7c; background: #fff;
-            box-shadow: 0 0 0 3px rgba(22,50,87,.1);
-        }
-        .input-wrap input {
-            flex: 1; border: none; outline: none; background: transparent;
-            padding: .75rem 1rem; font-size: .92rem; font-family: inherit;
-            color: #1a243a;
-        }
-        .input-wrap input::placeholder { color: #ccd3df; }
-        .input-icon {
-            padding: 0 .85rem; color: #ccd3df; font-size: .9rem;
-        }
-        .input-wrap:focus-within .input-icon { color: #1e4a7c; }
-
-        .login-row {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 1.5rem;
-        }
-        .remember-label {
-            display: flex; align-items: center; gap: .45rem;
-            font-size: .82rem; color: #6b7a99; cursor: pointer;
-        }
-        .remember-label input[type="checkbox"] {
-            width: 16px; height: 16px; accent-color: #0c2340; cursor: pointer;
-        }
-
-        .btn-login {
-            width: 100%; padding: .85rem;
-            background: #0c2340; color: #fff; border: none; border-radius: 10px;
-            font-family: inherit; font-size: .95rem; font-weight: 700;
-            cursor: pointer; transition: all .2s;
-            display: flex; align-items: center; justify-content: center; gap: .5rem;
-        }
-        .btn-login:hover {
-            background: #163257; transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(12,35,64,.3);
-        }
-
-        .login-hint {
-            text-align: center; margin-top: 1.5rem; padding-top: 1.25rem;
-            border-top: 1px solid #eef1f7;
-        }
-        .login-hint p {
-            font-size: .8rem; color: #6b7a99; margin: 0;
-        }
-        .login-hint strong { color: #0c2340; }
-
-        .login-footer {
-            text-align: center; margin-top: 1.5rem;
-        }
-        .login-footer a {
-            color: rgba(255,255,255,.5); font-size: .82rem; font-weight: 500;
-            text-decoration: none; transition: color .2s;
-        }
-        .login-footer a:hover { color: #e6cc7a; }
-        .login-footer a i { margin-right: .35rem; }
-
-        /* Alert */
-        .alert {
-            padding: .75rem 1rem; border-radius: 10px; font-size: .85rem;
-            margin-bottom: 1rem; font-weight: 500; position: relative;
-        }
-        .alert-danger { background: #fee2e2; color: #991b1b; }
-        .alert-success { background: #d1fae5; color: #065f46; }
-        .alert-warning { background: #fef3c7; color: #92400e; }
-        .alert-info { background: #dbeafe; color: #1e40af; }
-        .alert .close-btn {
-            position: absolute; top: .6rem; right: .75rem;
-            background: none; border: none; font-size: 1.1rem; cursor: pointer;
-            color: inherit; opacity: .6;
-        }
-        .alert .close-btn:hover { opacity: 1; }
+        :root { color-scheme:light; --ink:#11191d; --ink-raised:#1b282d; --paper:#f2f3ef; --white:#fff; --text:#182429; --muted:#6c7a7f; --line:#dce2de; --gold:#d8b65e; --cyan:#53c6ca; }
+        *, *::before, *::after { box-sizing:border-box; }
+        html, body { min-height:100%; margin:0; }
+        body { display:grid; place-items:center; padding:32px 20px; color:var(--text); background:var(--paper); font-family:Inter,system-ui,sans-serif; }
+        a:focus-visible, button:focus-visible, input:focus-visible { outline:3px solid var(--cyan); outline-offset:3px; }
+        .login-layout { width:min(100%,1020px); min-height:600px; display:grid; grid-template-columns: .92fr 1.08fr; overflow:hidden; border:1px solid #d7ddda; border-radius:20px; background:#fff; box-shadow:0 28px 80px rgba(18,29,33,.15); }
+        .brand-panel { position:relative; isolation:isolate; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; min-height:600px; padding:38px; background:radial-gradient(ellipse at 75% 32%,rgba(83,198,202,.12),transparent 33%),linear-gradient(145deg,#11191d,#1b292e 70%,#213237); color:#f5f4ed; }
+        .brand-panel::before { position:absolute; z-index:-1; content:""; inset:0; opacity:.22; background-image:linear-gradient(rgba(216,182,94,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(216,182,94,.16) 1px,transparent 1px); background-size:40px 40px; mask-image:linear-gradient(145deg,#000,transparent 75%); }
+        .brand-lockup { display:flex; align-items:center; gap:12px; }
+        .brand-lockup img { width:48px; height:48px; padding:5px; border-radius:12px; background:#f6f4ed; object-fit:contain; }
+        .brand-name { color:#fff; font-size:1.05rem; font-weight:700; letter-spacing:.015em; }
+        .brand-name small { display:block; margin-top:4px; color:var(--gold); font-size:.58rem; font-weight:600; letter-spacing:.19em; }
+        .brand-copy { position:relative; z-index:1; max-width:390px; margin:auto 0; padding:50px 0; }
+        .eyebrow { display:flex; align-items:center; gap:9px; color:var(--gold); font-size:.65rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; }
+        .eyebrow::before { width:7px; height:7px; border-radius:50%; background:#70d5b0; box-shadow:0 0 0 4px rgba(112,213,176,.12); content:""; }
+        .brand-copy h1 { max-width:360px; margin:19px 0 10px; color:#fff; font-size:clamp(2rem,4vw,3.1rem); font-weight:650; letter-spacing:-.06em; line-height:1.03; }
+        .brand-copy p { max-width:350px; margin:0; color:rgba(245,244,237,.68); font-size:.9rem; line-height:1.7; }
+        .instrument { position:absolute; right:-30px; bottom:95px; width:220px; height:220px; display:grid; place-items:center; border:1px solid rgba(216,182,94,.32); border-radius:50%; background:radial-gradient(circle,rgba(83,198,202,.08),transparent 65%); box-shadow:inset 0 0 0 12px rgba(255,255,255,.025); }
+        .instrument svg { width:100px; height:100px; }
+        .instrument circle { fill:none; stroke:rgba(83,198,202,.58); stroke-width:1.2; }
+        .instrument path { fill:rgba(83,198,202,.08); stroke:#d0bb7e; stroke-width:1.5; }
+        .instrument line { stroke:rgba(226,193,110,.74); stroke-width:1; }
+        .brand-foot { color:rgba(245,244,237,.5); font-size:.7rem; letter-spacing:.04em; }
+        .form-panel { display:flex; align-items:center; justify-content:center; padding:46px clamp(28px,6vw,74px); background:#fff; }
+        .form-inner { width:min(100%,390px); }
+        .form-kicker { margin:0 0 10px; color:#92712a; font-size:.67rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
+        .form-inner h2 { margin:0; color:var(--text); font-size:1.72rem; font-weight:700; letter-spacing:-.045em; }
+        .form-sub { margin:8px 0 28px; color:var(--muted); font-size:.85rem; line-height:1.6; }
+        .alert { margin:0 0 18px; padding:12px 14px; border:1px solid #efd3d0; border-left:3px solid #b8433f; border-radius:9px; background:#fbf1ef; color:#843e3a; font-size:.82rem; }
+        .field { margin-bottom:17px; }
+        .field label { display:flex; justify-content:space-between; margin-bottom:7px; color:#35444a; font-size:.74rem; font-weight:650; }
+        .field-wrap { position:relative; }
+        .field-wrap > i { position:absolute; top:14px; left:13px; color:#819096; font-size:.82rem; }
+        .field input { width:100%; height:46px; padding:0 45px 0 40px; border:1px solid #cfd8d4; border-radius:9px; background:#fbfcfa; color:#182429; font:inherit; font-size:.87rem; transition:border-color .15s,box-shadow .15s,background .15s; }
+        .field input::placeholder { color:#9aa5a3; }
+        .field input:focus { border-color:#32868a; outline:0; background:#fff; box-shadow:0 0 0 3px rgba(83,198,202,.16); }
+        .show-password { position:absolute; top:5px; right:5px; width:36px; height:36px; display:grid; place-items:center; border:0; border-radius:7px; background:transparent; color:#67777b; cursor:pointer; }
+        .show-password:hover { background:#eff3f0; color:#172328; }
+        .form-options { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:4px 0 22px; }
+        .remember { display:inline-flex; align-items:center; gap:8px; color:#66757a; font-size:.77rem; cursor:pointer; }
+        .remember input { width:16px; height:16px; accent-color:#1c4145; }
+        .submit-button { width:100%; min-height:46px; display:flex; align-items:center; justify-content:center; gap:9px; border:1px solid var(--ink); border-radius:9px; background:var(--ink); color:#fff; font:inherit; font-size:.84rem; font-weight:650; cursor:pointer; transition:background .15s,transform .15s; }
+        .submit-button:hover { transform:translateY(-1px); background:#25363b; }
+        .secure-note { display:flex; justify-content:center; align-items:center; gap:7px; margin:17px 0 0; color:#78858a; font-size:.69rem; }
+        .secure-note i { color:#558771; }
+        .public-link { display:inline-flex; align-items:center; gap:7px; margin-top:23px; color:#47676a; font-size:.76rem; font-weight:600; text-decoration:none; }
+        .public-link:hover { color:#1b484d; text-decoration:underline; }
+        @media (max-width:720px) { body { padding:14px; } .login-layout { max-width:470px; min-height:0; grid-template-columns:1fr; border-radius:16px; } .brand-panel { min-height:208px; padding:22px 24px; } .brand-copy { margin:24px 0 0; padding:0 0 8px; } .brand-copy h1 { max-width:330px; margin:13px 0 6px; font-size:1.8rem; } .brand-copy p { max-width:350px; font-size:.78rem; } .brand-foot { display:none; } .instrument { right:-75px; bottom:-93px; width:210px; height:210px; opacity:.55; } .form-panel { padding:30px 24px 34px; } .form-sub { margin-bottom:22px; } }
+        @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition-duration:.01ms!important; animation-duration:.01ms!important; } }
     </style>
 </head>
 <body>
-    <div class="login-wrapper">
-        <div class="login-logo">
-            <img src="/static/logo-transparent.png" alt="Ampoulex" style="filter: invert(1) brightness(2);">
-        </div>
+    <main class="login-layout">
+        <section class="brand-panel" aria-label="Ampoulex operations">
+            <a class="brand-lockup" href="{{ url_for('main.customer_site') }}" aria-label="Ampoulex public website">
+                <img src="/static/logo-transparent.png" alt="">
+                <span class="brand-name">Ampoulex<small>OPERATIONS CONSOLE</small></span>
+            </a>
+            <div class="brand-copy">
+                <div class="eyebrow">Operations access</div>
+                <h1>Your work,<br>in clear view.</h1>
+                <p>Sign in to manage orders, customers, production, stock, and the daily business workflow.</p>
+            </div>
+            <div class="instrument" aria-hidden="true">
+                <svg viewBox="0 0 100 100" role="presentation">
+                    <circle cx="50" cy="50" r="43"/><circle cx="50" cy="50" r="35" stroke-dasharray="2 4"/>
+                    <path d="M41 17h18v7l-5 13v13l8 11v22c0 3-2 5-5 5H43c-3 0-5-2-5-5V61l8-11V37l-5-13z"/>
+                    <line x1="42" y1="68" x2="58" y2="68"/><line x1="45" y1="38" x2="55" y2="38"/><circle cx="50" cy="54" r="2.5" fill="#7cdbdc" stroke="none"/>
+                </svg>
+            </div>
+            <div class="brand-foot">AMPOULEX · GLASS MANUFACTURING</div>
+        </section>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
-                    {{ message }}
-                    <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
-                </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        <section class="form-panel" aria-labelledby="login-heading">
+            <div class="form-inner">
+                <p class="form-kicker">Secure workspace</p>
+                <h2 id="login-heading">Welcome back</h2>
+                <p class="form-sub">Enter your account details to continue to the Ampoulex operations console.</p>
 
-        <div class="login-card">
-            <div class="login-card-accent"></div>
-            <div class="login-card-body">
-                <h2 class="login-heading">Welcome back</h2>
-                <p class="login-sub">Sign in to your Ampoulex dashboard</p>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert" role="alert">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
 
                 <form action="{{ url_for('main.login') }}" method="POST">
-                    <div class="form-group">
-                        <label class="form-label">Username</label>
-                        <div class="input-wrap">
-                            <input type="text" name="username" placeholder="Enter username" required autofocus>
-                            <span class="input-icon"><i class="fas fa-user"></i></span>
+                    <div class="field">
+                        <label for="username">Username</label>
+                        <div class="field-wrap">
+                            <i class="fas fa-user" aria-hidden="true"></i>
+                            <input id="username" type="text" name="username" placeholder="Enter your username" autocomplete="username" required autofocus>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Password</label>
-                        <div class="input-wrap">
-                            <input type="password" name="password" placeholder="Enter password" required>
-                            <span class="input-icon"><i class="fas fa-lock"></i></span>
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <div class="field-wrap">
+                            <i class="fas fa-lock" aria-hidden="true"></i>
+                            <input id="password" type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+                            <button class="show-password" type="button" id="toggle-password" aria-label="Show password" aria-pressed="false"><i class="fas fa-eye" aria-hidden="true"></i></button>
                         </div>
                     </div>
-                    <div class="login-row">
-                        <label class="remember-label">
-                            <input type="checkbox" name="remember"> Remember me
-                        </label>
+                    <div class="form-options">
+                        <label class="remember"><input type="checkbox" name="remember"> Remember me</label>
                     </div>
-                    <button type="submit" class="btn-login">
-                        <i class="fas fa-sign-in-alt"></i> Sign In
-                    </button>
+                    <button class="submit-button" type="submit"><i class="fas fa-arrow-right-to-bracket" aria-hidden="true"></i> Sign in</button>
                 </form>
-
-                <div class="login-hint">
-                    <p>Default: <strong>admin</strong> / <strong>admin123</strong></p>
-                </div>
+                <p class="secure-note"><i class="fas fa-shield-halved" aria-hidden="true"></i> Your account is protected by secure sign-in.</p>
+                <a class="public-link" href="{{ url_for('main.customer_site') }}"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Ampoulex website</a>
             </div>
-        </div>
-
-        <div class="login-footer">
-            <a href="{{ url_for('main.customer_site') }}" target="_blank">
-                <i class="fas fa-globe"></i> View Customer Website
-            </a>
-        </div>
-    </div>
+        </section>
+    </main>
+    <script>
+        const togglePassword = document.getElementById('toggle-password');
+        const passwordInput = document.getElementById('password');
+        togglePassword.addEventListener('click', () => {
+            const reveal = passwordInput.type === 'password';
+            passwordInput.type = reveal ? 'text' : 'password';
+            togglePassword.setAttribute('aria-pressed', String(reveal));
+            togglePassword.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
+            togglePassword.querySelector('i').className = reveal ? 'fas fa-eye-slash' : 'fas fa-eye';
+        });
+    </script>
 </body>
 </html>

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import os
 import json
 import random
-from sqlalchemy import func
+from sqlalchemy import func, text
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, send_file, send_from_directory, current_app, session
 from flask_login import login_user, logout_user, login_required, current_user
@@ -14,7 +14,7 @@ from app.models import (
     Employee, Expense, Accounting, CompanySetting, CustomerProductPrice,
     TaxSetting, StockAdjustment, Report, InquiryItem,
     Attendance, Timesheet, LeaveRequest, PayrollPayment,
-    RawMaterial, BOMItem, MaterialUsage, ProductionBatch,
+    RawMaterial, RawMaterialUsage, BatchRawMaterial, BOMItem, MaterialUsage, ProductionBatch,
     StockAlert, OrderApproval,
     Supplier, PurchaseOrder, PurchaseOrderItem,
     GoodsReceipt, GoodsReceiptItem,
@@ -50,7 +50,7 @@ def health_check():
     """Health check endpoint for Cloud Run and load balancers"""
     try:
         # Check database connectivity
-        db.session.execute('SELECT 1')
+        db.session.execute(text('SELECT 1'))
         return jsonify({'status': 'healthy', 'database': 'connected'}), 200
     except Exception as e:
         return jsonify({'status': 'unhealthy', 'error': str(e)}), 503
@@ -2179,6 +2179,78 @@ def raw_materials():
     materials = RawMaterial.query.filter_by(is_active=True).all()
     low_stock = [m for m in materials if m.current_stock < m.reorder_level]
     return render_template('materials/index.html', materials=materials, low_stock=low_stock)
+
+
+@main_bp.route('/production/raw-materials/<int:id>/usage', methods=['POST'])
+@login_required
+def record_material_usage(id):
+    """Record a validated raw-material withdrawal and keep stock movements traceable."""
+    material = RawMaterial.query.get_or_404(id)
+    try:
+        quantity = float(request.form.get('quantity', 0))
+        if quantity <= 0:
+            raise ValueError('Enter a quantity greater than zero.')
+        if quantity > material.current_stock:
+            raise ValueError(f'Only {material.current_stock:g} {material.unit} is currently available.')
+        batch_id = request.form.get('batch_id', type=int)
+        batch = ProductionBatch.query.get(batch_id) if batch_id else None
+        if batch_id and not batch:
+            raise ValueError('Select a valid production batch.')
+
+        usage = RawMaterialUsage(
+            material_id=material.id,
+            batch_id=batch.id if batch else None,
+            quantity_used=quantity,
+            unit=material.unit,
+            used_by=current_user.username,
+            notes=request.form.get('notes', '').strip()
+        )
+        material.current_stock -= quantity
+        db.session.add(usage)
+        db.session.commit()
+        flash('Material usage recorded and stock updated.', 'success')
+    except (ValueError, TypeError) as e:
+        db.session.rollback()
+        flash(str(e), 'warning')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception('Unable to record raw-material usage')
+        flash('Unable to record material usage. Please try again.', 'error')
+    return redirect(url_for('main.raw_materials'))
+
+
+@main_bp.route('/production/batch/<int:id>/add-material', methods=['POST'])
+@login_required
+def add_batch_material(id):
+    batch = ProductionBatch.query.get_or_404(id)
+    try:
+        quantity = float(request.form.get('quantity_used', 0))
+        cost = float(request.form.get('cost_per_unit', 0) or 0)
+        name = request.form.get('material_name', '').strip()
+        unit = request.form.get('unit', '').strip()
+        if not name or not unit or quantity <= 0 or cost < 0:
+            raise ValueError('Enter a material name, unit, positive quantity, and valid unit cost.')
+        db.session.add(BatchRawMaterial(
+            batch_id=batch.id,
+            material_name=name,
+            material_type=request.form.get('material_type', '').strip(),
+            quantity_used=quantity,
+            unit=unit,
+            cost_per_unit=cost,
+            total_cost=quantity * cost,
+            supplier=request.form.get('supplier', '').strip(),
+            batch_code=request.form.get('batch_code', '').strip()
+        ))
+        db.session.commit()
+        flash('Material added to the production batch.', 'success')
+    except (ValueError, TypeError) as e:
+        db.session.rollback()
+        flash(str(e), 'warning')
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception('Unable to add batch material')
+        flash('Unable to add the material. Please try again.', 'error')
+    return redirect(url_for('main.view_production_batch', id=batch.id))
 
 
 @main_bp.route('/raw-materials/add', methods=['GET', 'POST'])
@@ -5440,21 +5512,32 @@ def add_receipt_voucher():
     """Create Receipt Voucher"""
     if request.method == 'POST':
         try:
+            payer_name = request.form.get('payer_name', '').strip()
+            payment_method = request.form.get('payment_method', 'cash')
+            bank_account_id = request.form.get('bank_account_id', type=int)
+            if not payer_name:
+                raise ValueError('Enter the payer name.')
+            if payment_method not in {'cash', 'bank', 'cheque'}:
+                raise ValueError('Choose a valid payment method.')
+            if payment_method in {'bank', 'cheque'} and not bank_account_id:
+                raise ValueError('Choose a bank account for this payment method.')
             voucher_number = f"RV-{datetime.utcnow().strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
             voucher_date_str = request.form.get('voucher_date', '')
-            voucher_date = datetime.strptime(voucher_date_str, '%Y-%m-%d').date() if voucher_date_str else datetime.utcnow().date()
+            if not voucher_date_str:
+                raise ValueError('Choose a voucher date.')
+            voucher_date = datetime.strptime(voucher_date_str, '%Y-%m-%d').date()
             
             voucher = ReceiptVoucher(
                 voucher_number=voucher_number,
                 voucher_date=voucher_date,
-                payer_name=request.form.get('payer_name', ''),
-                payer_type=request.form.get('payer_type', ''),
-                payer_id=int(request.form.get('customer_id', 0)) or None,
-                payment_method=request.form.get('payment_method', 'cash'),
-                bank_account_id=int(request.form.get('bank_account_id', 0)) or None,
-                cheque_number=request.form.get('cheque_number', ''),
+                payer_name=payer_name,
+                payer_type=request.form.get('payer_type', '').strip(),
+                payer_id=request.form.get('customer_id', type=int),
+                payment_method=payment_method,
+                bank_account_id=bank_account_id,
+                cheque_number=request.form.get('cheque_number', '').strip(),
                 total_amount=0,
-                description=request.form.get('description', ''),
+                description=request.form.get('description', '').strip(),
                 status='draft',
                 created_by=current_user.username
             )
@@ -5469,17 +5552,25 @@ def add_receipt_voucher():
             total_amount = 0
             
             for i, aid in enumerate(account_ids):
-                if aid and amounts[i]:
-                    amount = float(amounts[i])
-                    
-                    line = ReceiptVoucherLine(
-                        voucher_id=voucher.id,
-                        account_id=int(aid),
-                        description=descriptions[i] if i < len(descriptions) else '',
-                        amount=amount
-                    )
-                    db.session.add(line)
-                    total_amount += amount
+                if not aid:
+                    continue
+                amount = float(amounts[i]) if i < len(amounts) and amounts[i] else 0
+                if amount <= 0:
+                    raise ValueError('Each receipt line needs an amount greater than zero.')
+                account = Account.query.filter_by(id=int(aid), is_active=True).first()
+                if not account:
+                    raise ValueError('Choose an active account for every receipt line.')
+                line = ReceiptVoucherLine(
+                    voucher_id=voucher.id,
+                    account_id=account.id,
+                    description=descriptions[i].strip() if i < len(descriptions) else '',
+                    amount=amount
+                )
+                db.session.add(line)
+                total_amount += amount
+
+            if total_amount <= 0:
+                raise ValueError('Add at least one receipt line before saving.')
             
             voucher.total_amount = total_amount
             db.session.commit()
@@ -5487,9 +5578,13 @@ def add_receipt_voucher():
             flash(f'Receipt Voucher {voucher_number} created!', 'success')
             return redirect(url_for('main.receipt_vouchers'))
             
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(str(e), 'warning')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception('Unable to create receipt voucher')
+            flash('Unable to create this receipt. Please try again.', 'error')
     
     accounts = Account.query.filter_by(is_active=True).all()
     bank_accounts = BankAccount.query.filter_by(is_active=True).all()
@@ -5507,6 +5602,87 @@ def view_receipt_voucher(id):
     """View Receipt Voucher Details"""
     voucher = ReceiptVoucher.query.get_or_404(id)
     return render_template('accounting/receipt_voucher_view.html', voucher=voucher)
+
+
+@main_bp.route('/accounting/receipt-vouchers/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_receipt_voucher(id):
+    voucher = ReceiptVoucher.query.get_or_404(id)
+    if voucher.status != 'draft':
+        flash('Only draft receipt vouchers can be edited.', 'warning')
+        return redirect(url_for('main.view_receipt_voucher', id=voucher.id))
+    if request.method == 'POST':
+        try:
+            payer_name = request.form.get('payer_name', '').strip()
+            line_ids = request.form.getlist('account_id[]')
+            descriptions = request.form.getlist('line_description[]')
+            amounts = request.form.getlist('amount[]')
+            lines = []
+            for i, account_id in enumerate(line_ids):
+                if not account_id:
+                    continue
+                amount = float(amounts[i]) if i < len(amounts) else 0
+                if amount <= 0:
+                    raise ValueError('Each receipt line must have an amount greater than zero.')
+                lines.append(ReceiptVoucherLine(
+                    account_id=int(account_id),
+                    description=descriptions[i].strip() if i < len(descriptions) else '',
+                    amount=amount
+                ))
+            if not payer_name or not lines:
+                raise ValueError('Enter the payer and at least one receipt line.')
+            date_text = request.form.get('voucher_date', '')
+            voucher.voucher_date = datetime.strptime(date_text, '%Y-%m-%d').date()
+            voucher.payer_name = payer_name
+            voucher.payer_type = request.form.get('payer_type', '').strip()
+            voucher.payer_id = request.form.get('customer_id', type=int) or None
+            voucher.payment_method = request.form.get('payment_method', 'cash')
+            voucher.bank_account_id = request.form.get('bank_account_id', type=int) or None
+            voucher.cheque_number = request.form.get('cheque_number', '').strip()
+            voucher.description = request.form.get('description', '').strip()
+            for old_line in list(voucher.lines):
+                db.session.delete(old_line)
+            for line in lines:
+                line.voucher_id = voucher.id
+                db.session.add(line)
+            voucher.total_amount = sum(line.amount for line in lines)
+            db.session.commit()
+            flash('Receipt voucher updated.', 'success')
+            return redirect(url_for('main.view_receipt_voucher', id=voucher.id))
+        except (ValueError, TypeError) as e:
+            db.session.rollback()
+            flash(str(e), 'warning')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception('Unable to update receipt voucher')
+            flash('Unable to update this receipt. Please try again.', 'error')
+    accounts = Account.query.filter_by(is_active=True).all()
+    bank_accounts = BankAccount.query.filter_by(is_active=True).all()
+    customers = Customer.query.filter_by(is_active=True, is_deleted=False).all()
+    return render_template('accounting/receipt_voucher_form.html',
+                           voucher=voucher, accounts=accounts,
+                           bank_accounts=bank_accounts, customers=customers)
+
+
+@main_bp.route('/accounting/receipt-vouchers/<int:id>/approve', methods=['POST'])
+@login_required
+def approve_receipt_voucher(id):
+    voucher = ReceiptVoucher.query.get_or_404(id)
+    if voucher.status != 'draft':
+        flash('This receipt voucher has already been processed.', 'warning')
+    elif not voucher.lines or voucher.total_amount <= 0:
+        flash('Add at least one receipt line before approval.', 'warning')
+    else:
+        try:
+            voucher.status = 'received'
+            voucher.received_by = current_user.username
+            db.session.commit()
+            flash(f'Receipt {voucher.voucher_number} approved.', 'success')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception('Unable to approve receipt voucher')
+            flash('Unable to approve this receipt. Please try again.', 'error')
+    return redirect(url_for('main.view_receipt_voucher', id=voucher.id))
 
 
 @main_bp.route('/accounting/bank-accounts')
