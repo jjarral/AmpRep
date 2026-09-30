@@ -57,7 +57,7 @@ def send_order_confirmation(order, customer_email):
     Darbar-e-Kareemi Stop, G.T. Road
     Wah Cantt, The. Taxila, Dist. RWP, Punjab, Pakistan
     Tel: 0340-5336238 | 0331-9980908
-    Email: info@ampoulex.com.com
+    Email: info@ampoulex.com
     """
     
     return send_email(subject, customer_email, body)
