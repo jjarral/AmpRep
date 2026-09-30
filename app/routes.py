@@ -487,7 +487,7 @@ def index():
     products = Product.query.filter(
         or_(Product.is_deleted.is_(False), Product.is_deleted.is_(None)),
         or_(Product.product_type.is_(None), Product.product_type != 'service')
-    ).order_by(Product.name.asc()).all()
+    ).order_by(Product.volume_cc.asc().nullslast(), Product.color.desc(), Product.name.asc()).all()
     return render_template('customer-site.html', products=products)
 
 @main_bp.route('/login', methods=['GET', 'POST'])
@@ -909,6 +909,7 @@ def add_product():
             product = Product(
                 name=request.form.get('name', ''),
                 specification=request.form.get('specification', ''),
+                volume_cc=float(request.form['volume_cc']) if request.form.get('volume_cc') else None,
                 
                 # ✅ NEW DIMENSION FIELDS:
                 body_diameter=float(request.form.get('body_diameter', 0) or 0),
@@ -986,6 +987,8 @@ def edit_product(id):
             
             product.name = request.form.get('name', '')
             product.specification = request.form.get('specification', '')
+            if 'volume_cc' in request.form:
+                product.volume_cc = float(request.form['volume_cc']) if request.form['volume_cc'] else None
             
             # ✅ UPDATE DIMENSION FIELDS:
             product.body_diameter = float(request.form.get('body_diameter', 0) or 0)
@@ -3311,7 +3314,7 @@ def customer_site():
     products = Product.query.filter(
         or_(Product.is_deleted.is_(False), Product.is_deleted.is_(None)),
         or_(Product.product_type.is_(None), Product.product_type != 'service')
-    ).order_by(Product.name.asc()).all()
+    ).order_by(Product.volume_cc.asc().nullslast(), Product.color.desc(), Product.name.asc()).all()
     return render_template('customer-site.html', products=products)
 
 @main_bp.route('/submit-inquiry', methods=['POST'])

@@ -43,7 +43,8 @@
                         <label>Color</label>
                         <select name="color" class="form-control">
                             <option value="">Select Color</option>
-                            <option value="Transparent" {{ 'selected' if product and product.color == 'Transparent' else '' }}>Transparent</option>
+                            <option value="Clear" {{ 'selected' if product and product.color == 'Clear' else '' }}>Clear</option>
+                            <option value="Transparent" {{ 'selected' if product and product.color == 'Transparent' else '' }}>Transparent (clear)</option>
                             <option value="Amber" {{ 'selected' if product and product.color == 'Amber' else '' }}>Amber</option>
                             <option value="Custom" {{ 'selected' if product and product.color == 'Custom' else '' }}>Custom</option>
                         </select>
@@ -59,6 +60,12 @@
                         </select>
                     </div>
                 </div>
+            </div>
+
+            <div class="form-group mb-4">
+                <label for="volume-cc">Capacity (mL / cc)</label>
+                <input id="volume-cc" type="number" name="volume_cc" class="form-control" min="0.01" step="0.01" value="{{ product.volume_cc if product and product.volume_cc else '' }}">
+                <small class="text-muted">1 mL equals 1 cc. Leave blank when capacity does not apply.</small>
             </div>
 
             <!-- ✅ AMPPOULE DIMENSIONS SECTION -->

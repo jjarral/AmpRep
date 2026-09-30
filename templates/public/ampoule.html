@@ -1,0 +1,18 @@
+{% macro ampoule(key, amber=false) -%}
+<svg class="ampoule-drawing" viewBox="0 0 120 260" aria-hidden="true" focusable="false">
+    <defs><linearGradient id="glass-{{ key }}" x1="0" x2="1">
+        <stop offset="0" stop-color="{{ '#6c3c0c' if amber else '#bbc7c9' }}" stop-opacity=".5"/>
+        <stop offset=".14" stop-color="{{ '#f6ce76' if amber else '#f3f4e9' }}" stop-opacity=".95"/>
+        <stop offset=".24" stop-color="{{ '#a26a1e' if amber else '#a9b4b7' }}" stop-opacity=".3"/>
+        <stop offset=".55" stop-color="{{ '#dc9b36' if amber else '#c6d6d8' }}" stop-opacity="{{ '.2' if amber else '.035' }}"/>
+        <stop offset=".8" stop-color="{{ '#f6b840' if amber else '#b0c6cc' }}" stop-opacity=".25"/>
+        <stop offset=".9" stop-color="{{ '#ffdfa0' if amber else '#fffced' }}" stop-opacity=".9"/>
+        <stop offset="1" stop-color="{{ '#a25e11' if amber else '#bccdd2' }}" stop-opacity=".45"/>
+    </linearGradient></defs>
+    <path d="M43 14 Q47 43 47 71 Q47 85 43 99 Q39 115 48 126 L48 135 Q47 142 38 147 Q32 152 32 163 L32 240 Q32 248 41 249 L79 249 Q88 248 88 240 L88 163 Q88 152 82 147 Q73 142 72 135 L72 126 Q81 115 77 99 Q73 85 73 71 Q73 43 77 14 Z" fill="url(#glass-{{ key }})" stroke="{{ '#d2a558' if amber else '#ccd3d3' }}" stroke-width="1.3"/>
+    <ellipse cx="60" cy="14" rx="18" ry="4.5" fill="#121313" stroke="{{ '#f8cf7b' if amber else '#e8e3d7' }}" stroke-width="1.7"/>
+    <ellipse cx="60" cy="241" rx="24" ry="4" fill="none" stroke="{{ '#d6ac5c' if amber else '#ddd8c7' }}" opacity=".65"/>
+    <path d="M51 24 L51 72 Q51 90 47 104 Q43 117 52 127 M39 165 L39 231" stroke="{{ '#ffe2a0' if amber else '#f3f2e5' }}" stroke-width="2.5" opacity=".65" fill="none" stroke-linecap="round"/>
+    <path d="M80 167 L80 233 M69 27 L69 73" stroke="{{ '#f4c679' if amber else '#eee9dc' }}" opacity=".7" fill="none"/>
+</svg>
+{%- endmacro %}
