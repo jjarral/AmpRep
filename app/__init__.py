@@ -95,8 +95,10 @@ def create_app():
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_pre_ping': True,
         'pool_recycle': 280,
-        'pool_size': 5,
-        'max_overflow': 10,
+        # Serverless instances should keep their client-side pool small; each
+        # warm Vercel function can otherwise hold many Supabase pooler slots.
+        'pool_size': 1 if os.environ.get('VERCEL') else 5,
+        'max_overflow': 0 if os.environ.get('VERCEL') else 10,
     }
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 
@@ -110,6 +112,15 @@ def create_app():
         or os.environ.get('POSTGRES_PRISMA_URL')
         or os.environ.get('DATABASE_PRIVATE_URL')
     )
+
+    # SQLAlchemy 2.1 defaults plain PostgreSQL URLs to Psycopg 3, while this
+    # application installs psycopg2-binary. Select that driver explicitly so
+    # deployments use the installed client rather than an undeclared package.
+    if isinstance(db_url, str):
+        if db_url.startswith('postgresql://'):
+            db_url = 'postgresql+psycopg2://' + db_url[len('postgresql://'):]
+        elif db_url.startswith('postgres://'):
+            db_url = 'postgresql+psycopg2://' + db_url[len('postgres://'):]
 
     app.logger.info(f"🔍 Env check: DATABASE_URL={bool(os.environ.get('DATABASE_URL'))}, "
                     f"POSTGRES_URL={bool(os.environ.get('POSTGRES_URL'))}, "
