@@ -483,31 +483,12 @@ def check_and_create_stock_alerts():
 
 @main_bp.route('/', methods=['GET', 'POST'])
 def index():
-    """Root route - Send RAW products"""
-    products = Product.query.filter_by(is_deleted=False).all()
+    """Render the public catalogue and inquiry form."""
+    products = Product.query.filter(
+        or_(Product.is_deleted.is_(False), Product.is_deleted.is_(None)),
+        or_(Product.product_type.is_(None), Product.product_type != 'service')
+    ).order_by(Product.name.asc()).all()
     return render_template('customer-site.html', products=products)
-    
-    # Group products by size (1cc, 2cc, etc.)
-    grouped_by_size = {}
-    for p in products:
-        if p.product_type == 'service':
-            continue
-        # Extract size (e.g., "1cc" from "1cc Clear Ampoule")
-        size = p.name.split(' ')[0] if ' ' in p.name else 'Other'
-        if size not in grouped_by_size:
-            grouped_by_size[size] = []
-        grouped_by_size[size].append(p)
-        
-    # Sort sizes numerically (1cc -> 2cc -> 3cc -> 5cc -> 10cc)
-    sorted_sizes = sorted(grouped_by_size.keys(), key=lambda x: int(''.join(filter(str.isdigit, x))))
-    
-    # Separate services
-    services = [p for p in products if p.product_type == 'service']
-    
-    return render_template('customer-site.html', 
-                           sorted_sizes=sorted_sizes, 
-                           grouped_by_size=grouped_by_size,
-                           services=services)
 
 @main_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -3327,7 +3308,10 @@ def upload_logo():
 @main_bp.route('/customer-site')
 def customer_site():
     """Render the public product range and inquiry form."""
-    products = Product.query.filter_by(is_deleted=False).order_by(Product.name.asc()).all()
+    products = Product.query.filter(
+        or_(Product.is_deleted.is_(False), Product.is_deleted.is_(None)),
+        or_(Product.product_type.is_(None), Product.product_type != 'service')
+    ).order_by(Product.name.asc()).all()
     return render_template('customer-site.html', products=products)
 
 @main_bp.route('/submit-inquiry', methods=['POST'])
@@ -3350,6 +3334,17 @@ def submit_inquiry():
         inquiry_notes = [request.form.get('notes', '').strip()]
         glass_finish = request.form.get('glass', '').strip()
         quantity_range = request.form.get('quantity', '').strip()
+        option_labels = {
+            'clear': 'Clear glass ampoules',
+            'amber': 'Amber glass ampoules',
+        }
+        selected_options = []
+        for option_code in request.form.getlist('product_options'):
+            option_label = option_labels.get(option_code)
+            option_quantity = request.form.get(f'option_qty_{option_code}', type=int) or 0
+            if option_label and option_quantity > 0:
+                selected_options.append((option_label, option_quantity))
+                inquiry_notes.append(f'Requested product: {option_label} · Quantity: {option_quantity:,}')
         if glass_finish and glass_finish != 'To be discussed':
             inquiry_notes.append(f'Preferred glass finish: {glass_finish}')
         if quantity_range and quantity_range != 'To be discussed':
@@ -3390,6 +3385,10 @@ def submit_inquiry():
                 product = Product.query.get(int(pid))
                 if product:
                     products_list.append(f"{product.name} ({product.color})")
+
+        for option_label, option_quantity in selected_options:
+            total_quantity += option_quantity
+            products_list.append(f'{option_label} ({option_quantity:,})')
         
         inquiry.quantity = total_quantity
         db.session.commit()  # ✅ Commit AFTER creating items

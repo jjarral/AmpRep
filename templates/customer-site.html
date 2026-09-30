@@ -48,10 +48,17 @@
             </div>
             <div class="u-hero-art" aria-label="Ampoulex glass ampoule range">
                 <span class="u-art-grid" aria-hidden="true"></span>
+                <span class="u-art-orbit" aria-hidden="true"></span>
+                <span class="u-art-orbit u-art-orbit-tilt" aria-hidden="true"></span>
+                <span class="u-art-axis u-art-axis-horizontal" aria-hidden="true"></span>
+                <span class="u-art-axis u-art-axis-vertical" aria-hidden="true"></span>
+                <span class="u-art-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+                <div class="u-art-console-head"><span>AMX / MATERIAL SYSTEMS</span><b><i aria-hidden="true"></i> INQUIRIES OPEN</b></div>
                 <span class="u-art-label u-art-label-top">Glass systems <b>/ clear + amber</b></span>
                 <span class="u-art-coordinate">AMPOULEX / 2024<strong>WAH CANTT · PK</strong></span>
                 <img class="u-art-image" src="{{ url_for('static', filename='ampoulex-range.svg') }}" alt="Illustration of clear and amber glass ampoules in several formats" width="760" height="420">
                 <span class="u-art-label u-art-label-bottom">Manufacturing <b>/ Pakistan</b></span>
+                <div class="u-art-readouts" aria-label="Product information"><span><small>FINISH</small><b>CLEAR <i>+</i> AMBER</b></span><span><small>QUALITY</small><b>BATCH CHECKED</b></span><span><small>DELIVERY</small><b>NATIONWIDE</b></span></div>
             </div>
         </div>
     </section>
@@ -68,8 +75,8 @@
     <section class="u-section u-section-dark" id="products" aria-labelledby="products-heading">
         <div class="u-wrap">
             <div class="u-section-head">
-                <div><div class="u-eyebrow">01 / Product matrix</div><h2 class="u-section-title" id="products-heading">Choose your <span>format.</span></h2><span class="u-section-index">GLASS AMPOULES · CURRENT CATALOGUE</span></div>
-                <p class="u-section-intro">Browse the formats currently listed. Choose an item to add it to your inquiry, then enter the quantity you need.</p>
+                <div><div class="u-eyebrow">01 / Product matrix</div><h2 class="u-section-title" id="products-heading">Choose your <span>format.</span></h2><span class="u-section-index">GLASS AMPOULES · PRODUCT RANGE</span></div>
+                <p class="u-section-intro">Choose a listed glass ampoule or start with a clear or amber finish. Add your quantity and requirements to the inquiry.</p>
             </div>
             {% if catalogue %}
             <div class="u-product-grid">
@@ -89,7 +96,24 @@
                 {% endfor %}
             </div>
             {% else %}
-            <div class="u-product-empty">The catalogue is being updated. Contact our team to discuss current glass ampoule formats.</div>
+            <div class="u-product-grid u-product-grid-fallback">
+                <article class="u-product u-product-fallback">
+                    <div class="u-product-top"><span>GLASS / CLEAR</span><span>FORMAT / 01</span></div>
+                    <div class="u-product-symbol" aria-hidden="true">C</div>
+                    <h3>Clear glass ampoules</h3>
+                    <p>For clear glass requirements. Tell us your volume and specification.</p>
+                    <div class="u-product-meta"><span>Clear finish</span><span>Custom requirements</span></div>
+                    <button class="u-button u-button-outline" type="button" data-select-option="clear">Add to inquiry <span aria-hidden="true">+</span></button>
+                </article>
+                <article class="u-product u-product-fallback">
+                    <div class="u-product-top"><span>GLASS / AMBER</span><span>FORMAT / 02</span></div>
+                    <div class="u-product-symbol" aria-hidden="true">A</div>
+                    <h3>Amber glass ampoules</h3>
+                    <p>For amber glass requirements. Tell us your volume and specification.</p>
+                    <div class="u-product-meta"><span>Amber finish</span><span>Custom requirements</span></div>
+                    <button class="u-button u-button-outline" type="button" data-select-option="amber">Add to inquiry <span aria-hidden="true">+</span></button>
+                </article>
+            </div>
             {% endif %}
             <div class="u-custom-note"><span><strong>Need a particular finish or specification?</strong> Tell us what you have in mind and we’ll discuss it with you.</span><a href="#contact">Talk to our team <span aria-hidden="true">↗</span></a></div>
         </div>
@@ -150,17 +174,18 @@
                     <div class="u-field"><label for="company-name">Company *</label><input id="company-name" name="business_name" autocomplete="organization" required placeholder="Company name"></div>
                     <div class="u-field"><label for="contact-phone">Phone *</label><input id="contact-phone" name="phone" type="tel" autocomplete="tel" required placeholder="03XX XXXXXXX"></div>
                     <div class="u-field"><label for="contact-email">Email</label><input id="contact-email" name="email" type="email" autocomplete="email" placeholder="you@company.com"></div>
-                    <div class="u-field u-field-full"><span class="u-field-legend" id="product-legend">Choose products and quantities{% if catalogue %} *{% endif %}</span>
+                    <div class="u-field u-field-full"><span class="u-field-legend" id="product-legend">Choose products and quantities *</span>
                         <div class="u-product-select" aria-labelledby="product-legend">
                             {% for product in catalogue if product.product_type != 'service' %}
                             <div class="u-product-option"><label for="product-{{ product.id }}"><input id="product-{{ product.id }}" class="u-product-check" type="checkbox" name="product_ids" value="{{ product.id }}" data-quantity="quantity-{{ product.id }}"><span>{{ product.name }}{% if product.color %} · {{ product.color }}{% endif %}</span></label><input id="quantity-{{ product.id }}" type="number" name="qty_{{ product.id }}" min="1" step="1" inputmode="numeric" placeholder="Quantity" aria-label="Quantity for {{ product.name }}" disabled></div>
                             {% else %}
-                            <p class="u-form-note">No products are listed right now. You can still send a note about the glass ampoule format you need.</p>
+                            <div class="u-product-option"><label for="format-clear"><input id="format-clear" class="u-product-check" type="checkbox" name="product_options" value="clear" data-quantity="option-qty-clear"><span>Clear glass ampoules</span></label><input id="option-qty-clear" type="number" name="option_qty_clear" min="1" step="1" inputmode="numeric" placeholder="Quantity" aria-label="Quantity for clear glass ampoules" disabled></div>
+                            <div class="u-product-option"><label for="format-amber"><input id="format-amber" class="u-product-check" type="checkbox" name="product_options" value="amber" data-quantity="option-qty-amber"><span>Amber glass ampoules</span></label><input id="option-qty-amber" type="number" name="option_qty_amber" min="1" step="1" inputmode="numeric" placeholder="Quantity" aria-label="Quantity for amber glass ampoules" disabled></div>
                             {% endfor %}
                         </div>
                     </div>
                     <div class="u-field"><label for="glass-finish">Preferred glass finish</label><select id="glass-finish" name="glass"><option value="To be discussed">To be discussed</option><option value="Clear glass">Clear glass</option><option value="Amber glass">Amber glass</option><option value="Both finishes">Both finishes</option></select></div>
-                    <div class="u-field"><label for="estimated-quantity">Estimated total volume</label><select id="estimated-quantity" name="quantity"><option value="To be discussed">To be discussed</option><option value="Under 10,000">Under 10,000</option><option value="10,000–50,000">10,000–50,000</option><option value="50,000–100,000">50,000–100,000</option><option value="100,000+">100,000+</option></select></div>
+                    <div class="u-field"><label for="estimated-quantity">Estimated total quantity</label><select id="estimated-quantity" name="quantity"><option value="To be discussed">To be discussed</option><option value="Under 10,000">Under 10,000</option><option value="10,000–50,000">10,000–50,000</option><option value="50,000–100,000">50,000–100,000</option><option value="100,000+">100,000+</option></select></div>
                     <div class="u-field u-field-full"><label for="requirements">Additional requirements</label><textarea id="requirements" name="notes" placeholder="Tell us about your specification, timing or delivery destination."></textarea></div>
                 </div>
                 <p class="u-form-note">Your inquiry is sent to the Ampoulex team. Product quantities are recorded with your request.</p>
@@ -201,6 +226,15 @@
 
     document.querySelectorAll('[data-select-product]').forEach(button => button.addEventListener('click', () => {
         const checkbox = document.getElementById(`product-${button.dataset.selectProduct}`);
+        if (!checkbox) return;
+        checkbox.checked = true;
+        checkbox.dispatchEvent(new Event('change', {bubbles: true}));
+        document.getElementById('contact').scrollIntoView({behavior: 'smooth', block: 'start'});
+        window.setTimeout(() => document.getElementById(checkbox.dataset.quantity)?.focus(), 350);
+    }));
+
+    document.querySelectorAll('[data-select-option]').forEach(button => button.addEventListener('click', () => {
+        const checkbox = document.getElementById(`format-${button.dataset.selectOption}`);
         if (!checkbox) return;
         checkbox.checked = true;
         checkbox.dispatchEvent(new Event('change', {bubbles: true}));
