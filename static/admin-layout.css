@@ -96,6 +96,13 @@ body.ax-admin ::selection { color: #091012; background: var(--ax-gold-bright); }
   scrollbar-color: rgba(212,177,95,.34) transparent;
 }
 .brand-link {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: auto !important;
+  height: 78px !important;
   min-height: 78px;
   margin: 12px 14px 0 !important;
   padding: 10px 12px !important;
@@ -120,7 +127,7 @@ body.ax-admin ::selection { color: #091012; background: var(--ax-gold-bright); }
 .ax-brand-copy { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .brand-link .brand-text { display: block; overflow: hidden; font-family: "Space Grotesk", sans-serif; font-size: 1.17rem; font-weight: 700 !important; letter-spacing: -.025em; text-overflow: ellipsis; }
 .brand-meta { font: 600 .7rem/1.4 "IBM Plex Mono", monospace; letter-spacing: .075em; text-transform: uppercase; }
-.main-sidebar .sidebar { padding: 0 13px; }
+.main-sidebar .sidebar { margin-top: 0 !important; padding: 0 13px; }
 .main-sidebar .user-panel { min-height: 70px; margin: 13px 1px 11px !important; padding: 10px 11px !important; align-items: center; gap: 11px; border-radius: 10px; }
 .ax-user-avatar { width: 38px; height: 38px; flex: 0 0 38px; display: inline-grid; place-items: center; border: 1px solid var(--ax-border); border-radius: 10px; font: 600 .95rem "Space Grotesk", sans-serif; }
 .ax-user-signal { width: 7px; height: 7px; display: inline-block; margin-right: 6px; border-radius: 50%; vertical-align: 1px; }

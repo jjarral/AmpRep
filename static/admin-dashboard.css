@@ -144,7 +144,9 @@
     .cmd-readout-caption { font-size:.84rem; }
     .cmd-metric-head { font-size:.77rem; }
     .cmd-metric-icon { font-size:.92rem; }
+    .cmd-metric-value { display:block; }
     .cmd-metric-foot { font-size:.8rem; }
+    .cmd-metric-foot { display:block; margin-top:3px; }
     .cmd-panel-title { font-size:1rem; }
     .cmd-panel-meta { font-size:.82rem; }
     .cmd-chart-date,.cmd-chart-amount { font-size:.77rem; }
