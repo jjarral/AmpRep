@@ -107,13 +107,26 @@
       {threshold: 0, rootMargin: '0px 0px -15% 0px'}).observe(document.getElementById('contact'));
   }
   const form = document.getElementById('quote-form');
+  const inquiryAdd = document.getElementById('inquiry-add');
+  const productPicker = document.getElementById('inquiry-product-picker');
+  if (inquiryAdd && productPicker) {
+    inquiryAdd.hidden = false;
+    form.classList.add('is-enhanced');
+    document.getElementById('inquiry-add-button').addEventListener('click', () => {
+      const check = document.getElementById(`product-${productPicker.value}`);
+      if (addProduct(check)) document.getElementById(check.dataset.quantity).focus();
+    });
+    checks.forEach(check => check.addEventListener('change', () => {
+      if (!check.checked) productPicker.focus();
+    }));
+  }
   form.addEventListener('submit', event => {
     const error = document.getElementById('form-error');
     if (!checks.some(check => check.checked)) {
       event.preventDefault();
       error.textContent = 'Please select at least one product and enter the quantity you need.';
       error.hidden = false;
-      checks[0]?.focus();
+      (productPicker || checks[0])?.focus();
       return;
     }
     error.hidden = true;

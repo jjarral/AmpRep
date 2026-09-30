@@ -12,7 +12,7 @@ The public website requests an inquiry and does not display those default prices
 - Website asset: `static/ampoulex-studio.webp` (58,844 bytes).
 - Original copied into the local workspace at `.cache/ampoulex-studio-original.png`.
 - Format conversion used Pillow; the composition and content were preserved.
-- Product cards use original SVG illustrations in `templates/public/ampoule.html`.
+- Product cards use an inline SVG macro in `templates/customer-site.html`.
 
 ### Final generation prompt
 

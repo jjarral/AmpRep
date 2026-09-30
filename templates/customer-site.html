@@ -7,12 +7,29 @@
     <meta name="description" content="Explore Ampoulex glass ampoules in 1, 2, 3, 5 and 10 mL. Clear and amber glass, batch checks and nationwide delivery across Pakistan.">
     <title>Ampoulex | Precision in glass</title>
     <link rel="preload" as="image" href="{{ url_for('static', filename='ampoulex-studio.webp') }}" fetchpriority="high">
-    <link rel="stylesheet" href="{{ url_for('static', filename='ampoulex-showroom.css') }}">
-    <script src="{{ url_for('static', filename='ampoulex-showroom.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='ampoulex-showroom.css') }}?v=20260930">
+    <script src="{{ url_for('static', filename='ampoulex-showroom.js') }}?v=20260930" defer></script>
 </head>
 <body>
 {% set catalogue = products|default([]) %}
-{% from 'public/ampoule.html' import ampoule %}
+{% macro ampoule(key, amber=false) -%}
+<svg class="ampoule-drawing" viewBox="0 0 120 260" aria-hidden="true" focusable="false">
+    <defs><linearGradient id="glass-{{ key }}" x1="0" x2="1">
+        <stop offset="0" stop-color="{{ '#6c3c0c' if amber else '#bbc7c9' }}" stop-opacity=".5"/>
+        <stop offset=".14" stop-color="{{ '#f6ce76' if amber else '#f3f4e9' }}" stop-opacity=".95"/>
+        <stop offset=".24" stop-color="{{ '#a26a1e' if amber else '#a9b4b7' }}" stop-opacity=".3"/>
+        <stop offset=".55" stop-color="{{ '#dc9b36' if amber else '#c6d6d8' }}" stop-opacity="{{ '.2' if amber else '.035' }}"/>
+        <stop offset=".8" stop-color="{{ '#f6b840' if amber else '#b0c6cc' }}" stop-opacity=".25"/>
+        <stop offset=".9" stop-color="{{ '#ffdfa0' if amber else '#fffced' }}" stop-opacity=".9"/>
+        <stop offset="1" stop-color="{{ '#a25e11' if amber else '#bccdd2' }}" stop-opacity=".45"/>
+    </linearGradient></defs>
+    <path d="M43 14 Q47 43 47 71 Q47 85 43 99 Q39 115 48 126 L48 135 Q47 142 38 147 Q32 152 32 163 L32 240 Q32 248 41 249 L79 249 Q88 248 88 240 L88 163 Q88 152 82 147 Q73 142 72 135 L72 126 Q81 115 77 99 Q73 85 73 71 Q73 43 77 14 Z" fill="url(#glass-{{ key }})" stroke="{{ '#d2a558' if amber else '#ccd3d3' }}" stroke-width="1.3"/>
+    <ellipse cx="60" cy="14" rx="18" ry="4.5" fill="#121313" stroke="{{ '#f8cf7b' if amber else '#e8e3d7' }}" stroke-width="1.7"/>
+    <ellipse cx="60" cy="241" rx="24" ry="4" fill="none" stroke="{{ '#d6ac5c' if amber else '#ddd8c7' }}" opacity=".65"/>
+    <path d="M51 24 L51 72 Q51 90 47 104 Q43 117 52 127 M39 165 L39 231" stroke="{{ '#ffe2a0' if amber else '#f3f2e5' }}" stroke-width="2.5" opacity=".65" fill="none" stroke-linecap="round"/>
+    <path d="M80 167 L80 233 M69 27 L69 73" stroke="{{ '#f4c679' if amber else '#eee9dc' }}" opacity=".7" fill="none"/>
+</svg>
+{%- endmacro %}
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
     <div class="shell nav-inner">
@@ -99,7 +116,9 @@
             <form id="quote-form" class="quote-form" action="{{ url_for('main.submit_inquiry') }}" method="post">
                 <div class="form-heading"><h3>Make an inquiry</h3><span class="status-dot" aria-hidden="true"></span></div><p class="form-hint">Fields marked * are required.</p>
                 {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="form-flash {{ 'error' if category == 'error' else '' }}" role="status">{{ message }}</div>{% endfor %}{% endwith %}
-                <fieldset class="inquiry-products"><legend><span>01</span> Products & quantities *</legend><p class="field-help">Select one or more formats and enter quantities in pieces.</p>
+                <fieldset class="inquiry-products"><legend><span>01</span> Products & quantities *</legend>
+                    {% if catalogue %}<div class="inquiry-add" id="inquiry-add" hidden><div><label for="inquiry-product-picker">Add a product</label><select id="inquiry-product-picker">{% for product in catalogue %}<option value="{{ product.id }}">{{ product.name }}</option>{% endfor %}</select></div><button class="button button-small" type="button" id="inquiry-add-button">Add <span aria-hidden="true">+</span></button></div>{% endif %}
+                    <p class="field-help">Enter quantities for your selected products. Uncheck a product to remove it.</p>
                     <div class="product-options">
                     {% for product in catalogue %}
                         <div class="product-option"><label for="product-{{ product.id }}"><input type="checkbox" class="product-check" id="product-{{ product.id }}" name="product_ids" value="{{ product.id }}" data-quantity="quantity-{{ product.id }}" data-volume="{{ '%g'|format(product.volume_cc) if product.volume_cc else '' }}" data-color="{{ 'clear' if (product.color or '')|lower == 'transparent' else (product.color or '')|lower }}" data-name="{{ product.name }}"><span><strong>{{ '%g'|format(product.volume_cc) ~ ' mL' if product.volume_cc else product.name }}</strong> {{ product.color or 'Glass' }} glass</span></label><input type="number" id="quantity-{{ product.id }}" name="qty_{{ product.id }}" min="1" step="1" inputmode="numeric" placeholder="Quantity" aria-label="Quantity for {{ product.name }}"></div>
@@ -114,7 +133,7 @@
                     <div class="field"><label for="company-name">Company *</label><input id="company-name" name="business_name" autocomplete="organization" required placeholder="Company name" maxlength="100"></div>
                     <div class="field"><label for="contact-phone">Phone *</label><input id="contact-phone" name="phone" type="tel" autocomplete="tel" required placeholder="03XX XXXXXXX" maxlength="20"></div>
                     <div class="field"><label for="contact-email">Email</label><input id="contact-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" maxlength="120"></div>
-                    <div class="field full"><label for="requirements">Specifications & delivery details</label><textarea id="requirements" name="notes" rows="3" placeholder="Dimensions, delivery city, timing or other requirements…"></textarea></div>
+                    <details class="field full optional-details"><summary>Add delivery or specification details <span aria-hidden="true">＋</span></summary><label for="requirements">Optional details</label><textarea id="requirements" name="notes" rows="2" placeholder="Delivery city, timing or other requirements…"></textarea></details>
                 </div></fieldset>
                 <p class="form-error" id="form-error" role="alert" hidden></p>
                 <button class="button submit-inquiry" type="submit">Send inquiry <span aria-hidden="true">↗</span></button><p class="form-note">We’ll confirm pricing and availability with you before any order.</p>

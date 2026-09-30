@@ -1,48 +1,59 @@
 {% extends "base.html" %}
-{% block title %}Business Settings{% endblock %}
+{% block title %}Business settings{% endblock %}
 {% block content %}
-<div class="max-w-3xl mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-6">🏢 Business Settings</h1>
-    
-    <form method="POST" class="bg-white p-6 rounded-lg shadow space-y-4">
-        <div>
-            <label class="block text-sm font-medium">Company Name</label>
-            <input type="text" name="company_name" value="{{ settings.company_name }}" class="w-full border rounded p-2">
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium">Phone 1</label>
-                <input type="text" name="phone_1" value="{{ settings.phone_1 }}" class="w-full border rounded p-2">
+<div class="row">
+    <div class="col-xl-8 col-lg-10">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title mb-0">Business profile</h2>
+                <p class="text-muted mb-0 mt-1">Contact details used across your Ampoulex workspace.</p>
             </div>
-            <div>
-                <label class="block text-sm font-medium">Phone 2</label>
-                <input type="text" name="phone_2" value="{{ settings.phone_2 }}" class="w-full border rounded p-2">
-            </div>
+            <form method="POST" autocomplete="on">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="company-name">Company name</label>
+                        <input id="company-name" type="text" name="company_name" value="{{ settings.company_name or '' }}" class="form-control" autocomplete="organization">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="phone-one">Primary phone</label>
+                            <input id="phone-one" type="tel" name="phone_1" value="{{ settings.phone_1 or '' }}" class="form-control" autocomplete="tel">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="phone-two">Alternate phone</label>
+                            <input id="phone-two" type="tel" name="phone_2" value="{{ settings.phone_2 or '' }}" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="business-email">Email</label>
+                            <input id="business-email" type="email" name="email" value="{{ settings.email or '' }}" class="form-control" autocomplete="email">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="business-website">Website</label>
+                            <input id="business-website" type="url" name="website" value="{{ settings.website or '' }}" class="form-control" autocomplete="url">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="business-address">Address</label>
+                        <textarea id="business-address" name="address" rows="3" class="form-control" autocomplete="street-address">{{ settings.address or '' }}</textarea>
+                    </div>
+                    <div class="form-row mb-0">
+                        <div class="form-group col-md-6 mb-md-0">
+                            <label for="business-ntn">NTN</label>
+                            <input id="business-ntn" type="text" name="ntn" value="{{ settings.ntn or '' }}" class="form-control">
+                        </div>
+                        <div class="form-group col-md-6 mb-0">
+                            <label for="business-strn">STRN</label>
+                            <input id="business-strn" type="text" name="strn" value="{{ settings.strn or '' }}" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-check mr-2" aria-hidden="true"></i>Save settings</button>
+                </div>
+            </form>
         </div>
-        <div>
-            <label class="block text-sm font-medium">Email</label>
-            <input type="email" name="email" value="{{ settings.email }}" class="w-full border rounded p-2">
-        </div>
-        <div>
-            <label class="block text-sm font-medium">Website</label>
-            <input type="text" name="website" value="{{ settings.website }}" class="w-full border rounded p-2">
-        </div>
-        <div>
-            <label class="block text-sm font-medium">Address</label>
-            <textarea name="address" rows="3" class="w-full border rounded p-2">{{ settings.address }}</textarea>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium">NTN</label>
-                <input type="text" name="ntn" value="{{ settings.ntn }}" class="w-full border rounded p-2">
-            </div>
-            <div>
-                <label class="block text-sm font-medium">STRN</label>
-                <input type="text" name="strn" value="{{ settings.strn }}" class="w-full border rounded p-2">
-            </div>
-        </div>
-        
-        <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">💾 Save Settings</button>
-    </form>
+    </div>
 </div>
 {% endblock %}
