@@ -3,16 +3,17 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#090f11">
     <title>{% block title %}Ampoulex{% endblock %} | Business Management</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="icon" type="image/png" href="/static/ampoulex-mark.png">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js" defer></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     
-    <link rel="stylesheet" href="{{ url_for('static', filename='admin-layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin-layout.css') }}?v=20260930-console">
     {% block extra_css %}{% endblock %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='admin-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin-theme.css') }}?v=20260930-console">
 </head>
 <body class="ax-admin hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
 <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -22,9 +23,10 @@
     <nav class="main-header navbar navbar-expand navbar-dark" aria-label="Main toolbar">
         <ul class="navbar-nav">
             <li class="nav-item"><button class="nav-link ax-menu-toggle" id="ax-menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primary-navigation"><i class="fas fa-bars" aria-hidden="true"></i></button></li>
-            <li class="nav-item ax-top-context">Ampoulex <strong>Operations console</strong></li>
+            <li class="nav-item ax-top-context"><span class="ax-top-kicker">Ampoulex / operations</span><strong>{{ self.page_title() }}</strong></li>
         </ul>
         <ul class="navbar-nav ml-auto">
+            <li class="nav-item ax-top-clock"><span>LOCAL TIME</span><time id="ax-header-clock" aria-label="Local time">--:--</time></li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('main.products') }}" title="Low stock" aria-label="Open products and stock alerts">
                     <i class="fas fa-exclamation-triangle text-warning"></i>
@@ -57,20 +59,21 @@
     <aside class="main-sidebar sidebar-dark-primary elevation-4" id="primary-navigation" aria-label="Primary navigation">
         <a href="{{ url_for('main.dashboard') }}" class="brand-link">
             <img src="/static/ampoulex-mark.png" alt="" class="brand-image">
-            <span class="brand-text font-weight-light">Ampoulex</span>
+            <span class="ax-brand-copy"><span class="brand-text">Ampoulex</span><span class="brand-meta">Operations system</span></span>
         </a>
         <div class="sidebar">
             <div class="user-panel d-flex">
+                <span class="ax-user-avatar" aria-hidden="true">{{ current_user.username[:1]|upper }}</span>
                 <div class="info">
                     <span class="d-block text-white">{{ current_user.username }}</span>
-                    <small>{{ current_user.role|title }} · Signed in</small>
+                    <small><span class="ax-user-signal" aria-hidden="true"></span>{{ current_user.role|title }} access</small>
                 </div>
             </div>
             <div class="ax-nav-search" role="search">
                 <i class="fas fa-search" aria-hidden="true"></i>
                 <label class="sr-only" for="ax-nav-filter">Find a section</label>
-                <input id="ax-nav-filter" type="search" placeholder="Find a section" autocomplete="off">
-                <span class="search-hint" aria-hidden="true">FILTER</span>
+                <input id="ax-nav-filter" type="search" placeholder="Search sections" autocomplete="off" aria-keyshortcuts="/">
+                <span class="search-hint" aria-hidden="true">/</span>
             </div>
             <nav class="mt-2" aria-label="Workspace sections">
                 <ul class="nav nav-pills nav-sidebar flex-column nav-compact nav-child-indent" data-widget="treeview" role="menu">
@@ -282,10 +285,8 @@
 
     <!-- Footer -->
     <footer class="main-footer">
-        <strong>Copyright &copy; {{ current_year }} <a href="{{ url_for('main.index') }}">Ampoulex</a>.</strong> All rights reserved.
-        <div class="float-right d-none d-sm-inline-block">
-            <b>Version</b> 3.0
-        </div>
+        <strong>{{ current_year }} <a href="{{ url_for('main.index') }}">Ampoulex</a> · Operations system</strong>
+        <div class="float-right d-none d-sm-inline-block">Factory control · PKR</div>
     </footer>
 
 </div>
@@ -296,7 +297,7 @@
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 
-<script src="{{ url_for('static', filename='admin-shell.js') }}" defer></script>
+<script src="{{ url_for('static', filename='admin-shell.js') }}?v=20260930-console" defer></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

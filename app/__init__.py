@@ -237,7 +237,38 @@ def create_app():
             db.create_all()
             app.logger.info("✅ Tables verified/created.")
             
-            from .models import User  # Lazy import
+            from .models import CompanySetting, Product, User  # Lazy import
+
+            # Restore the requested public catalogue after a clean database reset.
+            # A marker keeps intentionally removed products from reappearing later.
+            catalogue_seed = CompanySetting.query.filter_by(key='initial_ampoule_catalogue_v1').first()
+            if not catalogue_seed:
+                if Product.query.first() is None:
+                    for volume in (1, 2, 3, 5, 10):
+                        for color, sku_color in (('Clear', 'CLR'), ('Amber', 'AMB')):
+                            db.session.add(Product(
+                                name=f'{volume} mL Ampoule - {color}',
+                                base_name=f'{volume} mL Ampoule',
+                                product_type='ampoule',
+                                specification=f'{volume} mL / {color.lower()} glass',
+                                volume_cc=float(volume),
+                                glass_type=color,
+                                color=color,
+                                sku=f'AX-{volume}CC-{sku_color}',
+                                stock=0,
+                                base_price=0,
+                                unit_price=0,
+                                stock_value=0,
+                                is_active=True,
+                                is_deleted=False,
+                            ))
+                db.session.add(CompanySetting(
+                    key='initial_ampoule_catalogue_v1',
+                    value='Initial 1, 2, 3, 5 and 10 mL clear and amber ampoule variants; stock and price begin unset.',
+                ))
+                db.session.commit()
+                app.logger.info('✅ Initial Ampoulex catalogue checked.')
+
             if not User.query.filter_by(role='admin').first():
                 admin_username = os.environ.get('INITIAL_ADMIN_USERNAME')
                 admin_email = os.environ.get('INITIAL_ADMIN_EMAIL')

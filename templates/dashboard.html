@@ -4,7 +4,7 @@
 {% block breadcrumb_active %}Command center{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}?v=20260930-console">
 {% endblock %}
 
 {% block content %}
@@ -15,7 +15,7 @@
 {% set flagged_total = stock_queue + quality_queue + supply_queue + people_queue + active_inquiries + open_orders %}
 <div class="ax-command">
     <header class="cmd-topline">
-        <div class="cmd-brandline"><span class="cmd-brand-mark"><i class="fas fa-industry" aria-hidden="true"></i></span><strong>Ampoulex</strong><span>/</span><span>Operations control</span></div>
+        <div class="cmd-brandline"><span class="cmd-brand-mark"><i class="fas fa-industry" aria-hidden="true"></i></span><strong>Operations control</strong><span>/</span><span>Daily shift board</span></div>
         <div class="cmd-top-tools"><span>SHIFT BOARD · {{ now.strftime('%d %b %Y') }}</span><time class="cmd-clock" id="cmd-clock" aria-label="Local time">--:--:--</time><button class="cmd-refresh" type="button" onclick="window.location.reload()"><i class="fas fa-sync-alt" aria-hidden="true"></i><span>Refresh</span></button></div>
     </header>
 
@@ -113,7 +113,7 @@
             <article class="cmd-module" data-module="finance expenses accounting ledger journals cash bank vouchers assets"><h4><i class="fas fa-scale-balanced" aria-hidden="true"></i>Finance & accounting</h4><nav class="cmd-module-links" aria-label="Finance and accounting modules"><a href="{{ url_for('main.accounting_dashboard') }}">Accounting</a><a href="{{ url_for('main.expenses') }}">Expenses</a><a href="{{ url_for('main.journal_entries') }}">Journal entries</a><a href="{{ url_for('main.general_ledger') }}">General ledger</a><a href="{{ url_for('main.bank_reconciliation') }}">Bank reconciliation</a><a href="{{ url_for('main.payment_vouchers') }}">Payment vouchers</a><a href="{{ url_for('main.receipt_vouchers') }}">Receipt vouchers</a><a href="{{ url_for('main.fixed_assets_list') }}">Fixed assets</a></nav></article>
             <article class="cmd-module" data-module="people hr payroll employees attendance shifts timesheets leave"><h4><i class="fas fa-users" aria-hidden="true"></i>People & payroll</h4><nav class="cmd-module-links" aria-label="People and payroll modules"><a href="{{ url_for('main.payroll') }}">Employees</a><a href="{{ url_for('main.payroll_run') }}">Run payroll</a><a href="{{ url_for('main.payroll_payments') }}">Salary payments</a><a href="{{ url_for('main.shifts') }}">Shifts</a><a href="{{ url_for('main.attendance') }}">Attendance</a><a href="{{ url_for('main.timesheets') }}">Timesheets</a><a href="{{ url_for('main.leave_requests') }}">Leave requests</a></nav></article>
             <article class="cmd-module" data-module="analytics reports sales inventory production tax fbr"><h4><i class="fas fa-chart-line" aria-hidden="true"></i>Analytics & reports</h4><nav class="cmd-module-links" aria-label="Analytics and reporting modules"><a href="{{ url_for('main.analytics_dashboard') }}">Analytics</a><a href="{{ url_for('main.reports_dashboard') }}">Reports desk</a><a href="{{ url_for('main.sales_analysis_report') }}">Sales analysis</a><a href="{{ url_for('main.inventory_valuation_report') }}">Inventory valuation</a><a href="{{ url_for('main.production_efficiency_report') }}">Production efficiency</a><a href="{{ url_for('main.fbr_invoices') }}">FBR invoices</a><a href="{{ url_for('main.tax_returns') }}">Tax returns</a></nav></article>
-            <article class="cmd-module" data-module="control settings users audit administration"><h4><i class="fas fa-sliders" aria-hidden="true"></i>System control</h4><nav class="cmd-module-links" aria-label="System control modules"><a href="{{ url_for('main.settings') }}">Business settings</a><a href="{{ url_for('main.admin_users') }}">User management</a><a href="{{ url_for('main.audit_log') }}">Audit log</a><a href="{{ url_for('main.change_password') }}">Change password</a></nav></article>
+            <article class="cmd-module" data-module="control settings users audit administration"><h4><i class="fas fa-sliders" aria-hidden="true"></i>System control</h4><nav class="cmd-module-links" aria-label="System control modules"><a href="{{ url_for('main.settings') }}">Business settings</a>{% if current_user.role == 'admin' %}<a href="{{ url_for('main.admin_users') }}">User management</a>{% endif %}<a href="{{ url_for('main.audit_log') }}">Audit log</a><a href="{{ url_for('main.change_password') }}">Change password</a></nav></article>
         </div>
         <div class="cmd-search-empty" id="module-empty" role="status">No matching modules. Try another search term.</div>
     </section>

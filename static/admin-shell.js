@@ -1,79 +1,77 @@
-
-// Responsive navigation and quick section filter.
+// Shared navigation, account controls, and lightweight live indicators.
 const axMenuToggle = document.getElementById('ax-menu-toggle');
 const axNavScrim = document.getElementById('ax-nav-scrim');
 const axNav = document.getElementById('primary-navigation');
 const axNavFilter = document.getElementById('ax-nav-filter');
+const axIsMobile = () => window.matchMedia('(max-width: 899.98px)').matches;
+
+function axNavigationIsOpen() {
+    return axIsMobile()
+        ? document.body.classList.contains('ax-nav-open')
+        : !document.body.classList.contains('ax-nav-collapsed');
+}
+
 function setNavigationOpen(open, returnFocus = true) {
-    document.body.classList.toggle('ax-nav-open', open);
+    const mobile = axIsMobile();
+    document.body.classList.toggle('ax-nav-open', mobile && open);
+    document.body.classList.toggle('ax-nav-collapsed', !mobile && !open);
     if (axMenuToggle) {
         axMenuToggle.setAttribute('aria-expanded', String(open));
-        axMenuToggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+        axMenuToggle.setAttribute('aria-label', open
+            ? (mobile ? 'Close navigation menu' : 'Collapse navigation')
+            : (mobile ? 'Open navigation menu' : 'Show navigation'));
     }
-    if (window.matchMedia('(max-width: 767.98px)').matches) {
+    if (mobile) {
         if (open && axNavFilter) axNavFilter.focus();
         if (!open && returnFocus && axMenuToggle) axMenuToggle.focus();
     }
 }
-if (axMenuToggle) axMenuToggle.addEventListener('click', () => setNavigationOpen(!document.body.classList.contains('ax-nav-open')));
+
+setNavigationOpen(!axIsMobile(), false);
+if (axMenuToggle) axMenuToggle.addEventListener('click', () => setNavigationOpen(!axNavigationIsOpen()));
 if (axNavScrim) axNavScrim.addEventListener('click', () => setNavigationOpen(false));
-document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && document.body.classList.contains('ax-nav-open')) setNavigationOpen(false);
+let axWasMobile = axIsMobile();
+window.addEventListener('resize', () => {
+    const isMobile = axIsMobile();
+    if (isMobile !== axWasMobile) setNavigationOpen(!isMobile, false);
+    axWasMobile = isMobile;
 });
+
 if (axNav) {
-    axNav.querySelectorAll('.has-treeview > a.nav-link').forEach(link => {
+    const groups = Array.from(axNav.querySelectorAll('.has-treeview > a.nav-link'));
+    groups.forEach((link, index) => {
+        const panel = link.parentElement.querySelector(':scope > .nav-treeview');
+        if (!panel) return;
+        if (!panel.id) panel.id = `ax-nav-group-${index + 1}`;
+        link.setAttribute('role', 'button');
+        link.setAttribute('aria-controls', panel.id);
         link.setAttribute('aria-expanded', String(link.parentElement.classList.contains('menu-open')));
+        link.addEventListener('keydown', event => {
+            if (event.key === ' ') {
+                event.preventDefault();
+                link.click();
+            }
+        });
     });
+
     axNav.addEventListener('click', event => {
         const sectionLink = event.target.closest('.has-treeview > a.nav-link');
         if (sectionLink) {
             event.preventDefault();
-            event.stopPropagation();
             const section = sectionLink.parentElement;
             const expanded = section.classList.toggle('menu-open');
             sectionLink.setAttribute('aria-expanded', String(expanded));
             return;
         }
-        if (event.target.closest('a.nav-link') && window.matchMedia('(max-width: 767.98px)').matches) setNavigationOpen(false, false);
+        if (event.target.closest('a.nav-link') && axIsMobile()) setNavigationOpen(false, false);
     });
-}
 
-// Native account menu, independent of the optional Bootstrap JavaScript.
-const axAccountToggle = document.getElementById('ax-account-toggle');
-const axAccountMenu = document.getElementById('ax-account-menu');
-function setAccountMenuOpen(open) {
-    if (!axAccountToggle || !axAccountMenu) return;
-    axAccountMenu.hidden = !open;
-    axAccountToggle.setAttribute('aria-expanded', String(open));
-}
-if (axAccountToggle && axAccountMenu) {
-    axAccountToggle.addEventListener('click', () => setAccountMenuOpen(axAccountMenu.hidden));
-    document.addEventListener('click', event => {
-        if (!event.target.closest('.main-header .dropdown')) setAccountMenuOpen(false);
-    });
-    document.addEventListener('keydown', event => {
-        if (event.key === 'Escape' && !axAccountMenu.hidden) {
-            setAccountMenuOpen(false);
-            axAccountToggle.focus();
-        }
-    });
-}
-
-document.addEventListener('click', event => {
-    const dismiss = event.target.closest('[data-dismiss="alert"]');
-    if (dismiss) {
-        const alert = dismiss.closest('.alert');
-        if (alert) alert.remove();
-    }
-});
-
-if (axNavFilter && axNav) {
     const navItems = Array.from(axNav.querySelectorAll('li.nav-item'));
     const navHeaders = Array.from(axNav.querySelectorAll(':scope > ul > li.nav-header'));
     const emptyMessage = document.createElement('p');
     emptyMessage.className = 'ax-nav-empty';
     emptyMessage.textContent = 'No matching sections.';
-    emptyMessage.setAttribute('aria-live', 'polite');
+    emptyMessage.setAttribute('role', 'status');
     axNav.appendChild(emptyMessage);
 
     function filterNavigation() {
@@ -81,7 +79,7 @@ if (axNavFilter && axNav) {
         navItems.forEach(item => {
             const parentLink = item.querySelector(':scope > a.nav-link');
             const ownText = parentLink ? parentLink.textContent.toLocaleLowerCase() : '';
-            const children = Array.from(item.querySelectorAll('.nav-treeview > .nav-item'));
+            const children = Array.from(item.querySelectorAll(':scope > .nav-treeview > .nav-item'));
             if (!children.length) {
                 item.hidden = Boolean(query && !ownText.includes(query));
                 return;
@@ -89,20 +87,18 @@ if (axNavFilter && axNav) {
             const parentMatches = Boolean(query && ownText.includes(query));
             let childMatches = 0;
             children.forEach(child => {
-                const text = child.textContent.toLocaleLowerCase();
-                const matches = !query || parentMatches || text.includes(query);
+                const matches = !query || parentMatches || child.textContent.toLocaleLowerCase().includes(query);
                 child.hidden = !matches;
                 if (matches) childMatches += 1;
             });
             item.hidden = Boolean(query && !parentMatches && !childMatches);
-            const sectionLink = item.querySelector(':scope > a.nav-link');
             if (query && childMatches && !parentMatches) {
                 item.classList.add('menu-open');
-                if (sectionLink) sectionLink.setAttribute('aria-expanded', 'true');
+                if (parentLink) parentLink.setAttribute('aria-expanded', 'true');
             } else if (!query) {
                 const expanded = Boolean(item.querySelector('.nav-link.active'));
                 item.classList.toggle('menu-open', expanded);
-                if (sectionLink) sectionLink.setAttribute('aria-expanded', String(expanded));
+                if (parentLink) parentLink.setAttribute('aria-expanded', String(expanded));
             }
         });
 
@@ -117,49 +113,101 @@ if (axNavFilter && axNav) {
         });
         emptyMessage.style.display = query && !navItems.some(item => !item.hidden) ? 'block' : 'none';
     }
-    axNavFilter.addEventListener('input', filterNavigation);
+
+    navItems.forEach(item => {
+        const activeLink = item.querySelector(':scope > a.nav-link.active');
+        if (activeLink && activeLink.getAttribute('href') !== '#') activeLink.setAttribute('aria-current', 'page');
+    });
+    if (axNavFilter) axNavFilter.addEventListener('input', filterNavigation);
 }
 
-// Socket.IO - single connection guard
-if (typeof window.io === 'function' && typeof window.socket === 'undefined') {
-    window.socket = io('/admin', { reconnection: true, reconnectionAttempts: 5 });
-    window.socket.on('connect', () => console.log('✅ Real-time connected'));
-    window.socket.on('new_inquiry', d => showToast('New inquiry', `${d.customer} · ${d.business}`, 'info'));
-    window.socket.on('new_order', d => showToast('New order', `${d.customer} · PKR ${d.total}`, 'success'));
+document.addEventListener('keydown', event => {
+    const target = event.target;
+    const isTyping = target instanceof HTMLElement
+        && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+    if (event.key === 'Escape' && document.body.classList.contains('ax-nav-open')) setNavigationOpen(false);
+    if (event.key === '/' && !isTyping && !event.altKey && !event.ctrlKey && !event.metaKey && axNavFilter) {
+        event.preventDefault();
+        axNavFilter.focus();
+    }
+});
+
+// Native account menu keeps working when optional framework scripts are unavailable.
+const axAccountToggle = document.getElementById('ax-account-toggle');
+const axAccountMenu = document.getElementById('ax-account-menu');
+function setAccountMenuOpen(open) {
+    if (!axAccountToggle || !axAccountMenu) return;
+    axAccountMenu.hidden = !open;
+    axAccountToggle.setAttribute('aria-expanded', String(open));
 }
-function showToast(title, msg, type='info') {
-    const t = document.createElement('div');
-    t.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-    t.style.cssText = 'top:82px; right:20px; z-index:1090; width:min(380px,calc(100vw - 32px)); box-shadow:0 12px 34px rgba(17,25,29,.16);';
-    t.setAttribute('role', 'status');
-    t.setAttribute('aria-live', 'polite');
+if (axAccountToggle && axAccountMenu) {
+    setAccountMenuOpen(false);
+    axAccountToggle.addEventListener('click', () => setAccountMenuOpen(axAccountMenu.hidden));
+    document.addEventListener('click', event => {
+        if (!event.target.closest('.main-header .dropdown')) setAccountMenuOpen(false);
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !axAccountMenu.hidden) {
+            setAccountMenuOpen(false);
+            axAccountToggle.focus();
+        }
+    });
+}
+
+document.addEventListener('click', event => {
+    const dismiss = event.target.closest('[data-dismiss="alert"]');
+    if (dismiss) dismiss.closest('.alert')?.remove();
+});
+
+const axClock = document.getElementById('ax-header-clock');
+if (axClock) {
+    const updateClock = () => { axClock.textContent = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date()); };
+    updateClock();
+    window.setInterval(updateClock, 30_000);
+}
+
+if (typeof window.io === 'function' && typeof window.socket === 'undefined') {
+    window.socket = window.io('/admin', { reconnection: true, reconnectionAttempts: 5 });
+    window.socket.on('new_inquiry', data => showToast('New inquiry', `${data.customer} · ${data.business}`, 'info'));
+    window.socket.on('new_order', data => showToast('New order', `${data.customer} · PKR ${data.total}`, 'success'));
+}
+
+function showToast(title, message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top:88px;right:20px;z-index:1090;width:min(390px,calc(100vw - 32px));box-shadow:0 14px 34px rgba(0,0,0,.28);';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
     const heading = document.createElement('strong');
     heading.textContent = title;
     const detail = document.createElement('div');
-    detail.textContent = msg;
+    detail.textContent = message;
     detail.style.marginTop = '4px';
     const close = document.createElement('button');
     close.type = 'button';
     close.className = 'close';
     close.setAttribute('aria-label', 'Dismiss notification');
     close.textContent = '×';
-    close.addEventListener('click', () => t.remove());
-    t.append(heading, detail, close);
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 5000);
+    close.addEventListener('click', () => toast.remove());
+    toast.append(heading, detail, close);
+    document.body.appendChild(toast);
+    window.setTimeout(() => toast.remove(), 5000);
 }
-// Badge updates
+
 function updateInquiryBadge() {
-    fetch('/api/inquiry-count', { headers: { 'Accept': 'application/json' } })
-        .then(r => r.json())
-        .then(d => {
-            const el = document.getElementById('inquiry-badge');
-            if (el) {
-                el.textContent = d.count;
-                el.style.display = d.count > 0 ? 'inline' : 'none';
-                el.setAttribute('aria-label', `${d.count} open inquiries`);
-            }
+    fetch('/api/inquiry-count', { headers: { Accept: 'application/json' } })
+        .then(response => response.ok ? response.json() : null)
+        .then(data => {
+            const badge = document.getElementById('inquiry-badge');
+            if (!badge || !data) return;
+            const count = Number(data.count) || 0;
+            badge.textContent = count;
+            badge.hidden = count < 1;
+            badge.setAttribute('aria-label', `${count} open inquiries`);
         })
         .catch(() => {});
 }
-document.addEventListener('DOMContentLoaded', () => { updateInquiryBadge(); setInterval(updateInquiryBadge, 30000); });
+document.addEventListener('DOMContentLoaded', () => {
+    updateInquiryBadge();
+    window.setInterval(updateInquiryBadge, 45_000);
+});
