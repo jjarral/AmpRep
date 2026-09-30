@@ -4,7 +4,7 @@
 {% block breadcrumb_active %}Command center{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}?v=20261001-sidebar-final">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}?v=20261001-workspaces">
 {% endblock %}
 
 {% block content %}
@@ -95,28 +95,15 @@
                     <a class="cmd-command-link" href="{{ url_for('main.add_order') }}"><i class="fas fa-plus" aria-hidden="true"></i>New order</a>
                     <a class="cmd-command-link" href="{{ url_for('main.add_inquiry') }}"><i class="fas fa-inbox" aria-hidden="true"></i>New inquiry</a>
                     <a class="cmd-command-link" href="{{ url_for('main.add_production_batch') }}"><i class="fas fa-industry" aria-hidden="true"></i>New batch</a>
-                    <a class="cmd-command-link" href="{{ url_for('main.add_purchase_order') }}"><i class="fas fa-cart-plus" aria-hidden="true"></i>New purchase</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.add_purchase_order') }}"><i class="fas fa-cart-plus" aria-hidden="true"></i>New purchase order</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.customer_complaints') }}"><i class="fas fa-microscope" aria-hidden="true"></i>Review complaints</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.material_batches') }}"><i class="fas fa-barcode" aria-hidden="true"></i>Material lots</a>
                     <a class="cmd-command-link" href="{{ url_for('main.add_expense') }}"><i class="fas fa-receipt" aria-hidden="true"></i>Log expense</a>
                     <a class="cmd-command-link" href="{{ url_for('main.reports_dashboard') }}"><i class="fas fa-chart-pie" aria-hidden="true"></i>Open reports</a>
                 </div>
             </section>
         </aside>
     </div>
-
-    <section class="cmd-panel cmd-modules" aria-labelledby="modules-heading">
-        <div class="cmd-modules-top"><h3 class="cmd-panel-title" id="modules-heading"><i class="fas fa-grip" aria-hidden="true"></i> Every module, one launch surface</h3><label class="cmd-filter-wrap"><span class="sr-only">Filter modules</span><i class="fas fa-search" aria-hidden="true"></i><input class="cmd-filter" id="module-filter" type="search" placeholder="Find a module…" autocomplete="off" aria-controls="module-grid"></label></div>
-        <div class="cmd-module-grid" id="module-grid">
-            <article class="cmd-module" data-module="sales orders inquiries customers customer site"><h4><i class="fas fa-handshake" aria-hidden="true"></i>Sales & customers</h4><nav class="cmd-module-links" aria-label="Sales and customer modules"><a href="{{ url_for('main.inquiries') }}">Inquiries</a><a href="{{ url_for('main.orders') }}">Orders</a><a href="{{ url_for('main.customers') }}">Customers</a><a href="{{ url_for('main.customer_site') }}">Public catalogue</a></nav></article>
-            <article class="cmd-module" data-module="manufacturing production batches raw materials products stock warehouse transfers"><h4><i class="fas fa-industry" aria-hidden="true"></i>Factory & inventory</h4><nav class="cmd-module-links" aria-label="Factory and inventory modules"><a href="{{ url_for('main.production') }}">Production</a><a href="{{ url_for('main.production_batches') }}">Batches</a><a href="{{ url_for('main.raw_materials') }}">Raw materials</a><a href="{{ url_for('main.products') }}">Products & stock</a><a href="{{ url_for('main.warehouses') }}">Warehouses</a><a href="{{ url_for('main.stock_transfers') }}">Stock transfers</a></nav></article>
-            <article class="cmd-module" data-module="procurement suppliers purchase orders receipts invoices supply chain"><h4><i class="fas fa-truck-ramp-box" aria-hidden="true"></i>Supply chain</h4><nav class="cmd-module-links" aria-label="Supply chain modules"><a href="{{ url_for('main.suppliers') }}">Suppliers</a><a href="{{ url_for('main.purchase_orders') }}">Purchase orders</a><a href="{{ url_for('main.goods_receipts') }}">Goods receipts</a><a href="{{ url_for('main.supplier_invoices') }}">Supplier invoices</a></nav></article>
-            <article class="cmd-module" data-module="quality qc complaints capa calibration"><h4><i class="fas fa-microscope" aria-hidden="true"></i>Quality & assurance</h4><nav class="cmd-module-links" aria-label="Quality modules"><a href="{{ url_for('main.qc_parameters') }}">QC parameters</a><a href="{{ url_for('main.customer_complaints') }}">Complaints</a><a href="{{ url_for('main.capa_records') }}">CAPA</a><a href="{{ url_for('main.calibration_records') }}">Calibration</a></nav></article>
-            <article class="cmd-module" data-module="finance expenses accounting ledger journals cash bank vouchers assets"><h4><i class="fas fa-scale-balanced" aria-hidden="true"></i>Finance & accounting</h4><nav class="cmd-module-links" aria-label="Finance and accounting modules"><a href="{{ url_for('main.accounting_dashboard') }}">Accounting</a><a href="{{ url_for('main.expenses') }}">Expenses</a><a href="{{ url_for('main.journal_entries') }}">Journal entries</a><a href="{{ url_for('main.general_ledger') }}">General ledger</a><a href="{{ url_for('main.bank_reconciliation') }}">Bank reconciliation</a><a href="{{ url_for('main.payment_vouchers') }}">Payment vouchers</a><a href="{{ url_for('main.receipt_vouchers') }}">Receipt vouchers</a><a href="{{ url_for('main.fixed_assets_list') }}">Fixed assets</a></nav></article>
-            <article class="cmd-module" data-module="people hr payroll employees attendance shifts timesheets leave"><h4><i class="fas fa-users" aria-hidden="true"></i>People & payroll</h4><nav class="cmd-module-links" aria-label="People and payroll modules"><a href="{{ url_for('main.payroll') }}">Employees</a><a href="{{ url_for('main.payroll_run') }}">Run payroll</a><a href="{{ url_for('main.payroll_payments') }}">Salary payments</a><a href="{{ url_for('main.shifts') }}">Shifts</a><a href="{{ url_for('main.attendance') }}">Attendance</a><a href="{{ url_for('main.timesheets') }}">Timesheets</a><a href="{{ url_for('main.leave_requests') }}">Leave requests</a></nav></article>
-            <article class="cmd-module" data-module="analytics reports sales inventory production tax fbr"><h4><i class="fas fa-chart-line" aria-hidden="true"></i>Analytics & reports</h4><nav class="cmd-module-links" aria-label="Analytics and reporting modules"><a href="{{ url_for('main.analytics_dashboard') }}">Analytics</a><a href="{{ url_for('main.reports_dashboard') }}">Reports desk</a><a href="{{ url_for('main.sales_analysis_report') }}">Sales analysis</a><a href="{{ url_for('main.inventory_valuation_report') }}">Inventory valuation</a><a href="{{ url_for('main.production_efficiency_report') }}">Production efficiency</a><a href="{{ url_for('main.fbr_invoices') }}">FBR invoices</a><a href="{{ url_for('main.tax_returns') }}">Tax returns</a></nav></article>
-            <article class="cmd-module" data-module="control settings users audit administration"><h4><i class="fas fa-sliders" aria-hidden="true"></i>System control</h4><nav class="cmd-module-links" aria-label="System control modules"><a href="{{ url_for('main.settings') }}">Business settings</a>{% if current_user.role == 'admin' %}<a href="{{ url_for('main.admin_users') }}">User management</a>{% endif %}<a href="{{ url_for('main.audit_log') }}">Audit log</a><a href="{{ url_for('main.change_password') }}">Change password</a></nav></article>
-        </div>
-        <div class="cmd-search-empty" id="module-empty" role="status">No matching modules. Try another search term.</div>
-    </section>
 
     <footer class="cmd-footerline"><span><strong>{{ total_orders }}</strong> orders · <strong>{{ total_customers }}</strong> active customers · <strong>{{ active_batches + planned_batches }}</strong> planned or active batches</span><span>Figures reflect the current database snapshot · Refresh to pull the latest</span></footer>
 </div>
@@ -127,26 +114,6 @@
     updateClock();
     window.setInterval(updateClock, 1000);
 
-    const filter = document.getElementById('module-filter');
-    const cards = Array.from(document.querySelectorAll('#module-grid .cmd-module'));
-    const empty = document.getElementById('module-empty');
-    if (filter) {
-        const applyFilter = () => {
-            const query = filter.value.trim().toLocaleLowerCase();
-            let visible = 0;
-            cards.forEach(card => {
-                const match = !query || `${card.dataset.module} ${card.textContent}`.toLocaleLowerCase().includes(query);
-                card.hidden = !match;
-                if (match) visible += 1;
-            });
-            if (empty) empty.style.display = visible ? 'none' : 'block';
-        };
-        filter.addEventListener('input', applyFilter);
-        document.addEventListener('keydown', event => {
-            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); filter.focus(); }
-            if (event.key === 'Escape' && document.activeElement === filter) { filter.value = ''; applyFilter(); filter.blur(); }
-        });
-    }
 })();
 </script>
 {% endblock %}

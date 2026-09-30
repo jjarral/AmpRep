@@ -126,8 +126,11 @@ document.addEventListener('keydown', event => {
     const isTyping = target instanceof HTMLElement
         && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
     if (event.key === 'Escape' && document.body.classList.contains('ax-nav-open')) setNavigationOpen(false);
-    if (event.key === '/' && !isTyping && !event.altKey && !event.ctrlKey && !event.metaKey && axNavFilter) {
+    const slashSearch = event.key === '/' && !event.altKey && !event.ctrlKey && !event.metaKey;
+    const commandSearch = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+    if ((slashSearch || commandSearch) && !isTyping && axNavFilter) {
         event.preventDefault();
+        if (!axNavigationIsOpen()) setNavigationOpen(true, false);
         axNavFilter.focus();
     }
 });
