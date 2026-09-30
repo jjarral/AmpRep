@@ -19,7 +19,7 @@ def make_shell_context():
 if __name__ == '__main__':
     print('Starting Ampoulex with real-time updates...')
     print('URL: http://localhost:5000')
-    print('Login: admin / admin123')
+    print('Set INITIAL_ADMIN_USERNAME, INITIAL_ADMIN_EMAIL, and INITIAL_ADMIN_PASSWORD for the first local startup.')
     # Use socketio.run for WebSocket support
     # use_reloader=False to avoid issues with stat reloader in some environments
     socketio.run(app, debug=True, host='0.0.0.0', port=5000, use_reloader=False)

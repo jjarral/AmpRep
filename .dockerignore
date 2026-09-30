@@ -38,3 +38,18 @@ htmlcov/
 # Local environment (keep .env.example for reference)
 .env.local
 .env.development
+.env
+.env.*
+!.env.example
+
+# Local databases, backups, and generated data must not enter deployment images
+*.db
+backups/
+static/uploads/
+static/reports/
+static/barcodes/
+static/qrcodes/
+static/logos/
+
+# Repository metadata
+.git/

@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: ampoulex-admin
+    runtime: docker
+    plan: 0.5c-512mb
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /login
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: INITIAL_ADMIN_USERNAME
+        sync: false
+      - key: INITIAL_ADMIN_EMAIL
+        sync: false
+      - key: INITIAL_ADMIN_PASSWORD
+        sync: false
+    disk:
+      name: ampoulex-uploads
+      mountPath: /app/static/uploads
+      sizeGB: 1

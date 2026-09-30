@@ -67,7 +67,7 @@ def _is_local_environment() -> bool:
         return True
     cloud_indicators = [
         'VERCEL', 'VERCEL_REGION', 'GAE_ENV', 'GOOGLE_CLOUD_PROJECT',
-        'AWS_LAMBDA_FUNCTION_NAME', 'DYNO', 'KUBERNETES_SERVICE_HOST',
+        'AWS_LAMBDA_FUNCTION_NAME', 'DYNO', 'KUBERNETES_SERVICE_HOST', 'RENDER',
     ]
     if any(os.environ.get(ind) for ind in cloud_indicators):
         return False
@@ -87,7 +87,10 @@ def create_app():
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     # Configuration
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
+    secret_key = os.environ.get('SECRET_KEY')
+    if not secret_key and not _is_local_environment():
+        raise RuntimeError('SECRET_KEY must be set for production deployment.')
+    app.config['SECRET_KEY'] = secret_key or 'dev-only-key-change-before-deployment'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_pre_ping': True,
@@ -134,9 +137,8 @@ def create_app():
     else:
         available_vars = [k for k in os.environ.keys() if 'POSTGRES' in k or 'DATABASE' in k or 'NEON' in k]
         raise RuntimeError(
-            f'DATABASE_URL or NEON_DATABASE_URL must be set for production deployment.\n'
-            f'Found these related env vars: {available_vars if available_vars else "NONE"}\n'
-            f'Fix: Go to Vercel Dashboard → Settings → Environment Variables → Add DATABASE_URL'
+            f'DATABASE_URL or another supported PostgreSQL URL must be set for production deployment.\n'
+            f'Found these related env vars: {available_vars if available_vars else "NONE"}'
         )
 
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
@@ -225,17 +227,34 @@ def create_app():
             app.logger.info("✅ Tables verified/created.")
             
             from .models import User  # Lazy import
-            if not User.query.filter_by(username='admin').first():
-                admin = User(
-                    username='admin',
-                    email='admin@ampoulex.com',
-                    role='admin',
-                    is_active=True
-                )
-                admin.set_password('admin123')
-                db.session.add(admin)
-                db.session.commit()
-                app.logger.info("✅ Admin user created (admin/admin123).")
+            if not User.query.filter_by(role='admin').first():
+                admin_username = os.environ.get('INITIAL_ADMIN_USERNAME')
+                admin_email = os.environ.get('INITIAL_ADMIN_EMAIL')
+                admin_password = os.environ.get('INITIAL_ADMIN_PASSWORD')
+                admin_bootstrap = (admin_username, admin_email, admin_password)
+                if any(admin_bootstrap) and not all(admin_bootstrap):
+                    raise RuntimeError(
+                        'Set all of INITIAL_ADMIN_USERNAME, INITIAL_ADMIN_EMAIL, '
+                        'and INITIAL_ADMIN_PASSWORD to bootstrap an admin account.'
+                    )
+                if not all(admin_bootstrap):
+                    if not _is_local_environment():
+                        raise RuntimeError(
+                            'No admin account exists. Set INITIAL_ADMIN_USERNAME, '
+                            'INITIAL_ADMIN_EMAIL, and INITIAL_ADMIN_PASSWORD to bootstrap one.'
+                        )
+                    app.logger.warning('No local admin account exists; skipping admin bootstrap.')
+                else:
+                    admin = User(
+                        username=admin_username,
+                        email=admin_email,
+                        role='admin',
+                        is_active=True
+                    )
+                    admin.set_password(admin_password)
+                    db.session.add(admin)
+                    db.session.commit()
+                    app.logger.info("✅ Initial admin user created.")
             else:
                 app.logger.info("✅ Admin user already exists.")
                 
