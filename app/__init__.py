@@ -260,7 +260,8 @@ def create_app():
                         username=admin_username,
                         email=admin_email,
                         role='admin',
-                        is_active=True
+                        is_active=True,
+                        must_change_password=True,
                     )
                     admin.set_password(admin_password)
                     db.session.add(admin)
