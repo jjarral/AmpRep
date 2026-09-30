@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import os
 import json
 import random
-from sqlalchemy import func, text
+from sqlalchemy import func, text, or_
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, send_file, send_from_directory, current_app, session
 from flask_login import login_user, logout_user, login_required, current_user
@@ -12,7 +12,7 @@ from app import db, socketio
 from app.models import (
     User, Product, Customer, Inquiry, Order, OrderItem,
     Employee, Expense, Accounting, CompanySetting, CustomerProductPrice,
-    TaxSetting, StockAdjustment, Report, InquiryItem,
+    TaxSetting, StockAdjustment, Report, InquiryItem, BusinessSettings,
     Attendance, Timesheet, LeaveRequest, PayrollPayment,
     RawMaterial, RawMaterialUsage, BatchRawMaterial, BOMItem, MaterialUsage, ProductionBatch,
     StockAlert, OrderApproval,
@@ -790,30 +790,121 @@ def inquiry():
 @main_bp.route('/dashboard')
 @login_required
 def dashboard():
-    check_and_create_stock_alerts()
-    
+    now = datetime.utcnow()
+    today = now.date()
+    seven_days_ago = now - timedelta(days=6)
+    fourteen_days_ago = now - timedelta(days=14)
+
     total_revenue = db.session.query(db.func.sum(Order.total_amount)).filter(
         Order.status.in_(['completed', 'processing'])
     ).scalar() or 0
-    
+
+    revenue_today = db.session.query(db.func.sum(Order.total_amount)).filter(
+        Order.status.in_(['completed', 'processing']),
+        db.func.date(Order.created_at) == today
+    ).scalar() or 0
+    orders_today = Order.query.filter(db.func.date(Order.created_at) == today).count()
+    orders_this_week = Order.query.filter(Order.created_at >= seven_days_ago).count()
     total_orders = Order.query.count()
+    open_orders = Order.query.filter(Order.status.in_(['pending', 'processing'])).count()
     active_inquiries = Inquiry.query.filter(
         Inquiry.status.in_(['new', 'followup']),
         Inquiry.is_deleted == False
     ).count()
-    
+
     total_customers = Customer.query.filter_by(is_active=True, is_deleted=False).count()
-    
+    low_stock_products = Product.query.filter(
+        Product.stock < 10000,
+        Product.is_deleted == False
+    ).count()
+    low_stock_materials = RawMaterial.query.filter(
+        RawMaterial.is_active == True,
+        RawMaterial.current_stock < RawMaterial.reorder_level
+    ).count()
+
+    active_batches = ProductionBatch.query.filter_by(status='in_progress').count()
+    planned_batches = ProductionBatch.query.filter_by(status='planned').count()
+    open_purchase_orders = PurchaseOrder.query.filter(
+        PurchaseOrder.status.in_(['draft', 'sent'])
+    ).count()
+    pending_receipts = GoodsReceipt.query.filter(
+        GoodsReceipt.status.in_(['pending', 'inspected'])
+    ).count()
+    overdue_supplier_invoices = SupplierInvoice.query.filter(
+        SupplierInvoice.status.in_(['unpaid', 'partial', 'overdue']),
+        or_(SupplierInvoice.status == 'overdue', SupplierInvoice.due_date < today)
+    ).count()
+
+    recent_qc_failures = QCResult.query.filter(
+        db.func.lower(QCResult.result) == 'fail',
+        QCResult.test_date >= fourteen_days_ago
+    ).count()
+    open_complaints = CustomerComplaint.query.filter(
+        CustomerComplaint.status.in_(['open', 'investigating'])
+    ).count()
+    open_capa = CAPA.query.filter(CAPA.status.in_(['open', 'in_progress'])).count()
+    due_calibrations = CalibrationRecord.query.filter(
+        CalibrationRecord.is_active == True,
+        CalibrationRecord.next_due_date <= today + timedelta(days=30)
+    ).count()
+
+    pending_expenses = Expense.query.filter_by(status='pending').count()
+    pending_payroll = PayrollPayment.query.filter_by(status='pending').count()
+    pending_leave = LeaveRequest.query.filter_by(status='pending').count()
+
     recent_orders = Order.query.order_by(Order.created_at.desc()).limit(5).all()
     recent_inquiries = Inquiry.query.filter_by(is_deleted=False).order_by(Inquiry.created_at.desc()).limit(5).all()
-    
+    recent_batches = ProductionBatch.query.order_by(ProductionBatch.created_at.desc()).limit(4).all()
+
+    # A small, honest seven-day revenue trace; no client-side chart library or fake sample data.
+    revenue_by_day = dict(db.session.query(
+        db.func.date(Order.created_at),
+        db.func.sum(Order.total_amount)
+    ).filter(
+        Order.created_at >= seven_days_ago,
+        Order.status.in_(['completed', 'processing'])
+    ).group_by(db.func.date(Order.created_at)).all())
+    daily_revenue = []
+    for offset in range(6, -1, -1):
+        day = today - timedelta(days=offset)
+        amount = float(revenue_by_day.get(day.isoformat(), 0) or 0)
+        daily_revenue.append({
+            'label': day.strftime('%a'),
+            'date': day.strftime('%d %b'),
+            'amount': amount,
+        })
+    peak_revenue = max((item['amount'] for item in daily_revenue), default=0)
+    for item in daily_revenue:
+        item['height'] = min(100, round(item['amount'] / peak_revenue * 100)) if peak_revenue else 0
+
     return render_template('dashboard.html',
+        now=now,
         total_revenue=total_revenue,
         total_orders=total_orders,
+        revenue_today=revenue_today,
+        orders_today=orders_today,
+        orders_this_week=orders_this_week,
+        open_orders=open_orders,
         active_inquiries=active_inquiries,
         total_customers=total_customers,
+        low_stock_products=low_stock_products,
+        low_stock_materials=low_stock_materials,
+        active_batches=active_batches,
+        planned_batches=planned_batches,
+        open_purchase_orders=open_purchase_orders,
+        pending_receipts=pending_receipts,
+        overdue_supplier_invoices=overdue_supplier_invoices,
+        recent_qc_failures=recent_qc_failures,
+        open_complaints=open_complaints,
+        open_capa=open_capa,
+        due_calibrations=due_calibrations,
+        pending_expenses=pending_expenses,
+        pending_payroll=pending_payroll,
+        pending_leave=pending_leave,
+        daily_revenue=daily_revenue,
         recent_orders=recent_orders,
-        recent_inquiries=recent_inquiries)
+        recent_inquiries=recent_inquiries,
+        recent_batches=recent_batches)
 
 # ============================================================================
 # PRODUCTS
@@ -3235,34 +3326,11 @@ def upload_logo():
 # ============================================================================
 @main_bp.route('/customer-site')
 def customer_site():
-    """Customer site - Group products by size (1cc, 2cc, 3cc, etc.)"""
-    import re
-    
-    # Get all active products
-    products = Product.query.filter_by(is_deleted=False).all()
-    
-    # Group by size (extract "1cc", "2cc" from product name)
-    grouped_by_size = {}
-    for product in products:
-        # Extract size from name (e.g., "1cc" from "1cc Amber Glass Ampoule")
-        match = re.search(r'(\d+cc)', product.name, re.IGNORECASE)
-        if match:
-            size = match.group(1).upper()  # '1cc' -> '1CC'
-            if size not in grouped_by_size:
-                grouped_by_size[size] = []
-            grouped_by_size[size].append(product)
-    
-    # Sort sizes numerically: 1CC, 2CC, 3CC, 5CC, 10CC
-    sorted_sizes = sorted(
-        grouped_by_size.keys(),
-        key=lambda x: int(''.join(filter(str.isdigit, x)))
-    )
-    
-    return render_template('customer-site.html',
-                          grouped_by_size=grouped_by_size,
-                          sorted_sizes=sorted_sizes)
+    """Render the public product range and inquiry form."""
+    products = Product.query.filter_by(is_deleted=False).order_by(Product.name.asc()).all()
+    return render_template('customer-site.html', products=products)
 
-@main_bp.route('/submit-inquiry', methods=['GET', 'POST'])
+@main_bp.route('/submit-inquiry', methods=['POST'])
 def submit_inquiry():
     try:
         inquiry_number = f"INQ-{datetime.utcnow().strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
@@ -3279,6 +3347,14 @@ def submit_inquiry():
             phone=phone
         )
         
+        inquiry_notes = [request.form.get('notes', '').strip()]
+        glass_finish = request.form.get('glass', '').strip()
+        quantity_range = request.form.get('quantity', '').strip()
+        if glass_finish and glass_finish != 'To be discussed':
+            inquiry_notes.append(f'Preferred glass finish: {glass_finish}')
+        if quantity_range and quantity_range != 'To be discussed':
+            inquiry_notes.append(f'Estimated total volume: {quantity_range}')
+
         inquiry = Inquiry(
             inquiry_number=inquiry_number,
             customer_name=customer_name,
@@ -3287,7 +3363,7 @@ def submit_inquiry():
             phone=phone,
             product_id=None,
             quantity=0,
-            notes=request.form.get('notes', ''),
+            notes='\n'.join(note for note in inquiry_notes if note),
             status='new'
         )
         db.session.add(inquiry)
@@ -3341,7 +3417,7 @@ def submit_inquiry():
         print(f"Error: {str(e)}")
         flash(f'Error: {str(e)}', 'error')
     
-    return redirect(url_for('main.customer_site'))
+    return redirect(url_for('main.customer_site') + '#contact')
 
 # ============================================================================
 # API ENDPOINTS

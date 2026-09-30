@@ -1,265 +1,286 @@
 {% extends "base.html" %}
-{% block title %}Operations overview{% endblock %}
-{% block page_title %}Operations overview{% endblock %}
-{% block breadcrumb_active %}Overview{% endblock %}
+{% block title %}Command center · Ampoulex{% endblock %}
+{% block page_title %}Command center{% endblock %}
+{% block breadcrumb_active %}Command center{% endblock %}
 
 {% block extra_css %}
 <style>
-    .ax-overview { --ov-ink:#11191d; --ov-muted:#647279; --ov-line:#dce1de; --ov-paper:#fff; --ov-gold:#e2c16e; --ov-cyan:#7cdbdc; }
-    .overview-intro { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin:0 0 22px; }
-    .overview-intro p { max-width:660px; margin:6px 0 0; color:var(--ov-muted); font-size:.9rem; }
-    .overview-intro strong { color:#18252a; }
-    .overview-actions { display:flex; flex-wrap:wrap; gap:9px; }
-    .overview-actions .btn { display:inline-flex; align-items:center; gap:9px; padding:9px 14px; }
-    .overview-actions .btn-outline-dark { border-color:#cbd3d0; color:#26343a; }
-    .overview-actions .btn-outline-dark:hover { background:#e7ebe8; }
-
-    .ops-hero { position:relative; isolation:isolate; overflow:hidden; min-height:208px; margin-bottom:20px; padding:26px 30px; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:22px; border:1px solid #26383e; border-radius:15px; background:radial-gradient(ellipse at 80% 20%,rgba(83,198,202,.12),transparent 38%),linear-gradient(115deg,#11191d 0%,#172329 62%,#1d2c31 100%); color:#f5f4ed; box-shadow:0 14px 30px rgba(17,25,29,.14); }
-    .ops-hero::before { content:""; position:absolute; z-index:-1; inset:0; opacity:.24; background-image:linear-gradient(rgba(226,193,110,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(226,193,110,.16) 1px,transparent 1px); background-size:38px 38px; mask-image:linear-gradient(90deg,transparent 15%,#000 100%); }
-    .ops-hero-copy { max-width:670px; }
-    .ops-eyebrow { display:flex; align-items:center; gap:9px; margin:0 0 13px; color:var(--ov-gold); font-size:.65rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; }
-    .ops-live-dot { width:7px; height:7px; border-radius:50%; background:#69d9b4; box-shadow:0 0 0 4px rgba(105,217,180,.12); }
-    .ops-hero h2 { margin:0; color:#fff; font-size:clamp(1.5rem,2.5vw,2.15rem); font-weight:650; letter-spacing:-.045em; }
-    .ops-hero p { max-width:570px; margin:9px 0 0; color:rgba(245,244,237,.69); font-size:.87rem; line-height:1.65; }
-    .ops-hero p strong { color:#f4d98d; font-weight:600; }
-    .ops-hero-mark { width:156px; height:156px; display:grid; place-items:center; border:1px solid rgba(226,193,110,.32); border-radius:50%; background:radial-gradient(circle,rgba(83,198,202,.1),rgba(17,25,29,.12) 62%); box-shadow:inset 0 0 0 9px rgba(255,255,255,.025),0 0 32px rgba(83,198,202,.06); }
-    .ops-hero-mark svg { width:85px; height:85px; overflow:visible; }
-    .hero-mark-ring { fill:none; stroke:rgba(83,198,202,.62); stroke-width:1.2; }
-    .hero-mark-glass { fill:rgba(83,198,202,.08); stroke:#d0bb7e; stroke-width:1.5; }
-    .hero-mark-line { stroke:rgba(226,193,110,.74); stroke-width:1; }
-
-    .metric-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:13px; margin-bottom:23px; }
-    .metric-card { min-width:0; padding:17px 18px 16px; border:1px solid var(--ov-line); border-radius:12px; background:var(--ov-paper); box-shadow:0 5px 18px rgba(20,32,36,.035); transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
-    .metric-card:hover { transform:translateY(-2px); border-color:#bdc9c4; box-shadow:0 10px 24px rgba(20,32,36,.08); }
-    .metric-link { display:block; color:inherit; text-decoration:none !important; }
-    .metric-link:focus-visible { outline:3px solid #287e83; outline-offset:3px; border-radius:8px; }
-    .metric-top { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    .metric-label { color:#5c6c72; font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
-    .metric-icon { width:35px; height:35px; display:grid; place-items:center; border:1px solid #e4e9e6; border-radius:10px; color:#325056; background:#f4f7f5; }
-    .metric-card.inquiries .metric-icon { color:#785b18; background:#fbf5e4; border-color:#f0e3bf; }
-    .metric-card.revenue .metric-icon { color:#17644b; background:#e9f4ef; border-color:#d3e9df; }
-    .metric-card.customers .metric-icon { color:#3d5c91; background:#eef2f8; border-color:#dce4f0; }
-    .metric-value { overflow:hidden; margin-top:13px; color:#172328; font-size:clamp(1.28rem,2vw,1.78rem); font-weight:700; letter-spacing:-.055em; text-overflow:ellipsis; white-space:nowrap; }
-    .metric-note { margin-top:4px; color:#76848a; font-size:.75rem; }
-    .metric-note i { margin-right:5px; color:#538c7b; }
-
-    .workspace-grid { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(250px,.8fr); gap:16px; align-items:start; }
-    .work-panel { overflow:hidden; border:1px solid var(--ov-line); border-radius:12px; background:#fff; box-shadow:0 5px 18px rgba(20,32,36,.035); }
-    .work-panel + .work-panel { margin-top:16px; }
-    .work-panel-head { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:16px 19px; border-bottom:1px solid #e7ebe8; }
-    .work-panel-title { display:flex; align-items:center; gap:10px; margin:0; color:#172328; font-size:.9rem; font-weight:700; }
-    .work-panel-title i { color:#9b7832; font-size:.86rem; }
-    .work-panel-link { color:#37666a; font-size:.76rem; font-weight:600; text-decoration:none; white-space:nowrap; }
-    .work-panel-link:hover { color:#183f43; text-decoration:underline; }
-    .work-panel-body { padding:0; }
-    .ops-table { width:100%; border-collapse:collapse; font-size:.8rem; }
-    .ops-table caption { padding:0; }
-    .ops-table th { padding:10px 17px; border-bottom:1px solid #e8ece9; background:#f7f8f6; color:#65747a; font-size:.62rem; font-weight:700; letter-spacing:.12em; text-align:left; text-transform:uppercase; white-space:nowrap; }
-    .ops-table td { padding:12px 17px; border-bottom:1px solid #edf0ee; color:#3e4c51; vertical-align:middle; }
-    .ops-table tr:last-child td { border-bottom:0; }
-    .ops-table tbody tr:hover { background:#fafbf9; }
-    .inquiries-panel .ops-table { min-width:0; table-layout:fixed; }
-    .inquiries-panel .ops-table th, .inquiries-panel .ops-table td { padding-right:10px; padding-left:10px; overflow-wrap:anywhere; }
-    .inquiries-panel .ops-table th:first-child, .inquiries-panel .ops-table td:first-child { width:48%; }
-    .inquiries-panel .ops-table th:nth-child(2), .inquiries-panel .ops-table td:nth-child(2) { width:28%; }
-    .ops-id { color:#233f44; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-weight:700; text-decoration:none; }
-    .ops-id:hover { color:#936d1c; text-decoration:underline; }
-    .ops-customer { color:#1e2e33; font-weight:650; }
-    .ops-amount { color:#1a292d; font-variant-numeric:tabular-nums; white-space:nowrap; }
-    .ops-date { color:#738087; font-size:.74rem; white-space:nowrap; }
-    .status-pill { display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid #dbe2de; border-radius:999px; background:#f5f7f5; color:#4d5e63; font-size:.68rem; font-weight:650; white-space:nowrap; }
-    .status-pill::before { content:""; width:6px; height:6px; border-radius:50%; background:#8b9894; }
-    .status-pill.new, .status-pill.processing { border-color:#cee8e6; background:#edf7f6; color:#215e5e; }
-    .status-pill.new::before, .status-pill.processing::before { background:#45a5a4; }
-    .status-pill.completed, .status-pill.closed { border-color:#d2e8db; background:#eef7f1; color:#216547; }
-    .status-pill.completed::before, .status-pill.closed::before { background:#3b9a6d; }
-    .status-pill.cancelled { border-color:#efd5d2; background:#fbf0ef; color:#8d413c; }
-    .status-pill.cancelled::before { background:#bf6259; }
-    .status-pill.followup { border-color:#f0e3bf; background:#fbf6e8; color:#775f24; }
-    .status-pill.followup::before { background:#c39b48; }
-    .empty-state { display:grid; justify-items:center; gap:8px; padding:34px 20px; color:#77848a; text-align:center; }
-    .empty-state i { color:#85938f; font-size:1.35rem; }
-    .empty-state p { margin:0; font-size:.8rem; }
-
-    .shortcut-list { display:grid; gap:7px; padding:10px; }
-    .shortcut-item { display:flex; align-items:center; gap:12px; min-height:55px; padding:9px 10px; border:1px solid transparent; border-radius:9px; color:#27373c; text-decoration:none !important; transition:background .15s,border-color .15s; }
-    .shortcut-item:hover { border-color:#e0e6e2; background:#f7f8f6; color:#15262a; }
-    .shortcut-icon { width:34px; height:34px; display:grid; flex:0 0 34px; place-items:center; border-radius:9px; background:#edf2ef; color:#375d5a; }
-    .shortcut-copy { flex:1; min-width:0; }
-    .shortcut-copy strong { display:block; font-size:.78rem; font-weight:650; }
-    .shortcut-copy small { display:block; margin-top:2px; color:#77858a; font-size:.68rem; }
-    .shortcut-arrow { color:#94a09b; font-size:.72rem; }
-    .report-panel { margin-top:16px; }
-    .report-form { display:flex; flex-wrap:wrap; align-items:flex-end; gap:11px; padding:16px 19px 19px; }
-    .report-field { display:grid; gap:5px; flex:1 1 140px; }
-    .report-field label { color:#65747a; font-size:.65rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; }
-    .report-field input, .report-field select { width:100%; min-height:38px; padding:7px 10px; border:1px solid #cfd7d4; border-radius:8px; background:#fff; color:#243238; font:inherit; font-size:.78rem; }
-    .report-form .btn { display:inline-flex; align-items:center; gap:8px; }
-
-    @media (max-width:1100px) { .metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @media (max-width:850px) { .workspace-grid { grid-template-columns:1fr; } .ops-hero-mark { width:125px; height:125px; } }
-    @media (max-width:600px) {
-        .overview-intro { align-items:flex-start; flex-direction:column; }
-        .overview-actions { width:100%; }
-        .overview-actions .btn { flex:1; justify-content:center; }
-        .ops-hero { min-height:0; grid-template-columns:1fr; padding:22px; }
-        .ops-hero-mark { position:absolute; right:-34px; bottom:-38px; width:132px; height:132px; opacity:.55; }
-        .ops-hero-mark svg { width:72px; height:72px; }
-        .metric-grid { gap:9px; }
-        .metric-card { padding:13px; }
-        .metric-value { font-size:1.2rem; }
-        .work-panel-head { padding:14px; }
-        .ops-table { min-width:540px; }
-        .inquiries-panel .ops-table { min-width:0; }
-        .report-form { padding:14px; }
+    .ax-command {
+        --cmd-bg:#101719; --cmd-panel:#172124; --cmd-panel-2:#1b282b; --cmd-line:rgba(234,239,230,.11);
+        --cmd-ink:#f2f0e8; --cmd-muted:#a4afaa; --cmd-dim:#71807b; --cmd-gold:#d6b45e; --cmd-cyan:#7bd6d0;
+        --cmd-red:#ff806b; --cmd-green:#79d0a8;
+        color:var(--cmd-ink); padding:20px; border:1px solid #243134; border-radius:16px;
+        background:radial-gradient(ellipse at 78% 0%,rgba(66,133,131,.13),transparent 32%),var(--cmd-bg);
+        box-shadow:0 16px 48px rgba(19,29,31,.12); font-size:.86rem;
     }
+    .ax-command * { box-sizing:border-box; }
+    .cmd-topline { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:0 2px 14px; border-bottom:1px solid var(--cmd-line); }
+    .cmd-brandline,.cmd-top-tools,.cmd-kicker,.cmd-titleline,.cmd-row-actions,.cmd-module-links { display:flex; align-items:center; }
+    .cmd-brandline { gap:10px; color:var(--cmd-muted); font-size:.67rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; }
+    .cmd-brand-mark { display:grid; width:26px; height:26px; place-items:center; border:1px solid rgba(214,180,94,.55); border-radius:7px; color:var(--cmd-gold); }
+    .cmd-brandline strong { color:var(--cmd-ink); font-size:.72rem; }
+    .cmd-top-tools { gap:12px; color:var(--cmd-muted); font-size:.7rem; }
+    .cmd-clock { color:var(--cmd-ink); font:600 .8rem ui-monospace,SFMono-Regular,Consolas,monospace; font-variant-numeric:tabular-nums; }
+    .cmd-refresh { display:inline-flex; min-height:34px; align-items:center; gap:7px; padding:0 10px; border:1px solid var(--cmd-line); border-radius:7px; color:var(--cmd-ink); background:rgba(255,255,255,.035); font:inherit; cursor:pointer; }
+    .cmd-refresh:hover { border-color:rgba(123,214,208,.45); color:var(--cmd-cyan); background:rgba(123,214,208,.07); }
+    .cmd-hero { position:relative; overflow:hidden; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:22px; margin:17px 0 14px; padding:24px 25px; border:1px solid rgba(214,180,94,.25); border-radius:12px; background:linear-gradient(115deg,rgba(214,180,94,.08),transparent 38%),linear-gradient(110deg,#1a2528 0%,#152023 67%,#1b2c2d 100%); }
+    .cmd-hero::after { content:""; position:absolute; inset:0 0 0 40%; pointer-events:none; opacity:.16; background:linear-gradient(90deg,transparent 49%,rgba(123,214,208,.16) 50%,transparent 51%),linear-gradient(rgba(123,214,208,.12) 1px,transparent 1px); background-size:100% 100%,28px 28px; mask-image:linear-gradient(90deg,transparent,#000); }
+    .cmd-hero-copy,.cmd-hero-readout { position:relative; z-index:1; }
+    .cmd-kicker { gap:8px; color:var(--cmd-gold); font-size:.63rem; font-weight:750; letter-spacing:.16em; text-transform:uppercase; }
+    .cmd-indicator { width:7px; height:7px; flex:0 0 7px; border-radius:50%; background:var(--cmd-cyan); box-shadow:0 0 0 4px rgba(123,214,208,.1); }
+    .cmd-indicator.is-alert { background:var(--cmd-red); box-shadow:0 0 0 4px rgba(255,128,107,.12); }
+    .cmd-hero h2 { margin:9px 0 5px; color:var(--cmd-ink); font-size:clamp(1.55rem,3vw,2.35rem); font-weight:670; letter-spacing:-.055em; line-height:1.1; }
+    .cmd-hero p { max-width:660px; margin:0; color:var(--cmd-muted); line-height:1.6; }
+    .cmd-hero p strong { color:var(--cmd-ink); font-weight:650; }
+    .cmd-hero-readout { min-width:175px; padding:14px 16px; border-left:1px solid rgba(214,180,94,.32); }
+    .cmd-readout-label { display:block; color:var(--cmd-dim); font-size:.6rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
+    .cmd-readout-value { display:block; margin:4px 0 2px; color:var(--cmd-gold); font:700 2rem ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:-.07em; }
+    .cmd-readout-caption { color:var(--cmd-muted); font-size:.69rem; }
+    .cmd-metrics { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:9px; margin:0 0 14px; }
+    .cmd-metric { min-width:0; padding:14px 14px 12px; border:1px solid var(--cmd-line); border-radius:9px; background:var(--cmd-panel); color:inherit; text-decoration:none!important; transition:border-color .16s ease,transform .16s ease,background .16s ease; }
+    .cmd-metric:hover { transform:translateY(-2px); border-color:rgba(123,214,208,.45); background:#1a282b; }
+    .cmd-metric:focus-visible,.cmd-command-link:focus-visible,.cmd-queue-link:focus-visible,.cmd-module-links a:focus-visible,.cmd-refresh:focus-visible,.cmd-filter:focus-visible { outline:2px solid var(--cmd-cyan); outline-offset:3px; }
+    .cmd-metric-head { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--cmd-muted); font-size:.61rem; font-weight:700; letter-spacing:.09em; text-transform:uppercase; }
+    .cmd-metric-icon { color:var(--cmd-cyan); font-size:.8rem; }
+    .cmd-metric.gold .cmd-metric-icon { color:var(--cmd-gold); }
+    .cmd-metric.red .cmd-metric-icon { color:var(--cmd-red); }
+    .cmd-metric-value { overflow:hidden; margin:9px 0 3px; color:var(--cmd-ink); font-size:clamp(1.25rem,1.8vw,1.72rem); font-weight:700; letter-spacing:-.055em; line-height:1; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums; }
+    .cmd-metric-foot { overflow:hidden; color:var(--cmd-dim); font-size:.65rem; text-overflow:ellipsis; white-space:nowrap; }
+    .cmd-main-grid { display:grid; grid-template-columns:minmax(0,1.18fr) minmax(330px,.82fr); gap:12px; align-items:start; }
+    .cmd-panel { min-width:0; overflow:hidden; border:1px solid var(--cmd-line); border-radius:10px; background:var(--cmd-panel); }
+    .cmd-panel + .cmd-panel { margin-top:12px; }
+    .cmd-panel-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 15px; border-bottom:1px solid var(--cmd-line); }
+    .cmd-panel-title { display:flex; align-items:center; gap:9px; margin:0; color:var(--cmd-ink); font-size:.78rem; font-weight:700; letter-spacing:.02em; }
+    .cmd-panel-title i { color:var(--cmd-gold); font-size:.76rem; }
+    .cmd-panel-meta { color:var(--cmd-dim); font-size:.64rem; }
+    .cmd-panel-body { padding:13px 15px; }
+    .cmd-chart { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; min-height:135px; align-items:end; }
+    .cmd-chart-day { display:grid; grid-template-rows:1fr auto auto; gap:5px; min-width:0; text-align:center; }
+    .cmd-chart-track { position:relative; display:flex; height:86px; align-items:flex-end; justify-content:center; border-bottom:1px solid rgba(255,255,255,.1); background:repeating-linear-gradient(to top,transparent 0,transparent 20px,rgba(255,255,255,.035) 21px); }
+    .cmd-chart-bar { width:min(24px,70%); min-height:2px; border-radius:4px 4px 1px 1px; background:linear-gradient(0deg,#a37f35,var(--cmd-gold)); box-shadow:0 0 16px rgba(214,180,94,.1); }
+    .cmd-chart-day.today .cmd-chart-bar { background:linear-gradient(0deg,#32847f,var(--cmd-cyan)); }
+    .cmd-chart-date { color:var(--cmd-dim); font-size:.58rem; }
+    .cmd-chart-amount { overflow:hidden; color:var(--cmd-muted); font-size:.59rem; font-variant-numeric:tabular-nums; text-overflow:ellipsis; white-space:nowrap; }
+    .cmd-chart-legend { display:flex; justify-content:space-between; gap:8px; margin-top:7px; color:var(--cmd-dim); font-size:.61rem; }
+    .cmd-table-wrap { overflow-x:auto; }
+    .cmd-table { width:100%; border-collapse:collapse; font-size:.72rem; }
+    .cmd-table th { padding:9px 10px; border-bottom:1px solid var(--cmd-line); color:var(--cmd-dim); font-size:.57rem; font-weight:700; letter-spacing:.1em; text-align:left; text-transform:uppercase; white-space:nowrap; }
+    .cmd-table td { padding:10px; border-bottom:1px solid rgba(234,239,230,.065); color:var(--cmd-muted); vertical-align:middle; }
+    .cmd-table tr:last-child td { border-bottom:0; }
+    .cmd-table tbody tr:hover { background:rgba(255,255,255,.025); }
+    .cmd-table a { color:var(--cmd-cyan); font-weight:650; text-decoration:none; }
+    .cmd-table a:hover { color:var(--cmd-gold); text-decoration:underline; }
+    .cmd-table .is-primary { color:var(--cmd-ink); font-weight:650; }
+    .cmd-status { display:inline-flex; align-items:center; gap:6px; padding:3px 7px; border:1px solid var(--cmd-line); border-radius:20px; color:var(--cmd-muted); font-size:.61rem; white-space:nowrap; }
+    .cmd-status::before { width:5px; height:5px; border-radius:50%; background:var(--cmd-dim); content:""; }
+    .cmd-status.pending,.cmd-status.in-progress,.cmd-status.new,.cmd-status.planned { border-color:rgba(214,180,94,.26); color:#ecd28d; }
+    .cmd-status.pending::before,.cmd-status.in-progress::before,.cmd-status.new::before,.cmd-status.planned::before { background:var(--cmd-gold); }
+    .cmd-status.completed,.cmd-status.closed { border-color:rgba(121,208,168,.2); color:var(--cmd-green); }
+    .cmd-status.completed::before,.cmd-status.closed::before { background:var(--cmd-green); }
+    .cmd-empty { padding:24px 12px; color:var(--cmd-dim); font-size:.74rem; text-align:center; }
+    .cmd-empty i { display:block; margin-bottom:7px; color:var(--cmd-cyan); }
+    .cmd-queue-list { display:grid; }
+    .cmd-queue { display:grid; grid-template-columns:35px minmax(0,1fr) auto; align-items:start; gap:10px; padding:12px 14px; border-bottom:1px solid rgba(234,239,230,.07); }
+    .cmd-queue:last-child { border-bottom:0; }
+    .cmd-queue-index { display:grid; width:30px; height:30px; place-items:center; border:1px solid var(--cmd-line); border-radius:8px; color:var(--cmd-gold); font:700 .62rem ui-monospace,SFMono-Regular,Consolas,monospace; }
+    .cmd-queue-index.is-alert { color:var(--cmd-red); border-color:rgba(255,128,107,.34); background:rgba(255,128,107,.07); }
+    .cmd-queue h4 { margin:1px 0 3px; color:var(--cmd-ink); font-size:.72rem; font-weight:700; }
+    .cmd-queue p { margin:0; color:var(--cmd-dim); font-size:.64rem; line-height:1.5; }
+    .cmd-queue-count { min-width:26px; padding:4px 7px; border-radius:5px; color:var(--cmd-muted); background:rgba(255,255,255,.06); font:700 .7rem ui-monospace,SFMono-Regular,Consolas,monospace; text-align:center; }
+    .cmd-queue-count.is-alert { color:#ffb1a3; background:rgba(255,128,107,.12); }
+    .cmd-row-actions { flex-wrap:wrap; gap:6px; margin-top:7px; }
+    .cmd-queue-link { color:var(--cmd-cyan); font-size:.62rem; font-weight:650; text-decoration:none; }
+    .cmd-queue-link:hover { color:var(--cmd-gold); text-decoration:underline; }
+    .cmd-launch { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; padding:10px; }
+    .cmd-command-link { min-height:51px; display:flex; align-items:center; gap:8px; padding:8px 9px; border:1px solid var(--cmd-line); border-radius:7px; color:var(--cmd-ink); background:rgba(255,255,255,.025); font-size:.66rem; font-weight:650; text-decoration:none!important; }
+    .cmd-command-link i { width:15px; color:var(--cmd-gold); text-align:center; }
+    .cmd-command-link:hover { border-color:rgba(123,214,208,.4); color:var(--cmd-cyan); background:rgba(123,214,208,.055); }
+    .cmd-modules { margin-top:12px; }
+    .cmd-modules-top { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 15px; border-bottom:1px solid var(--cmd-line); }
+    .cmd-filter-wrap { position:relative; width:min(260px,45%); }
+    .cmd-filter { width:100%; min-height:34px; padding:7px 10px 7px 30px; border:1px solid var(--cmd-line); border-radius:7px; color:var(--cmd-ink); background:#111a1c; font:inherit; font-size:.68rem; }
+    .cmd-filter::placeholder { color:var(--cmd-dim); }
+    .cmd-filter-wrap i { position:absolute; top:10px; left:10px; color:var(--cmd-dim); font-size:.7rem; pointer-events:none; }
+    .cmd-module-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:10px; }
+    .cmd-module { min-width:0; padding:12px; border:1px solid rgba(234,239,230,.08); border-radius:8px; background:rgba(255,255,255,.02); }
+    .cmd-module[hidden] { display:none; }
+    .cmd-module h4 { display:flex; align-items:center; gap:8px; margin:0 0 9px; color:var(--cmd-ink); font-size:.7rem; font-weight:700; }
+    .cmd-module h4 i { color:var(--cmd-cyan); }
+    .cmd-module-links { flex-wrap:wrap; gap:5px; }
+    .cmd-module-links a { padding:4px 6px; border:1px solid transparent; border-radius:5px; color:var(--cmd-muted); font-size:.63rem; text-decoration:none; }
+    .cmd-module-links a:hover { border-color:rgba(214,180,94,.2); color:var(--cmd-gold); background:rgba(214,180,94,.055); }
+    .cmd-search-empty { display:none; padding:20px; color:var(--cmd-dim); font-size:.72rem; text-align:center; }
+    .cmd-footerline { display:flex; justify-content:space-between; gap:12px; padding:12px 2px 0; color:var(--cmd-dim); font-size:.6rem; }
+    .cmd-footerline strong { color:var(--cmd-muted); font-weight:600; }
+    @media (max-width:1250px) { .cmd-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); } .cmd-module-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:900px) { .cmd-main-grid { grid-template-columns:1fr; } .cmd-hero { grid-template-columns:minmax(0,1fr) auto; } }
+    @media (max-width:600px) {
+        .ax-command { padding:11px; border-radius:11px; }
+        .cmd-topline { align-items:flex-start; }
+        .cmd-top-tools { flex-wrap:wrap; justify-content:flex-end; gap:7px; }
+        .cmd-top-tools > span:first-child { display:none; }
+        .cmd-hero { grid-template-columns:1fr; gap:12px; padding:18px; }
+        .cmd-hero-readout { display:flex; align-items:center; gap:9px; min-width:0; padding:10px 0 0; border-top:1px solid rgba(214,180,94,.25); border-left:0; }
+        .cmd-readout-value { margin:0; font-size:1.35rem; }
+        .cmd-readout-label { font-size:.57rem; }
+        .cmd-readout-caption { margin-left:auto; text-align:right; }
+        .cmd-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+        .cmd-metric { padding:11px; }
+        .cmd-metric-head { font-size:.56rem; }
+        .cmd-main-grid { gap:9px; }
+        .cmd-panel-head,.cmd-panel-body { padding-right:11px; padding-left:11px; }
+        .cmd-queue { grid-template-columns:30px minmax(0,1fr) auto; gap:8px; padding:11px; }
+        .cmd-queue-index { width:27px; height:27px; }
+        .cmd-launch { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        .cmd-module-grid { grid-template-columns:1fr; }
+        .cmd-modules-top { align-items:flex-start; flex-direction:column; }
+        .cmd-filter-wrap { width:100%; }
+        .cmd-footerline { flex-direction:column; }
+    }
+    @media (prefers-reduced-motion:reduce) { .ax-command *, .ax-command *::before, .ax-command *::after { transition:none!important; animation:none!important; scroll-behavior:auto!important; } }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="ax-overview">
-    <section class="overview-intro" aria-labelledby="overview-heading">
+{% set stock_queue = low_stock_products + low_stock_materials %}
+{% set quality_queue = recent_qc_failures + open_complaints + open_capa + due_calibrations %}
+{% set supply_queue = open_purchase_orders + pending_receipts + overdue_supplier_invoices %}
+{% set people_queue = pending_expenses + pending_payroll + pending_leave %}
+{% set flagged_total = stock_queue + quality_queue + supply_queue + people_queue + active_inquiries + open_orders %}
+<div class="ax-command">
+    <header class="cmd-topline">
+        <div class="cmd-brandline"><span class="cmd-brand-mark"><i class="fas fa-industry" aria-hidden="true"></i></span><strong>Ampoulex</strong><span>/</span><span>Operations control</span></div>
+        <div class="cmd-top-tools"><span>SHIFT BOARD · {{ now.strftime('%d %b %Y') }}</span><time class="cmd-clock" id="cmd-clock" aria-label="Local time">--:--:--</time><button class="cmd-refresh" type="button" onclick="window.location.reload()"><i class="fas fa-sync-alt" aria-hidden="true"></i><span>Refresh</span></button></div>
+    </header>
+
+    <section class="cmd-hero" aria-labelledby="cmd-heading">
+        <div class="cmd-hero-copy">
+            <div class="cmd-kicker"><span class="cmd-indicator {% if flagged_total > 0 %}is-alert{% endif %}" aria-hidden="true"></span> Continuity board · updated on page load</div>
+            <h2 id="cmd-heading">Hold the line. Close every loop.</h2>
+            <p>One control surface for customer demand, the factory floor, supply, quality, finance and people. <strong>{{ flagged_total }} tracked items are in active queues.</strong></p>
+        </div>
+        <div class="cmd-hero-readout" aria-label="Tracked items in active queues">
+            <span class="cmd-readout-label">Active queue</span><strong class="cmd-readout-value">{{ '%02d'|format(flagged_total) if flagged_total < 100 else flagged_total }}</strong><span class="cmd-readout-caption">work items to scan</span>
+        </div>
+    </section>
+
+    <section class="cmd-metrics" aria-label="Current operating metrics">
+        <a class="cmd-metric gold" href="{{ url_for('main.orders') }}"><span class="cmd-metric-head">Revenue · today <i class="fas fa-coins cmd-metric-icon" aria-hidden="true"></i></span><strong class="cmd-metric-value">PKR {{ '{:,.0f}'.format(revenue_today) }}</strong><span class="cmd-metric-foot">all time PKR {{ '{:,.0f}'.format(total_revenue) }} · paid & processing</span></a>
+        <a class="cmd-metric" href="{{ url_for('main.orders') }}"><span class="cmd-metric-head">Orders · today <i class="fas fa-file-invoice cmd-metric-icon" aria-hidden="true"></i></span><strong class="cmd-metric-value">{{ orders_today }}</strong><span class="cmd-metric-foot">{{ orders_this_week }} orders over 7 days</span></a>
+        <a class="cmd-metric gold" href="{{ url_for('main.inquiries') }}"><span class="cmd-metric-head">Inquiries to work <i class="fas fa-inbox cmd-metric-icon" aria-hidden="true"></i></span><strong class="cmd-metric-value">{{ active_inquiries }}</strong><span class="cmd-metric-foot">new or awaiting follow-up</span></a>
+        <a class="cmd-metric" href="{{ url_for('main.orders') }}"><span class="cmd-metric-head">Open orders <i class="fas fa-truck-loading cmd-metric-icon" aria-hidden="true"></i></span><strong class="cmd-metric-value">{{ open_orders }}</strong><span class="cmd-metric-foot">pending or processing</span></a>
+        <a class="cmd-metric {% if stock_queue > 0 %}red{% endif %}" href="{{ url_for('main.products') }}"><span class="cmd-metric-head">Stock signals <i class="fas fa-boxes-stacked cmd-metric-icon" aria-hidden="true"></i></span><strong class="cmd-metric-value">{{ stock_queue }}</strong><span class="cmd-metric-foot">products and materials below threshold</span></a>
+        <a class="cmd-metric" href="{{ url_for('main.production_batches') }}"><span class="cmd-metric-head">Batches in motion <i class="fas fa-industry cmd-metric-icon" aria-hidden="true"></i></span><strong class="cmd-metric-value">{{ active_batches + planned_batches }}</strong><span class="cmd-metric-foot">{{ active_batches }} in progress · {{ planned_batches }} planned</span></a>
+    </section>
+
+    <div class="cmd-main-grid">
         <div>
-            <p class="ops-eyebrow" style="margin-bottom:5px;color:#89691f;">Ampoulex · Operations</p>
-            <h2 id="overview-heading" class="sr-only">Operations overview</h2>
-            <p>Welcome back, <strong>{{ current_user.username|capitalize }}</strong>. Here’s your business at a glance for {{ datetime.utcnow().strftime('%A, %d %B %Y') }}.</p>
-        </div>
-        <div class="overview-actions" aria-label="Common actions">
-            <a href="{{ url_for('main.inquiries') }}" class="btn btn-outline-dark"><i class="fas fa-inbox" aria-hidden="true"></i> Review inquiries</a>
-            <a href="{{ url_for('main.add_order') }}" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i> Create order</a>
-        </div>
-    </section>
-
-    <section class="ops-hero" aria-label="Ampoulex operations workspace">
-        <div class="ops-hero-copy">
-            <div class="ops-eyebrow"><span class="ops-live-dot" aria-hidden="true"></span> OPERATIONS SNAPSHOT</div>
-            <h2>One clear view of the work.</h2>
-            <p>Orders, customer requests, production, and stock—together in one place, so the next step is easy to find.</p>
-        </div>
-        <div class="ops-hero-mark" aria-hidden="true">
-            <svg viewBox="0 0 100 100" role="presentation">
-                <circle class="hero-mark-ring" cx="50" cy="50" r="43" />
-                <circle class="hero-mark-ring" cx="50" cy="50" r="35" stroke-dasharray="2 4" />
-                <path class="hero-mark-glass" d="M41 17h18v7l-5 13v13l8 11v22c0 3-2 5-5 5H43c-3 0-5-2-5-5V61l8-11V37l-5-13z" />
-                <path class="hero-mark-line" d="M42 68h16M45 38h10M46 24h8" />
-                <circle cx="50" cy="54" r="2.5" fill="#7cdbdc" />
-            </svg>
-        </div>
-    </section>
-
-    <section class="metric-grid" aria-label="Business summary">
-        <article class="metric-card revenue">
-            <a class="metric-link" href="{{ url_for('main.orders') }}" aria-label="Revenue, PKR {{ '{:,.0f}'.format(total_revenue) }}. View orders">
-                <div class="metric-top"><span class="metric-label">Revenue</span><span class="metric-icon"><i class="fas fa-chart-line" aria-hidden="true"></i></span></div>
-                <div class="metric-value">PKR {{ "{:,.0f}".format(total_revenue) }}</div>
-                <div class="metric-note">From processing and completed orders</div>
-            </a>
-        </article>
-        <article class="metric-card">
-            <a class="metric-link" href="{{ url_for('main.orders') }}" aria-label="{{ total_orders }} total orders. Manage orders">
-                <div class="metric-top"><span class="metric-label">Orders</span><span class="metric-icon"><i class="fas fa-file-invoice" aria-hidden="true"></i></span></div>
-                <div class="metric-value">{{ total_orders }}</div>
-                <div class="metric-note">All orders on record</div>
-            </a>
-        </article>
-        <article class="metric-card inquiries">
-            <a class="metric-link" href="{{ url_for('main.inquiries') }}" aria-label="{{ active_inquiries }} active inquiries. Review inquiries">
-                <div class="metric-top"><span class="metric-label">Active inquiries</span><span class="metric-icon"><i class="fas fa-envelope-open-text" aria-hidden="true"></i></span></div>
-                <div class="metric-value">{{ active_inquiries }}</div>
-                <div class="metric-note">New or awaiting follow-up</div>
-            </a>
-        </article>
-        <article class="metric-card customers">
-            <a class="metric-link" href="{{ url_for('main.customers') }}" aria-label="{{ total_customers }} active customers. View customers">
-                <div class="metric-top"><span class="metric-label">Customers</span><span class="metric-icon"><i class="fas fa-users" aria-hidden="true"></i></span></div>
-                <div class="metric-value">{{ total_customers }}</div>
-                <div class="metric-note">Active customer accounts</div>
-            </a>
-        </article>
-    </section>
-
-    <div class="workspace-grid">
-        <section class="work-panel" aria-labelledby="orders-heading">
-            <header class="work-panel-head">
-                <h3 class="work-panel-title" id="orders-heading"><i class="fas fa-receipt" aria-hidden="true"></i> Recent orders</h3>
-                <a class="work-panel-link" href="{{ url_for('main.orders') }}">All orders <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
-            </header>
-            <div class="work-panel-body">
-                {% if recent_orders %}
-                <div class="table-responsive">
-                    <table class="ops-table">
-                        <caption class="sr-only">Five most recent Ampoulex orders</caption>
-                        <thead><tr><th scope="col">Order</th><th scope="col">Customer</th><th scope="col">Amount</th><th scope="col">Status</th><th scope="col">Date</th></tr></thead>
-                        <tbody>
-                            {% for order in recent_orders %}
-                            {% set order_status = (order.status or 'draft')|lower|replace(' ', '-') %}
-                            <tr>
-                                <td><a class="ops-id" href="{{ url_for('main.view_order', id=order.id) }}">#{{ order.id }}</a></td>
-                                <td class="ops-customer">{{ order.customer.name if order.customer else '—' }}</td>
-                                <td class="ops-amount">PKR {{ "{:,.0f}".format(order.total_amount or 0) }}</td>
-                                <td><span class="status-pill {{ order_status }}">{{ (order.status or 'draft')|capitalize }}</span></td>
-                                <td class="ops-date">{{ order.created_at.strftime('%d %b %Y') if order.created_at else '—' }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="empty-state"><i class="fas fa-file-invoice" aria-hidden="true"></i><p>No orders yet. New orders will appear here.</p></div>
-                {% endif %}
-            </div>
-        </section>
-
-        <div>
-            <section class="work-panel inquiries-panel" aria-labelledby="inquiries-heading">
-                <header class="work-panel-head">
-                    <h3 class="work-panel-title" id="inquiries-heading"><i class="fas fa-inbox" aria-hidden="true"></i> Recent inquiries</h3>
-                    <a class="work-panel-link" href="{{ url_for('main.inquiries') }}">View all <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
-                </header>
-                <div class="work-panel-body">
-                    {% if recent_inquiries %}
-                    <div class="table-responsive">
-                        <table class="ops-table">
-                            <caption class="sr-only">Five most recent customer inquiries</caption>
-                            <thead><tr><th scope="col">Company / contact</th><th scope="col">Status</th><th scope="col">Received</th></tr></thead>
-                            <tbody>
-                                {% for inquiry in recent_inquiries %}
-                                {% set inquiry_status = (inquiry.status or 'new')|lower|replace(' ', '-') %}
-                                <tr>
-                                    <td><a class="ops-customer" href="{{ url_for('main.edit_inquiry', id=inquiry.id) }}">{{ inquiry.business_name or inquiry.customer_name or 'Unknown' }}</a><div class="ops-date">{{ inquiry.customer_name or '' }}</div></td>
-                                    <td><span class="status-pill {{ inquiry_status }}">{{ (inquiry.status or 'new')|capitalize }}</span></td>
-                                    <td class="ops-date">{{ inquiry.created_at.strftime('%d %b') if inquiry.created_at else '—' }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+            <section class="cmd-panel" aria-labelledby="revenue-heading">
+                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="revenue-heading"><i class="fas fa-chart-area" aria-hidden="true"></i> Revenue tempo</h3><span class="cmd-panel-meta">7 days · completed and processing orders</span></header>
+                <div class="cmd-panel-body">
+                    <div class="cmd-chart" role="img" aria-label="Daily order revenue for the last seven days. {% for day in daily_revenue %}{{ day.date }}: PKR {{ '{:,.0f}'.format(day.amount) }}. {% endfor %}">
+                        {% for day in daily_revenue %}
+                        <div class="cmd-chart-day {% if loop.last %}today{% endif %}" title="{{ day.date }} · PKR {{ '{:,.0f}'.format(day.amount) }}">
+                            <div class="cmd-chart-track"><span class="cmd-chart-bar" style="height:{{ [day.height, 2]|max }}%"></span></div><span class="cmd-chart-date">{{ day.label }}</span><span class="cmd-chart-amount">{{ '{:,.0f}'.format(day.amount) }}</span>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% else %}
-                    <div class="empty-state"><i class="fas fa-envelope" aria-hidden="true"></i><p>No customer inquiries yet.</p></div>
-                    {% endif %}
+                    <div class="cmd-chart-legend"><span>PKR · daily total</span><a class="cmd-queue-link" href="{{ url_for('main.analytics_dashboard') }}">Open sales analytics <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
                 </div>
             </section>
 
-            <nav class="work-panel" aria-labelledby="shortcuts-heading" style="margin-top:16px;">
-                <header class="work-panel-head"><h3 class="work-panel-title" id="shortcuts-heading"><i class="fas fa-compass" aria-hidden="true"></i> Workspace shortcuts</h3></header>
-                <div class="shortcut-list">
-                    <a class="shortcut-item" href="{{ url_for('main.production') }}"><span class="shortcut-icon"><i class="fas fa-industry" aria-hidden="true"></i></span><span class="shortcut-copy"><strong>Production</strong><small>Manage batches and output</small></span><i class="fas fa-arrow-right shortcut-arrow" aria-hidden="true"></i></a>
-                    <a class="shortcut-item" href="{{ url_for('main.products') }}"><span class="shortcut-icon"><i class="fas fa-boxes-stacked" aria-hidden="true"></i></span><span class="shortcut-copy"><strong>Products & stock</strong><small>Check products and availability</small></span><i class="fas fa-arrow-right shortcut-arrow" aria-hidden="true"></i></a>
-                    <a class="shortcut-item" href="{{ url_for('main.customers') }}"><span class="shortcut-icon"><i class="fas fa-address-book" aria-hidden="true"></i></span><span class="shortcut-copy"><strong>Customers</strong><small>Accounts and order history</small></span><i class="fas fa-arrow-right shortcut-arrow" aria-hidden="true"></i></a>
-                    <a class="shortcut-item" href="{{ url_for('main.reports_dashboard') }}"><span class="shortcut-icon"><i class="fas fa-chart-pie" aria-hidden="true"></i></span><span class="shortcut-copy"><strong>Reports</strong><small>Review business performance</small></span><i class="fas fa-arrow-right shortcut-arrow" aria-hidden="true"></i></a>
-                </div>
-            </nav>
+            <section class="cmd-panel" aria-labelledby="orders-heading">
+                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="orders-heading"><i class="fas fa-list-check" aria-hidden="true"></i> Latest orders</h3><a class="cmd-queue-link" href="{{ url_for('main.orders') }}">All orders <i class="fas fa-arrow-right" aria-hidden="true"></i></a></header>
+                {% if recent_orders %}<div class="cmd-table-wrap"><table class="cmd-table"><caption class="sr-only">Five most recent orders</caption><thead><tr><th scope="col">Reference</th><th scope="col">Customer</th><th scope="col">Value</th><th scope="col">State</th><th scope="col">Opened</th></tr></thead><tbody>
+                    {% for order in recent_orders %}{% set order_status = (order.status or 'pending')|lower|replace(' ','-')|replace('_','-') %}<tr><td><a href="{{ url_for('main.view_order', id=order.id) }}">{{ order.order_number or ('#' ~ order.id) }}</a></td><td class="is-primary">{{ order.customer_name_snapshot or (order.customer.name if order.customer else '—') }}</td><td>PKR {{ '{:,.0f}'.format(order.total_amount or 0) }}</td><td><span class="cmd-status {{ order_status }}">{{ (order.status or 'pending')|replace('_',' ')|capitalize }}</span></td><td>{{ order.created_at.strftime('%d %b') if order.created_at else '—' }}</td></tr>{% endfor %}
+                </tbody></table></div>{% else %}<div class="cmd-empty"><i class="fas fa-inbox" aria-hidden="true"></i>No orders in the ledger yet.</div>{% endif %}
+            </section>
+
+            <section class="cmd-panel" aria-labelledby="inquiries-heading">
+                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="inquiries-heading"><i class="fas fa-headset" aria-hidden="true"></i> Customer signals</h3><a class="cmd-queue-link" href="{{ url_for('main.inquiries') }}">Inquiry desk <i class="fas fa-arrow-right" aria-hidden="true"></i></a></header>
+                {% if recent_inquiries %}<div class="cmd-table-wrap"><table class="cmd-table"><caption class="sr-only">Five latest customer inquiries</caption><thead><tr><th scope="col">Business / contact</th><th scope="col">Status</th><th scope="col">Received</th><th scope="col">Open</th></tr></thead><tbody>
+                    {% for inquiry in recent_inquiries %}{% set inquiry_status = (inquiry.status or 'new')|lower|replace(' ','-')|replace('_','-') %}<tr><td class="is-primary">{{ inquiry.business_name or inquiry.customer_name or 'Unknown' }}<br><small>{{ inquiry.customer_name or '' }}</small></td><td><span class="cmd-status {{ inquiry_status }}">{{ (inquiry.status or 'new')|capitalize }}</span></td><td>{{ inquiry.created_at.strftime('%d %b') if inquiry.created_at else '—' }}</td><td><a href="{{ url_for('main.edit_inquiry', id=inquiry.id) }}">Review</a></td></tr>{% endfor %}
+                </tbody></table></div>{% else %}<div class="cmd-empty"><i class="fas fa-check-circle" aria-hidden="true"></i>No customer signals waiting in the inbox.</div>{% endif %}
+            </section>
+
+            <section class="cmd-panel" aria-labelledby="batches-heading">
+                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="batches-heading"><i class="fas fa-gears" aria-hidden="true"></i> Production docket</h3><a class="cmd-queue-link" href="{{ url_for('main.production_batches') }}">All batches <i class="fas fa-arrow-right" aria-hidden="true"></i></a></header>
+                {% if recent_batches %}<div class="cmd-table-wrap"><table class="cmd-table"><caption class="sr-only">Four most recently created production batches</caption><thead><tr><th scope="col">Batch</th><th scope="col">Planned output</th><th scope="col">State</th><th scope="col">Started</th></tr></thead><tbody>
+                    {% for batch in recent_batches %}{% set batch_status = (batch.status or 'planned')|lower|replace('_','-') %}<tr><td><a href="{{ url_for('main.view_production_batch', id=batch.id) }}">{{ batch.batch_number }}</a></td><td>{{ '{:,.0f}'.format(batch.planned_quantity or 0) }}</td><td><span class="cmd-status {{ batch_status }}">{{ (batch.status or 'planned')|replace('_',' ')|capitalize }}</span></td><td>{{ batch.start_date.strftime('%d %b') if batch.start_date else '—' }}</td></tr>{% endfor %}
+                </tbody></table></div>{% else %}<div class="cmd-empty"><i class="fas fa-industry" aria-hidden="true"></i>No production batches have been scheduled.</div>{% endif %}
+            </section>
         </div>
+
+        <aside>
+            <section class="cmd-panel" aria-labelledby="triage-heading">
+                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="triage-heading"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Triage board</h3><span class="cmd-panel-meta">Review these loops</span></header>
+                <div class="cmd-queue-list">
+                    <article class="cmd-queue"><span class="cmd-queue-index {% if stock_queue %}is-alert{% endif %}">01</span><div><h4>Material and product stock</h4><p>{{ low_stock_products }} products below the 10,000 alert line · {{ low_stock_materials }} raw materials under reorder level.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.products') }}">Products & stock</a><a class="cmd-queue-link" href="{{ url_for('main.raw_materials') }}">Raw materials</a></div></div><span class="cmd-queue-count {% if stock_queue %}is-alert{% endif %}">{{ stock_queue }}</span></article>
+                    <article class="cmd-queue"><span class="cmd-queue-index {% if quality_queue %}is-alert{% endif %}">02</span><div><h4>Quality and corrective action</h4><p>{{ recent_qc_failures }} failed tests in 14 days · {{ open_complaints }} complaints · {{ open_capa }} open CAPAs · {{ due_calibrations }} calibrations due within 30 days.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.customer_complaints') }}">Complaints</a><a class="cmd-queue-link" href="{{ url_for('main.capa_records') }}">CAPA</a><a class="cmd-queue-link" href="{{ url_for('main.calibration_records') }}">Calibration</a></div></div><span class="cmd-queue-count {% if quality_queue %}is-alert{% endif %}">{{ quality_queue }}</span></article>
+                    <article class="cmd-queue"><span class="cmd-queue-index {% if supply_queue %}is-alert{% endif %}">03</span><div><h4>Procurement and receipts</h4><p>{{ open_purchase_orders }} draft or sent purchase orders · {{ pending_receipts }} receipts to inspect · {{ overdue_supplier_invoices }} overdue supplier invoices.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.purchase_orders') }}">Purchase orders</a><a class="cmd-queue-link" href="{{ url_for('main.goods_receipts') }}">Goods receipts</a><a class="cmd-queue-link" href="{{ url_for('main.supplier_invoices') }}">Invoices</a></div></div><span class="cmd-queue-count {% if supply_queue %}is-alert{% endif %}">{{ supply_queue }}</span></article>
+                    <article class="cmd-queue"><span class="cmd-queue-index {% if people_queue %}is-alert{% endif %}">04</span><div><h4>Cash and people</h4><p>{{ pending_expenses }} expenses awaiting review · {{ pending_payroll }} payroll payments pending · {{ pending_leave }} leave requests to decide.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.expenses') }}">Expenses</a><a class="cmd-queue-link" href="{{ url_for('main.payroll_payments') }}">Payroll</a><a class="cmd-queue-link" href="{{ url_for('main.leave_requests') }}">Leave</a></div></div><span class="cmd-queue-count {% if people_queue %}is-alert{% endif %}">{{ people_queue }}</span></article>
+                    <article class="cmd-queue"><span class="cmd-queue-index {% if active_inquiries + open_orders %}is-alert{% endif %}">05</span><div><h4>Demand and delivery</h4><p>{{ active_inquiries }} inquiries need follow-up · {{ open_orders }} orders are pending or processing.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.inquiries') }}">Inquiry desk</a><a class="cmd-queue-link" href="{{ url_for('main.orders') }}">Order book</a></div></div><span class="cmd-queue-count {% if active_inquiries + open_orders %}is-alert{% endif %}">{{ active_inquiries + open_orders }}</span></article>
+                </div>
+            </section>
+
+            <section class="cmd-panel" aria-labelledby="launch-heading">
+                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="launch-heading"><i class="fas fa-bolt" aria-hidden="true"></i> Fast launch</h3><span class="cmd-panel-meta">Create or inspect</span></header>
+                <div class="cmd-launch">
+                    <a class="cmd-command-link" href="{{ url_for('main.add_order') }}"><i class="fas fa-plus" aria-hidden="true"></i>New order</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.add_inquiry') }}"><i class="fas fa-inbox" aria-hidden="true"></i>New inquiry</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.add_production_batch') }}"><i class="fas fa-industry" aria-hidden="true"></i>New batch</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.add_purchase_order') }}"><i class="fas fa-cart-plus" aria-hidden="true"></i>New purchase</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.add_expense') }}"><i class="fas fa-receipt" aria-hidden="true"></i>Log expense</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.reports_dashboard') }}"><i class="fas fa-chart-pie" aria-hidden="true"></i>Open reports</a>
+                </div>
+            </section>
+        </aside>
     </div>
 
-    <section class="work-panel report-panel" aria-labelledby="report-heading">
-        <header class="work-panel-head"><h3 class="work-panel-title" id="report-heading"><i class="fas fa-file-export" aria-hidden="true"></i> Build a report</h3></header>
-        <form class="report-form" action="{{ url_for('main.generate_pdf_report', module='dashboard') }}" method="POST">
-            <div class="report-field"><label for="report-type">Report type</label><select id="report-type" name="report_type"><option value="summary">Summary report</option><option value="detailed">Detailed report</option><option value="export">Data export</option></select></div>
-            <div class="report-field"><label for="report-from">From</label><input id="report-from" type="date" name="date_from" value="{{ (datetime.utcnow() - timedelta(days=30)).strftime('%Y-%m-%d') }}"></div>
-            <div class="report-field"><label for="report-to">To</label><input id="report-to" type="date" name="date_to" value="{{ datetime.utcnow().strftime('%Y-%m-%d') }}"></div>
-            <button type="submit" class="btn btn-primary"><i class="fas fa-download" aria-hidden="true"></i> Generate report</button>
-        </form>
+    <section class="cmd-panel cmd-modules" aria-labelledby="modules-heading">
+        <div class="cmd-modules-top"><h3 class="cmd-panel-title" id="modules-heading"><i class="fas fa-grip" aria-hidden="true"></i> Every module, one launch surface</h3><label class="cmd-filter-wrap"><span class="sr-only">Filter modules</span><i class="fas fa-search" aria-hidden="true"></i><input class="cmd-filter" id="module-filter" type="search" placeholder="Find a module…" autocomplete="off" aria-controls="module-grid"></label></div>
+        <div class="cmd-module-grid" id="module-grid">
+            <article class="cmd-module" data-module="sales orders inquiries customers customer site"><h4><i class="fas fa-handshake" aria-hidden="true"></i>Sales & customers</h4><nav class="cmd-module-links" aria-label="Sales and customer modules"><a href="{{ url_for('main.inquiries') }}">Inquiries</a><a href="{{ url_for('main.orders') }}">Orders</a><a href="{{ url_for('main.customers') }}">Customers</a><a href="{{ url_for('main.customer_site') }}">Public catalogue</a></nav></article>
+            <article class="cmd-module" data-module="manufacturing production batches raw materials products stock warehouse transfers"><h4><i class="fas fa-industry" aria-hidden="true"></i>Factory & inventory</h4><nav class="cmd-module-links" aria-label="Factory and inventory modules"><a href="{{ url_for('main.production') }}">Production</a><a href="{{ url_for('main.production_batches') }}">Batches</a><a href="{{ url_for('main.raw_materials') }}">Raw materials</a><a href="{{ url_for('main.products') }}">Products & stock</a><a href="{{ url_for('main.warehouses') }}">Warehouses</a><a href="{{ url_for('main.stock_transfers') }}">Stock transfers</a></nav></article>
+            <article class="cmd-module" data-module="procurement suppliers purchase orders receipts invoices supply chain"><h4><i class="fas fa-truck-ramp-box" aria-hidden="true"></i>Supply chain</h4><nav class="cmd-module-links" aria-label="Supply chain modules"><a href="{{ url_for('main.suppliers') }}">Suppliers</a><a href="{{ url_for('main.purchase_orders') }}">Purchase orders</a><a href="{{ url_for('main.goods_receipts') }}">Goods receipts</a><a href="{{ url_for('main.supplier_invoices') }}">Supplier invoices</a></nav></article>
+            <article class="cmd-module" data-module="quality qc complaints capa calibration"><h4><i class="fas fa-microscope" aria-hidden="true"></i>Quality & assurance</h4><nav class="cmd-module-links" aria-label="Quality modules"><a href="{{ url_for('main.qc_parameters') }}">QC parameters</a><a href="{{ url_for('main.customer_complaints') }}">Complaints</a><a href="{{ url_for('main.capa_records') }}">CAPA</a><a href="{{ url_for('main.calibration_records') }}">Calibration</a></nav></article>
+            <article class="cmd-module" data-module="finance expenses accounting ledger journals cash bank vouchers assets"><h4><i class="fas fa-scale-balanced" aria-hidden="true"></i>Finance & accounting</h4><nav class="cmd-module-links" aria-label="Finance and accounting modules"><a href="{{ url_for('main.accounting_dashboard') }}">Accounting</a><a href="{{ url_for('main.expenses') }}">Expenses</a><a href="{{ url_for('main.journal_entries') }}">Journal entries</a><a href="{{ url_for('main.general_ledger') }}">General ledger</a><a href="{{ url_for('main.bank_reconciliation') }}">Bank reconciliation</a><a href="{{ url_for('main.payment_vouchers') }}">Payment vouchers</a><a href="{{ url_for('main.receipt_vouchers') }}">Receipt vouchers</a><a href="{{ url_for('main.fixed_assets_list') }}">Fixed assets</a></nav></article>
+            <article class="cmd-module" data-module="people hr payroll employees attendance shifts timesheets leave"><h4><i class="fas fa-users" aria-hidden="true"></i>People & payroll</h4><nav class="cmd-module-links" aria-label="People and payroll modules"><a href="{{ url_for('main.payroll') }}">Employees</a><a href="{{ url_for('main.payroll_run') }}">Run payroll</a><a href="{{ url_for('main.payroll_payments') }}">Salary payments</a><a href="{{ url_for('main.shifts') }}">Shifts</a><a href="{{ url_for('main.attendance') }}">Attendance</a><a href="{{ url_for('main.timesheets') }}">Timesheets</a><a href="{{ url_for('main.leave_requests') }}">Leave requests</a></nav></article>
+            <article class="cmd-module" data-module="analytics reports sales inventory production tax fbr"><h4><i class="fas fa-chart-line" aria-hidden="true"></i>Analytics & reports</h4><nav class="cmd-module-links" aria-label="Analytics and reporting modules"><a href="{{ url_for('main.analytics_dashboard') }}">Analytics</a><a href="{{ url_for('main.reports_dashboard') }}">Reports desk</a><a href="{{ url_for('main.sales_analysis_report') }}">Sales analysis</a><a href="{{ url_for('main.inventory_valuation_report') }}">Inventory valuation</a><a href="{{ url_for('main.production_efficiency_report') }}">Production efficiency</a><a href="{{ url_for('main.fbr_invoices') }}">FBR invoices</a><a href="{{ url_for('main.tax_returns') }}">Tax returns</a></nav></article>
+            <article class="cmd-module" data-module="control settings users audit administration"><h4><i class="fas fa-sliders" aria-hidden="true"></i>System control</h4><nav class="cmd-module-links" aria-label="System control modules"><a href="{{ url_for('main.settings') }}">Business settings</a><a href="{{ url_for('main.admin_users') }}">User management</a><a href="{{ url_for('main.audit_log') }}">Audit log</a><a href="{{ url_for('main.change_password') }}">Change password</a></nav></article>
+        </div>
+        <div class="cmd-search-empty" id="module-empty" role="status">No matching modules. Try another search term.</div>
     </section>
+
+    <footer class="cmd-footerline"><span><strong>{{ total_orders }}</strong> orders · <strong>{{ total_customers }}</strong> active customers · <strong>{{ active_batches + planned_batches }}</strong> planned or active batches</span><span>Figures reflect the current database snapshot · Refresh to pull the latest</span></footer>
 </div>
+<script>
+(() => {
+    const clock = document.getElementById('cmd-clock');
+    const updateClock = () => { if (clock) clock.textContent = new Intl.DateTimeFormat(undefined, {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date()); };
+    updateClock();
+    window.setInterval(updateClock, 1000);
+
+    const filter = document.getElementById('module-filter');
+    const cards = Array.from(document.querySelectorAll('#module-grid .cmd-module'));
+    const empty = document.getElementById('module-empty');
+    if (filter) {
+        const applyFilter = () => {
+            const query = filter.value.trim().toLocaleLowerCase();
+            let visible = 0;
+            cards.forEach(card => {
+                const match = !query || `${card.dataset.module} ${card.textContent}`.toLocaleLowerCase().includes(query);
+                card.hidden = !match;
+                if (match) visible += 1;
+            });
+            if (empty) empty.style.display = visible ? 'none' : 'block';
+        };
+        filter.addEventListener('input', applyFilter);
+        document.addEventListener('keydown', event => {
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); filter.focus(); }
+            if (event.key === 'Escape' && document.activeElement === filter) { filter.value = ''; applyFilter(); filter.blur(); }
+        });
+    }
+})();
+</script>
 {% endblock %}
