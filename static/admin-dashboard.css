@@ -105,7 +105,7 @@
     .cmd-search-empty { display:none; padding:20px; color:var(--cmd-dim); font-size:.72rem; text-align:center; }
     .cmd-footerline { display:flex; justify-content:space-between; gap:12px; padding:12px 2px 0; color:var(--cmd-dim); font-size:.6rem; }
     .cmd-footerline strong { color:var(--cmd-muted); font-weight:600; }
-    @media (max-width:1250px) { .cmd-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); } .cmd-module-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:1250px) { .cmd-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } .cmd-module-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media (max-width:900px) { .cmd-main-grid { grid-template-columns:1fr; } .cmd-hero { grid-template-columns:minmax(0,1fr) auto; } }
     @media (max-width:600px) {
         .ax-command { padding:11px; border-radius:11px; }
@@ -131,3 +131,36 @@
         .cmd-footerline { flex-direction:column; }
     }
     @media (prefers-reduced-motion:reduce) { .ax-command *, .ax-command *::before, .ax-command *::after { transition:none!important; animation:none!important; scroll-behavior:auto!important; } }
+
+    /* Readability pass: keep secondary dashboard information comfortably legible. */
+    .ax-command { font-size:.98rem; }
+    .cmd-brandline { font-size:.78rem; }
+    .cmd-brandline strong { font-size:.86rem; }
+    .cmd-top-tools { font-size:.8rem; }
+    .cmd-refresh { font-size:.84rem; }
+    .cmd-kicker { font-size:.76rem; }
+    .cmd-hero p { font-size:.98rem; }
+    .cmd-readout-label { font-size:.74rem; }
+    .cmd-readout-caption { font-size:.84rem; }
+    .cmd-metric-head { font-size:.77rem; }
+    .cmd-metric-icon { font-size:.92rem; }
+    .cmd-metric-foot { font-size:.8rem; }
+    .cmd-panel-title { font-size:1rem; }
+    .cmd-panel-meta { font-size:.82rem; }
+    .cmd-chart-date,.cmd-chart-amount { font-size:.77rem; }
+    .cmd-chart-legend { font-size:.8rem; }
+    .cmd-table { font-size:.9rem; }
+    .cmd-table th { font-size:.76rem; }
+    .cmd-status { font-size:.78rem; }
+    .cmd-empty { font-size:.92rem; }
+    .cmd-queue h4 { font-size:.94rem; }
+    .cmd-queue p { font-size:.84rem; }
+    .cmd-queue-index { font-size:.72rem; }
+    .cmd-queue-count { font-size:.8rem; }
+    .cmd-queue-link { font-size:.8rem; }
+    .cmd-command-link { font-size:.84rem; }
+    .cmd-filter { font-size:.84rem; }
+    .cmd-module h4 { font-size:.92rem; }
+    .cmd-module-links a { font-size:.83rem; }
+    .cmd-search-empty { font-size:.9rem; }
+    .cmd-footerline { font-size:.78rem; }

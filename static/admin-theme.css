@@ -46,11 +46,13 @@ body.ax-admin .main-header .dropdown-item:hover,
 body.ax-admin .dropdown-item:hover { color: var(--ax-heading); background: var(--ax-surface-hover); }
 
 body.ax-admin .brand-link { border-bottom: 1px solid var(--ax-line) !important; }
+body.ax-admin .main-sidebar { border-right: 1px solid var(--ax-border); background: linear-gradient(180deg, #0e1719 0%, #090f11 100%) !important; }
+body.ax-admin .brand-link { border: 1px solid rgba(212,177,95,.22) !important; border-top: 2px solid var(--ax-gold) !important; border-radius: 11px; background: linear-gradient(125deg, rgba(212,177,95,.09), rgba(121,215,207,.035) 72%) !important; }
 body.ax-admin .brand-link .brand-image { background: #f4f2ed; }
 body.ax-admin .brand-link .brand-text { color: var(--ax-heading) !important; }
 body.ax-admin .brand-meta { color: var(--ax-gold); }
-body.ax-admin .user-panel { border-bottom: 1px solid var(--ax-line) !important; }
-body.ax-admin .ax-user-avatar { border-color: rgba(121,215,207,.28); background: rgba(121,215,207,.08); color: var(--ax-cyan); }
+body.ax-admin .user-panel { border: 1px solid var(--ax-border) !important; background: linear-gradient(115deg, rgba(255,255,255,.035), rgba(255,255,255,.012)); }
+body.ax-admin .ax-user-avatar { border-color: rgba(121,215,207,.32); background: rgba(121,215,207,.09); color: var(--ax-cyan); }
 body.ax-admin .ax-user-signal { background: var(--ax-green); box-shadow: 0 0 0 3px rgba(130,213,169,.12); }
 body.ax-admin .user-panel .info .d-block { color: var(--ax-heading) !important; }
 body.ax-admin .user-panel .info small { color: var(--ax-subtle) !important; }
@@ -59,15 +61,20 @@ body.ax-admin .ax-nav-search input { color: var(--ax-heading); background: #111a
 body.ax-admin .ax-nav-search input::placeholder { color: var(--ax-subtle); }
 body.ax-admin .ax-nav-search input:focus { border-color: var(--ax-cyan); box-shadow: 0 0 0 3px rgba(121,215,207,.14); }
 body.ax-admin .ax-nav-search .search-hint { color: var(--ax-subtle); background: rgba(255,255,255,.02); }
-body.ax-admin .nav-sidebar .nav-header { color: var(--ax-gold) !important; border-color: var(--ax-line); }
-body.ax-admin .nav-sidebar .nav-link { color: #aeb9b3 !important; }
-body.ax-admin .nav-sidebar .nav-link:hover { color: var(--ax-heading) !important; background: rgba(255,255,255,.055) !important; }
-body.ax-admin .nav-sidebar .nav-link.active { color: var(--ax-gold-bright) !important; background: rgba(212,177,95,.12) !important; box-shadow: inset 2px 0 var(--ax-gold); }
-body.ax-admin .nav-sidebar .nav-link.active .nav-icon { color: var(--ax-gold); }
+body.ax-admin .nav-sidebar .nav-header { color: #c7b276 !important; border-color: var(--ax-line); }
+body.ax-admin .nav-sidebar .nav-link { color: #bac4be !important; }
+body.ax-admin .nav-sidebar .nav-link:hover { border-color: rgba(121,215,207,.12); color: var(--ax-heading) !important; background: rgba(255,255,255,.055) !important; }
+body.ax-admin .nav-sidebar .nav-link .nav-icon { color: #87958f; background: rgba(255,255,255,.035); }
+body.ax-admin .nav-sidebar .nav-link:hover .nav-icon { color: var(--ax-cyan); background: rgba(121,215,207,.09); }
+body.ax-admin .nav-sidebar .nav-link.active { border-color: rgba(212,177,95,.25); color: var(--ax-gold-bright) !important; background: linear-gradient(100deg, rgba(212,177,95,.16), rgba(212,177,95,.055)) !important; box-shadow: inset 3px 0 var(--ax-gold); }
+body.ax-admin .nav-sidebar .nav-link.active .nav-icon { color: var(--ax-gold-bright); background: rgba(212,177,95,.15); }
 body.ax-admin .nav-sidebar .nav-link .right { color: var(--ax-subtle); }
 body.ax-admin .nav-sidebar .nav-treeview { border-color: rgba(236,210,138,.23); }
 body.ax-admin .nav-sidebar .nav-treeview .nav-link.active { background: rgba(121,215,207,.08) !important; color: var(--ax-cyan) !important; box-shadow: inset 2px 0 var(--ax-cyan); }
 body.ax-admin .ax-nav-empty { color: var(--ax-muted); }
+body.ax-admin .main-sidebar::-webkit-scrollbar { width: 7px; }
+body.ax-admin .main-sidebar::-webkit-scrollbar-thumb { border: 2px solid #0b1113; border-radius: 9px; background: rgba(212,177,95,.28); }
+body.ax-admin .main-sidebar::-webkit-scrollbar-thumb:hover { background: rgba(212,177,95,.5); }
 
 body.ax-admin .content-header { background: rgba(14,21,23,.96) !important; border-bottom: 1px solid var(--ax-line); backdrop-filter: blur(14px); }
 body.ax-admin .content-header h1 { color: var(--ax-heading) !important; }
