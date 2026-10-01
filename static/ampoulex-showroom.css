@@ -28,7 +28,7 @@ fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
 .site-header { position: sticky; top: 0; z-index: 30; border-bottom: 1px solid #2e332e; background: rgb(10 12 13 / 94%); backdrop-filter: blur(16px); }
 .nav-inner { min-height: 100px; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
 .brand { display: inline-flex; align-items: center; gap: 15px; flex-shrink: 0; }
-.brand img { display: block; background: #f2f0e8; width: 52px; height: 52px; border-radius: 2px; }
+.brand img { display: block; width: 52px; height: 52px; border: 1px solid #c8a964; border-radius: 3px; background: #f2f0e8; object-fit: contain; }
 .brand strong { display: block; font-size: 28px; font-weight: 650; letter-spacing: -.025em; line-height: 1.15; }
 .brand small { display: block; margin-top: 5px; color: var(--gold); font: 10px/1.4 var(--mono); letter-spacing: .12em; }
 #main-nav { display: flex; align-items: center; gap: clamp(22px,3vw,45px); }
@@ -217,6 +217,11 @@ input::placeholder,textarea::placeholder { color: #99a48e; opacity: 1; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 19px 16px; }
 .field { min-width: 0; }
 .field label { display: block; margin-bottom: 8px; color: #dbe0cf; font-size: 14px; }
+.field .input-hint,.field .input-error { display: block; margin: 6px 0 0; font-size: 12px; line-height: 1.5; }
+.field .input-hint { color: #a9b39e; }
+.field .input-error { color: #e6bd78; }
+.field input[aria-invalid="true"] { border-color: #c89e5a; box-shadow: 0 0 0 2px #c89e5a24; }
+.field input[aria-invalid="false"] { border-color: #546048; }
 .field.full { grid-column: 1/-1; }
 .optional-details { padding-top: 1px; }
 .optional-details summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; padding: 7px 0; color: #d9c58f; cursor: pointer; font-size: 14px; list-style: none; }

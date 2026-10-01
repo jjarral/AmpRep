@@ -84,7 +84,7 @@ body.ax-admin ::selection { color: #091012; background: var(--ax-gold-bright); }
   z-index: 1035;
   top: var(--ax-top-height) !important;
   bottom: 0;
-  left: 0;
+  left: 0 !important;
   width: var(--ax-side-width) !important;
   height: auto !important;
   overflow-x: hidden !important;
@@ -196,8 +196,9 @@ body.ax-admin ::selection { color: #091012; background: var(--ax-gold-bright); }
 }
 @media (max-width: 899.98px) {
   :root { --ax-side-width: min(320px, 88vw); --ax-top-height: 70px; }
-  .main-sidebar { transform: translateX(-102%); visibility: hidden; }
-  body.ax-nav-open .main-sidebar { transform: translateX(0); visibility: visible; }
+  body.ax-admin .main-sidebar { left: 0 !important; right: auto !important; width: var(--ax-side-width) !important; max-width: 88vw; transform: translateX(-102%); visibility: hidden; }
+  body.ax-admin.ax-nav-open .main-sidebar { transform: translateX(0) !important; visibility: visible; }
+  body.ax-admin.ax-nav-open { overflow: hidden !important; }
   .content-wrapper, .main-footer { margin-left: 0 !important; }
   .ax-scrim { position: fixed; z-index: 1030; inset: var(--ax-top-height) 0 0; display: block; width: 100%; height: calc(100% - var(--ax-top-height)); border: 0; background: rgba(0,0,0,.58); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .2s ease; }
   body.ax-nav-open .ax-scrim { opacity: 1; visibility: visible; pointer-events: auto; }

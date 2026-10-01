@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 import os
 import json
 import random
+import re
+import unicodedata
 from sqlalchemy import func, text, or_
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, send_file, send_from_directory, current_app, session
@@ -36,6 +38,46 @@ from app.utils.tax_calculator import calculate_monthly_tax_deduction
 
 
 main_bp = Blueprint('main', __name__) 
+
+_INQUIRY_EMAIL = re.compile(
+    r"(?=.{3,120}\Z)(?=[^@]{1,64}@)"
+    r"[A-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Z0-9!#$%&'*+/=?^_`{|}~-]+)*"
+    r"@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,63}\Z",
+    re.IGNORECASE,
+)
+_INQUIRY_PHONE = re.compile(r"\+?[0-9\s().-]+\Z")
+_CONTACT_PUNCTUATION = set(" .,'’&()/-")
+
+
+def _is_relevant_contact_text(value):
+    value = ' '.join((value or '').split())
+    return (
+        2 <= len(value) <= 100
+        and any(char.isalpha() for char in value)
+        and all(
+            char.isalpha()
+            or char.isdigit()
+            or unicodedata.category(char).startswith('M')
+            or char.isspace()
+            or char in _CONTACT_PUNCTUATION
+            for char in value
+        )
+    )
+
+
+def _is_valid_inquiry_email(value):
+    return bool(_INQUIRY_EMAIL.fullmatch((value or '').strip()))
+
+
+def _is_valid_inquiry_phone(value):
+    value = (value or '').strip()
+    digits = ''.join(char for char in value if char.isdigit())
+    return (
+        len(value) <= 24
+        and _INQUIRY_PHONE.fullmatch(value) is not None
+        and value.count('(') == value.count(')')
+        and 10 <= len(digits) <= 15
+    )
 
 @main_bp.route('/favicon.ico')
 def favicon():
@@ -3379,10 +3421,10 @@ def submit_inquiry():
     try:
         inquiry_number = f"INQ-{datetime.utcnow().strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
         product_ids = request.form.getlist('product_ids')
-        customer_name = request.form.get('customer_name', '')
-        business_name = request.form.get('business_name', '')
-        email = request.form.get('email', '')
-        phone = request.form.get('phone', '')
+        customer_name = ' '.join(request.form.get('customer_name', '').split())
+        business_name = ' '.join(request.form.get('business_name', '').split())
+        email = request.form.get('email', '').strip().lower()
+        phone = request.form.get('phone', '').strip()
 
         service_type = request.form.get('service_type', 'supply').strip().lower()
         service_labels = {
@@ -3394,8 +3436,17 @@ def submit_inquiry():
             service_type = 'supply'
         paint_specification = request.form.get('paint_specification', '').strip()[:100]
 
-        if not customer_name.strip() or not business_name.strip() or not phone.strip():
-            flash('Please enter your contact name, company and phone number.', 'error')
+        if not _is_relevant_contact_text(customer_name):
+            flash('Enter a valid contact name using letters and common punctuation.', 'error')
+            return redirect(url_for('main.index') + '#contact')
+        if not _is_relevant_contact_text(business_name):
+            flash('Enter a valid company or organization name.', 'error')
+            return redirect(url_for('main.index') + '#contact')
+        if not _is_valid_inquiry_email(email):
+            flash('Enter a valid email address, such as name@company.com.', 'error')
+            return redirect(url_for('main.index') + '#contact')
+        if not _is_valid_inquiry_phone(phone):
+            flash('Enter a valid phone number with 10 to 15 digits.', 'error')
             return redirect(url_for('main.index') + '#contact')
 
         selected_products = []

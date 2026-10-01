@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#090f11">
     <title>{% block title %}Ampoulex{% endblock %} | Business Management</title>
-    <link rel="icon" type="image/png" href="/static/ampoulex-mark.png">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='ampoulex-mark.png') }}?v=20261001-logo-fix">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     
-    <link rel="stylesheet" href="{{ url_for('static', filename='admin-layout.css') }}?v=20261001-workspaces">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin-layout.css') }}?v=20261001-mobile-drawer-fix">
     {% block extra_css %}{% endblock %}
     <link rel="stylesheet" href="{{ url_for('static', filename='admin-theme.css') }}?v=20261001-workspaces">
 </head>

@@ -125,6 +125,54 @@
     }
   }));
   syncServiceChoice();
+
+  const contactValidators = [
+    {
+      id: 'contact-name',
+      message: 'Use a relevant contact name with letters and common punctuation.',
+      emptyMessage: 'Enter your contact name.',
+      validate: value => value.length <= 100 && /\p{L}/u.test(value) && /^[\p{L}\p{M}\p{N}\s.'’&()\/-]+$/u.test(value)
+    },
+    {
+      id: 'company-name',
+      message: 'Use a relevant company name with letters and common punctuation.',
+      emptyMessage: 'Enter your company or organization name.',
+      validate: value => value.length <= 100 && /\p{L}/u.test(value) && /^[\p{L}\p{M}\p{N}\s.'’&()\/-]+$/u.test(value)
+    },
+    {
+      id: 'contact-email',
+      message: 'Enter a valid email address, such as name@company.com.',
+      emptyMessage: 'Enter your email address.',
+      validate: value => value.length <= 120 && /^[A-Z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[A-Z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,63}$/i.test(value)
+    },
+    {
+      id: 'contact-phone',
+      message: 'Enter a valid phone number with 10 to 15 digits.',
+      emptyMessage: 'Enter your phone number.',
+      validate: value => {
+        const digits = value.replace(/\D/g, '');
+        return value.length <= 24 && /^\+?[0-9\s().-]+$/.test(value) && value.split('(').length === value.split(')').length && digits.length >= 10 && digits.length <= 15;
+      }
+    }
+  ];
+  contactValidators.forEach(({ id, message, emptyMessage, validate }) => {
+    const field = document.getElementById(id);
+    const error = document.getElementById(`${id}-error`);
+    let touched = false;
+    const updateValidity = () => {
+      const value = field.value.trim();
+      const problem = value ? (validate(value) ? '' : message) : (touched ? emptyMessage : '');
+      field.setCustomValidity(problem);
+      field.setAttribute('aria-invalid', String(Boolean(problem)));
+      error.textContent = problem;
+      error.hidden = !problem;
+    };
+    field.addEventListener('input', updateValidity);
+    field.addEventListener('blur', () => { touched = true; updateValidity(); });
+    field.addEventListener('invalid', () => { touched = true; updateValidity(); });
+    updateValidity();
+  });
+
   const inquiryAdd = document.getElementById('inquiry-add');
   const productPicker = document.getElementById('inquiry-product-picker');
   if (inquiryAdd && productPicker) {

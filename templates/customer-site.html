@@ -7,8 +7,8 @@
     <meta name="description" content="Explore Ampoulex glass ampoules and ampoule painting service. 1, 2, 3, 5 and 10 mL in clear and amber glass, with batch checks and nationwide delivery across Pakistan.">
     <title>Ampoulex | Precision in glass</title>
     <link rel="preload" as="image" href="{{ url_for('static', filename='ampoulex-studio.webp') }}" fetchpriority="high">
-    <link rel="stylesheet" href="{{ url_for('static', filename='ampoulex-showroom.css') }}?v=20261001-painting-service">
-    <script src="{{ url_for('static', filename='ampoulex-showroom.js') }}?v=20261001-painting-service-v2" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='ampoulex-showroom.css') }}?v=20261001-logo-validation">
+    <script src="{{ url_for('static', filename='ampoulex-showroom.js') }}?v=20261001-logo-validation" defer></script>
 </head>
 <body>
 {% set catalogue = products|default([]) %}
@@ -34,7 +34,7 @@
 <header class="site-header">
     <div class="shell nav-inner">
         <a class="brand" href="#top" aria-label="Ampoulex home">
-            <img src="{{ url_for('static', filename='ampoulex-mark.png') }}" alt="Ampoulex logo" width="52" height="52">
+            <img src="{{ url_for('static', filename='ampoulex-mark.png') }}?v=20261001-logo-fix" alt="Ampoulex logo" width="52" height="52">
             <span><strong>Ampoulex</strong><small>GLASS AMPOULES · PAINTING</small></span>
         </a>
         <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Open navigation"><span></span><span></span></button>
@@ -166,10 +166,10 @@
                     </div><p class="selection-total" id="selection-total" role="status" aria-live="polite">Select your ampoule formats above.</p>
                 </fieldset>
                 <fieldset class="contact-fields"><legend><span>03</span> Your details</legend><div class="form-grid">
-                    <div class="field"><label for="contact-name">Contact name *</label><input id="contact-name" name="customer_name" autocomplete="name" required placeholder="Your name" maxlength="100"></div>
-                    <div class="field"><label for="company-name">Company *</label><input id="company-name" name="business_name" autocomplete="organization" required placeholder="Company name" maxlength="100"></div>
-                    <div class="field"><label for="contact-phone">Phone *</label><input id="contact-phone" name="phone" type="tel" autocomplete="tel" required placeholder="03XX XXXXXXX" maxlength="20"></div>
-                    <div class="field"><label for="contact-email">Email</label><input id="contact-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" maxlength="120"></div>
+                    <div class="field"><label for="contact-name">Contact name *</label><input id="contact-name" name="customer_name" autocomplete="name" required aria-describedby="contact-name-hint contact-name-error" aria-invalid="false" placeholder="Your name" maxlength="100"><small class="input-hint" id="contact-name-hint">Enter a name using letters and common punctuation.</small><small class="input-error" id="contact-name-error" hidden></small></div>
+                    <div class="field"><label for="company-name">Company *</label><input id="company-name" name="business_name" autocomplete="organization" required aria-describedby="company-name-hint company-name-error" aria-invalid="false" placeholder="Company name" maxlength="100"><small class="input-hint" id="company-name-hint">Enter a company or organization name.</small><small class="input-error" id="company-name-error" hidden></small></div>
+                    <div class="field"><label for="contact-phone">Phone *</label><input id="contact-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required aria-describedby="contact-phone-hint contact-phone-error" aria-invalid="false" placeholder="03XX XXXXXXX" maxlength="24"><small class="input-hint" id="contact-phone-hint">Use 10–15 digits; spaces, +, hyphens and brackets are accepted.</small><small class="input-error" id="contact-phone-error" hidden></small></div>
+                    <div class="field"><label for="contact-email">Email *</label><input id="contact-email" name="email" type="email" inputmode="email" autocomplete="email" required aria-describedby="contact-email-hint contact-email-error" aria-invalid="false" placeholder="you@company.com" maxlength="120"><small class="input-hint" id="contact-email-hint">Enter a valid business email address.</small><small class="input-error" id="contact-email-error" hidden></small></div>
                     <details class="field full optional-details" id="optional-specifications"><summary>Add delivery or specification details <span aria-hidden="true">＋</span></summary><label for="paint-specification">Desired paint colour or code <span>(for painting enquiries)</span></label><input id="paint-specification" name="paint_specification" type="text" maxlength="100" placeholder="Colour name or code, if known"><label for="requirements">Other details <span>(optional)</span></label><textarea id="requirements" name="notes" rows="2" maxlength="1500" placeholder="Delivery city, timing or other requirements…"></textarea></details>
                 </div></fieldset>
                 <p class="form-error" id="form-error" role="alert" hidden></p>
