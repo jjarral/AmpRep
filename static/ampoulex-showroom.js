@@ -120,6 +120,7 @@
     const paintingRadio = serviceRadios.find(radio => radio.value === 'painting');
     if (paintingRadio) {
       paintingRadio.checked = true;
+      paintingRadio.dispatchEvent(new Event('change', { bubbles: true }));
       syncServiceChoice();
     }
   }));
