@@ -196,7 +196,7 @@ body.ax-admin ::selection { color: #091012; background: var(--ax-gold-bright); }
 }
 @media (max-width: 899.98px) {
   :root { --ax-side-width: min(320px, 88vw); --ax-top-height: 70px; }
-  body.ax-admin .main-sidebar { left: 0 !important; right: auto !important; width: var(--ax-side-width) !important; max-width: 88vw; transform: translateX(-102%); visibility: hidden; }
+  body.ax-admin .main-sidebar { left: 0 !important; right: auto !important; width: var(--ax-side-width) !important; max-width: 88vw; margin-left: 0 !important; transform: translateX(-102%); visibility: hidden; }
   body.ax-admin.ax-nav-open .main-sidebar { transform: translateX(0) !important; visibility: visible; }
   body.ax-admin.ax-nav-open { overflow: hidden !important; }
   .content-wrapper, .main-footer { margin-left: 0 !important; }
