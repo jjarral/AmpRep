@@ -154,6 +154,10 @@ def create_app():
 
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['RESEND_API_KEY'] = os.environ.get('RESEND_API_KEY', '')
+    app.config['EMAIL_FROM'] = os.environ.get('EMAIL_FROM', '')
+    app.config['INQUIRY_EMAIL_VERIFICATION_REQUIRED'] = os.environ.get(
+        'INQUIRY_EMAIL_VERIFICATION_REQUIRED', '').lower() in ('1', 'true', 'yes')
 
     # Initialize extensions
     db.init_app(app)
@@ -227,6 +231,9 @@ def create_app():
     # ────────────────────────────────────────────────────────────────
     from app.routes import main_bp
     app.register_blueprint(main_bp)
+    from app.inquiry_email import email_verification_bp, form_context
+    app.register_blueprint(email_verification_bp)
+    app.jinja_env.globals['inquiry_email_context'] = form_context
     
     # ────────────────────────────────────────────────────────────────
     # 🏗️ Database Setup (tables + admin user)

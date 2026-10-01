@@ -7,11 +7,13 @@
     <meta name="description" content="Explore Ampoulex glass ampoules and ampoule painting service. 1, 2, 3, 5 and 10 mL in clear and amber glass, with batch checks and nationwide delivery across Pakistan.">
     <title>Ampoulex | Precision in glass</title>
     <link rel="preload" as="image" href="{{ url_for('static', filename='ampoulex-studio.webp') }}" fetchpriority="high">
-    <link rel="stylesheet" href="{{ url_for('static', filename='ampoulex-showroom.css') }}?v=20261001-logo-validation">
+    <link rel="stylesheet" href="{{ url_for('static', filename='ampoulex-showroom.css') }}?v=20261001-email-confirmation">
     <script src="{{ url_for('static', filename='ampoulex-showroom.js') }}?v=20261001-logo-validation" defer></script>
+    <script src="{{ url_for('static', filename='inquiry-email.js') }}?v=20261001-email-confirmation" defer></script>
 </head>
 <body>
 {% set catalogue = products|default([]) %}
+{% set email_confirmation = inquiry_email_context() %}
 {% macro ampoule(key, amber=false) -%}
 <svg class="ampoule-drawing" viewBox="0 0 120 260" aria-hidden="true" focusable="false">
     <defs><linearGradient id="glass-{{ key }}" x1="0" x2="1">
@@ -170,6 +172,20 @@
                     <div class="field"><label for="company-name">Company *</label><input id="company-name" name="business_name" autocomplete="organization" required aria-describedby="company-name-hint company-name-error" aria-invalid="false" placeholder="Company name" maxlength="100"><small class="input-hint" id="company-name-hint">Enter a company or organization name.</small><small class="input-error" id="company-name-error" hidden></small></div>
                     <div class="field"><label for="contact-phone">Phone *</label><input id="contact-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required aria-describedby="contact-phone-hint contact-phone-error" aria-invalid="false" placeholder="03XX XXXXXXX" maxlength="24"><small class="input-hint" id="contact-phone-hint">Use 10–15 digits; spaces, +, hyphens and brackets are accepted.</small><small class="input-error" id="contact-phone-error" hidden></small></div>
                     <div class="field"><label for="contact-email">Email *</label><input id="contact-email" name="email" type="email" inputmode="email" autocomplete="email" required aria-describedby="contact-email-hint contact-email-error" aria-invalid="false" placeholder="you@company.com" maxlength="120"><small class="input-hint" id="contact-email-hint">Enter a valid business email address.</small><small class="input-error" id="contact-email-error" hidden></small></div>
+                    {% if email_confirmation.enabled %}
+                    <div class="field full email-confirmation" id="email-confirmation" data-send-url="{{ url_for('inquiry_email.send_code') }}" data-confirm-url="{{ url_for('inquiry_email.confirm_code') }}">
+                        <input type="hidden" name="email_verification_csrf" value="{{ email_confirmation.csrf }}">
+                        <input type="hidden" name="email_challenge_id" id="email-challenge-id" value="">
+                        <p class="field-help">Confirm that you can receive email at this address before sending your inquiry.</p>
+                        <button class="button button-small" id="send-email-code" type="button">Send confirmation code</button>
+                        <div id="email-code-fields" hidden>
+                            <label for="email-code">6-digit confirmation code</label>
+                            <div class="email-code-row"><input id="email-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" aria-describedby="email-confirmation-status" placeholder="000000"><button class="button button-small" id="confirm-email-code" type="button">Confirm email</button></div>
+                        </div>
+                        <p id="email-confirmation-status" class="field-help" role="status" aria-live="polite"></p>
+                        <noscript><p>Enable JavaScript to confirm your email, or contact info@ampoulex.com directly.</p></noscript>
+                    </div>
+                    {% endif %}
                     <details class="field full optional-details" id="optional-specifications"><summary>Add delivery or specification details <span aria-hidden="true">＋</span></summary><label for="paint-specification">Desired paint colour or code <span>(for painting enquiries)</span></label><input id="paint-specification" name="paint_specification" type="text" maxlength="100" placeholder="Colour name or code, if known"><label for="requirements">Other details <span>(optional)</span></label><textarea id="requirements" name="notes" rows="2" maxlength="1500" placeholder="Delivery city, timing or other requirements…"></textarea></details>
                 </div></fieldset>
                 <p class="form-error" id="form-error" role="alert" hidden></p>
@@ -178,7 +194,7 @@
         </div>
     </section>
 </main>
-<footer class="site-footer"><div class="shell footer-main"><div><strong>Ampoulex</strong><p>Precision. In glass.</p></div><a class="text-link" href="#top">Back to top <span aria-hidden="true">↑</span></a></div><div class="shell footer-bottom"><span>© {{ now.year if now is defined else datetime.utcnow().year }} Ampoulex</span><span>Wah Cantt, Pakistan · Established 2024</span><a href="{{ url_for('main.dashboard') }}">Staff login <span aria-hidden="true">↗</span></a></div></footer>
+<footer class="site-footer"><div class="shell footer-main"><div><strong>Ampoulex</strong><p>Precision. In glass.</p></div><a class="text-link" href="#top">Back to top <span aria-hidden="true">↑</span></a></div><div class="shell footer-bottom"><span>© {{ now.year if now is defined else datetime.utcnow().year }} Ampoulex</span><span>Wah Cantt, Pakistan · Established 2024</span></div></footer>
 <aside class="inquiry-dock" id="inquiry-dock" aria-label="Your inquiry selection" hidden><div><span class="dock-count" id="dock-count">0</span><span id="dock-label">ampoule formats selected</span></div><a class="button button-small" href="#contact">Review inquiry <span aria-hidden="true">↗</span></a></aside>
 <div class="toast" id="selection-toast" role="status" aria-live="polite"></div>
 </body>

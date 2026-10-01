@@ -402,3 +402,12 @@ input::placeholder,textarea::placeholder { color: #99a48e; opacity: 1; }
   .form-grid { grid-template-columns: 1fr; }
 }
 @media(prefers-reduced-motion:reduce) { html { scroll-behavior: auto; } *,*::before,*::after { animation: none !important; transition: none !important; } }
+.email-confirmation { border: 1px solid var(--line, #444333); padding: 16px; }
+.email-confirmation p { margin: 0 0 12px; }
+.email-confirmation [hidden] { display: none !important; }
+.email-confirmation #email-code-fields { margin-top: 16px; }
+.email-code-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.email-code-row input { flex: 1 1 130px; width: 130px; min-width: 0; font-size: 18px; letter-spacing: .2em; }
+.email-code-row button { flex: 1 1 auto; }
+.email-confirmation #email-confirmation-status { margin: 12px 0 0; }
+.email-confirmation button:disabled { opacity: .6; cursor: default; }

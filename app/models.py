@@ -112,6 +112,27 @@ class Customer(db.Model):
     painting_prices = db.relationship('CustomerPaintingPrice', backref='customer', lazy=True) 
     orders = db.relationship('Order', backref='customer', lazy=True)
 
+class InquiryEmailChallenge(db.Model):
+    """Short-lived inbox confirmation; never stores the plain confirmation code."""
+    id = db.Column(db.String(64), primary_key=True)
+    email = db.Column(db.String(120), nullable=False, index=True)
+    session_digest = db.Column(db.String(64), nullable=False, index=True)
+    code_digest = db.Column(db.String(64), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=False, index=True)
+    attempts = db.Column(db.Integer, nullable=False, default=0)
+    sent = db.Column(db.Boolean, nullable=False, default=False)
+    verified_at = db.Column(db.DateTime)
+    consumed_at = db.Column(db.DateTime)
+
+
+class EmailVerificationRate(db.Model):
+    """Database-backed limits shared by all Vercel instances."""
+    key = db.Column(db.String(64), primary_key=True)
+    count = db.Column(db.Integer, nullable=False, default=0)
+    expires_at = db.Column(db.DateTime, nullable=False, index=True)
+
+
 class CustomerProductPrice(db.Model):
     __tablename__ = 'customer_product_price'
     id = db.Column(db.Integer, primary_key=True)

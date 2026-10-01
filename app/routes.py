@@ -387,7 +387,7 @@ def create_journal_entry_for_production_batch(batch):
         db.session.rollback()
         print(f"❌ Error creating journal for production: {e}")
 
-def find_or_create_customer(customer_name=None, business_name=None, email=None, phone=None):
+def find_or_create_customer(customer_name=None, business_name=None, email=None, phone=None, commit=True):
     """Find existing customer or create new one automatically"""
     if email and email.strip():
         customer = Customer.query.filter_by(email=email.strip().lower()).first()
@@ -416,7 +416,10 @@ def find_or_create_customer(customer_name=None, business_name=None, email=None, 
         email=email.strip().lower() if email else None
     )
     db.session.add(new_customer)
-    db.session.commit()
+    if commit:
+        db.session.commit()
+    else:
+        db.session.flush()
     return new_customer, True
 
 
@@ -3418,6 +3421,7 @@ def customer_site():
 
 @main_bp.route('/submit-inquiry', methods=['POST'])
 def submit_inquiry():
+    from app.inquiry_email import enabled, consume_confirmation, VerificationError
     try:
         inquiry_number = f"INQ-{datetime.utcnow().strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
         product_ids = request.form.getlist('product_ids')
@@ -3484,17 +3488,26 @@ def submit_inquiry():
             flash('Choose at least one ampoule format and enter a positive whole-number quantity for each.', 'error')
             return redirect(url_for('main.index') + '#contact')
         
+        email_confirmed_at = None
+        if enabled():
+            email_confirmed_at = consume_confirmation(
+                email, request.form.get('email_challenge_id', ''),
+                request.form.get('email_verification_csrf', ''))
+
         customer, is_new = find_or_create_customer(
             customer_name=customer_name,
             business_name=business_name,
             email=email,
-            phone=phone
+            phone=phone,
+            commit=False
         )
         
         inquiry_notes = [
             f"Service requested: {service_labels[service_type]}",
             request.form.get('notes', '').strip()[:1500],
         ]
+        if email_confirmed_at:
+            inquiry_notes.append(f'Email inbox confirmed: {email_confirmed_at.isoformat()} UTC')
         if paint_specification and service_type in ('painting', 'supply_and_painting'):
             inquiry_notes.append(f'Requested paint colour/specification: {paint_specification}')
         glass_finish = request.form.get('glass', '').strip()
@@ -3559,7 +3572,10 @@ def submit_inquiry():
             print(f"Socket.IO error: {e}")
         
         flash(f'Thank you! Your inquiry #{inquiry_number} has been submitted.', 'success')
-        
+
+    except VerificationError as e:
+        db.session.rollback()
+        flash(str(e), 'error')
     except Exception as e:
         db.session.rollback()
         print(f"Error: {str(e)}")
