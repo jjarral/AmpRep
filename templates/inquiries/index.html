@@ -71,6 +71,7 @@
                         <th>Inquiry #</th>
                         <th>Customer</th>
                         <th>Business</th>
+                        <th>Request</th>
                         <th>Product</th>
                         <th>Quantity</th>
                         <th>Status</th>
@@ -80,10 +81,23 @@
                 </thead>
                 <tbody>
                     {% for inquiry in inquiries %}
+                    {% set inquiry_service_line = (inquiry.notes or '').split('\n')[0] if inquiry.notes else '' %}
+                    {% set painting_only = inquiry_service_line == 'Service requested: Ampoule painting service' %}
                     <tr>
                         <td><strong>{{ inquiry.inquiry_number }}</strong></td>
                         <td>{{ inquiry.customer_name }}</td>
                         <td>{{ inquiry.business_name or '-' }}</td>
+                        <td>
+                            {% if 'Ampoule supply and painting service' in inquiry_service_line %}
+                            <span class="badge badge-warning">Supply + painting</span>
+                            {% elif painting_only %}
+                            <span class="badge badge-info">Painting service</span>
+                            {% elif inquiry_service_line.startswith('Service requested: Ampoule supply') %}
+                            <span class="badge badge-secondary">Ampoule supply</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Ampoule supply</span>
+                            {% endif %}
+                        </td>
                         <td>
                             {% if inquiry.product %}
                             {{ inquiry.product.name }}
@@ -110,7 +124,7 @@
                                 <a href="{{ url_for('main.edit_inquiry', id=inquiry.id) }}" class="btn btn-info" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                {% if inquiry.status != 'converted' and inquiry.status != 'cancelled' %}
+                                {% if inquiry.status != 'converted' and inquiry.status != 'cancelled' and not painting_only %}
                                 <a href="{{ url_for('main.process_invoice', id=inquiry.id) }}" class="btn btn-success" title="Convert to Order">
                                     <i class="fas fa-file-invoice"></i>
                                 </a>
@@ -127,7 +141,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" class="text-center text-muted">No inquiries found</td>
+                        <td colspan="9" class="text-center text-muted">No inquiries found</td>
                     </tr>
                     {% endfor %}
                 </tbody>

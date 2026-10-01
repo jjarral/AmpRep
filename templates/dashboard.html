@@ -12,7 +12,7 @@
 {% set quality_queue = recent_qc_failures + open_complaints + open_capa + due_calibrations %}
 {% set supply_queue = open_purchase_orders + pending_receipts + overdue_supplier_invoices %}
 {% set people_queue = pending_expenses + pending_payroll + pending_leave %}
-{% set flagged_total = stock_queue + quality_queue + supply_queue + people_queue + active_inquiries + open_orders %}
+{% set flagged_total = stock_queue + quality_queue + supply_queue + people_queue + active_inquiries + open_orders + painting_queue %}
 <div class="ax-command">
     <header class="cmd-topline">
         <div class="cmd-brandline"><span class="cmd-brand-mark"><i class="fas fa-industry" aria-hidden="true"></i></span><strong>Operations control</strong><span>/</span><span>Daily shift board</span></div>
@@ -86,6 +86,7 @@
                     <article class="cmd-queue"><span class="cmd-queue-index {% if supply_queue %}is-alert{% endif %}">03</span><div><h4>Procurement and receipts</h4><p>{{ open_purchase_orders }} draft or sent purchase orders · {{ pending_receipts }} receipts to inspect · {{ overdue_supplier_invoices }} overdue supplier invoices.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.purchase_orders') }}">Purchase orders</a><a class="cmd-queue-link" href="{{ url_for('main.goods_receipts') }}">Goods receipts</a><a class="cmd-queue-link" href="{{ url_for('main.supplier_invoices') }}">Invoices</a></div></div><span class="cmd-queue-count {% if supply_queue %}is-alert{% endif %}">{{ supply_queue }}</span></article>
                     <article class="cmd-queue"><span class="cmd-queue-index {% if people_queue %}is-alert{% endif %}">04</span><div><h4>Cash and people</h4><p>{{ pending_expenses }} expenses awaiting review · {{ pending_payroll }} payroll payments pending · {{ pending_leave }} leave requests to decide.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.expenses') }}">Expenses</a><a class="cmd-queue-link" href="{{ url_for('main.payroll_payments') }}">Payroll</a><a class="cmd-queue-link" href="{{ url_for('main.leave_requests') }}">Leave</a></div></div><span class="cmd-queue-count {% if people_queue %}is-alert{% endif %}">{{ people_queue }}</span></article>
                     <article class="cmd-queue"><span class="cmd-queue-index {% if active_inquiries + open_orders %}is-alert{% endif %}">05</span><div><h4>Demand and delivery</h4><p>{{ active_inquiries }} inquiries need follow-up · {{ open_orders }} orders are pending or processing.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.inquiries') }}">Inquiry desk</a><a class="cmd-queue-link" href="{{ url_for('main.orders') }}">Order book</a></div></div><span class="cmd-queue-count {% if active_inquiries + open_orders %}is-alert{% endif %}">{{ active_inquiries + open_orders }}</span></article>
+                    <article class="cmd-queue"><span class="cmd-queue-index {% if painting_queue %}is-alert{% endif %}">06</span><div><h4>Ampoule painting service</h4><p>{{ painting_queue }} painting orders are pending or in progress.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.painting_orders') }}">Painting orders</a><a class="cmd-queue-link" href="{{ url_for('main.painting_prices') }}">Service pricing</a></div></div><span class="cmd-queue-count {% if painting_queue %}is-alert{% endif %}">{{ painting_queue }}</span></article>
                 </div>
             </section>
 
@@ -94,6 +95,8 @@
                 <div class="cmd-launch">
                     <a class="cmd-command-link" href="{{ url_for('main.add_order') }}"><i class="fas fa-plus" aria-hidden="true"></i>New order</a>
                     <a class="cmd-command-link" href="{{ url_for('main.add_inquiry') }}"><i class="fas fa-inbox" aria-hidden="true"></i>New inquiry</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.painting_dashboard') }}"><i class="fas fa-palette" aria-hidden="true"></i>Painting service</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.add_painting_order') }}"><i class="fas fa-brush" aria-hidden="true"></i>New painting order</a>
                     <a class="cmd-command-link" href="{{ url_for('main.add_production_batch') }}"><i class="fas fa-industry" aria-hidden="true"></i>New batch</a>
                     <a class="cmd-command-link" href="{{ url_for('main.add_purchase_order') }}"><i class="fas fa-cart-plus" aria-hidden="true"></i>New purchase order</a>
                     <a class="cmd-command-link" href="{{ url_for('main.customer_complaints') }}"><i class="fas fa-microscope" aria-hidden="true"></i>Review complaints</a>

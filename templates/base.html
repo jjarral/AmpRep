@@ -92,6 +92,15 @@
                             <li class="nav-item"><a href="{{ url_for('main.orders') }}" class="nav-link {% if 'order' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-file-invoice"></i><p>Sales orders</p></a></li>
                         </ul>
                     </li>
+                    <li class="nav-item has-treeview {% if 'painting' in endpoint %}menu-open{% endif %}">
+                        <a href="#" class="nav-link {% if 'painting' in endpoint %}active{% endif %}" aria-expanded="{{ 'true' if 'painting' in endpoint else 'false' }}"><i class="nav-icon fas fa-palette"></i><p>Painting service<i class="right fas fa-angle-left"></i></p></a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item"><a href="{{ url_for('main.painting_dashboard') }}" class="nav-link {% if endpoint == 'main.painting_dashboard' %}active{% endif %}"><i class="nav-icon fas fa-gauge-high"></i><p>Service overview</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.painting_orders') }}" class="nav-link {% if 'painting_order' in endpoint or endpoint == 'main.view_painting_order' %}active{% endif %}"><i class="nav-icon fas fa-list-check"></i><p>Painting orders</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.painting_prices') }}" class="nav-link {% if 'painting_price' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-tags"></i><p>Service pricing</p></a></li>
+                            <li class="nav-item"><a href="{{ url_for('main.add_painting_order') }}" class="nav-link {% if endpoint == 'main.add_painting_order' %}active{% endif %}"><i class="nav-icon fas fa-plus"></i><p>New painting order</p></a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item has-treeview {% if 'product' in endpoint or 'production' in endpoint or 'raw_material' in endpoint or 'material_batch' in endpoint or 'fixed_asset' in endpoint or request.path.startswith('/assets') %}menu-open{% endif %}">
                         <a href="#" class="nav-link {% if 'product' in endpoint or 'production' in endpoint or 'raw_material' in endpoint or 'material_batch' in endpoint or 'fixed_asset' in endpoint or request.path.startswith('/assets') %}active{% endif %}" aria-expanded="{{ 'true' if 'product' in endpoint or 'production' in endpoint or 'raw_material' in endpoint or 'material_batch' in endpoint or 'fixed_asset' in endpoint or request.path.startswith('/assets') else 'false' }}"><i class="nav-icon fas fa-industry"></i><p>Manufacturing<i class="right fas fa-angle-left"></i></p></a>
                         <ul class="nav nav-treeview">

@@ -47,12 +47,12 @@
       button.querySelector('b').textContent = selected ? '✓' : '+';
     });
     const count = selected.length;
-    const noun = count === 1 ? 'product' : 'products';
+    const noun = count === 1 ? 'format' : 'formats';
     document.getElementById('selection-total').textContent = count
       ? `${count} ${noun} selected${total ? ` · ${total.toLocaleString()} pieces` : ''}${missing ? ' · Enter quantities to continue.' : ''}`
-      : 'Select your products above.';
+      : 'Select your ampoule formats above.';
     document.getElementById('dock-count').textContent = count;
-    document.getElementById('dock-label').textContent = `${noun} selected`;
+    document.getElementById('dock-label').textContent = `ampoule ${noun} selected`;
     dock.hidden = !count || contactInView;
   }
   function addProduct(check) {
@@ -107,6 +107,23 @@
       {threshold: 0, rootMargin: '0px 0px -15% 0px'}).observe(document.getElementById('contact'));
   }
   const form = document.getElementById('quote-form');
+  const serviceRadios = Array.from(form.querySelectorAll('[name="service_type"]'));
+  const optionalSpecifications = document.getElementById('optional-specifications');
+  function syncServiceChoice() {
+    const service = serviceRadios.find(radio => radio.checked)?.value;
+    const needsPainting = service === 'painting' || service === 'supply_and_painting';
+    optionalSpecifications.classList.toggle('painting-request', needsPainting);
+    if (needsPainting) optionalSpecifications.open = true;
+  }
+  serviceRadios.forEach(radio => radio.addEventListener('change', syncServiceChoice));
+  document.querySelectorAll('[data-enquiry-service="painting"]').forEach(link => link.addEventListener('click', () => {
+    const paintingRadio = serviceRadios.find(radio => radio.value === 'painting');
+    if (paintingRadio) {
+      paintingRadio.checked = true;
+      syncServiceChoice();
+    }
+  }));
+  syncServiceChoice();
   const inquiryAdd = document.getElementById('inquiry-add');
   const productPicker = document.getElementById('inquiry-product-picker');
   if (inquiryAdd && productPicker) {
@@ -124,9 +141,22 @@
     const error = document.getElementById('form-error');
     if (!checks.some(check => check.checked)) {
       event.preventDefault();
-      error.textContent = 'Please select at least one product and enter the quantity you need.';
+      error.textContent = 'Please select at least one ampoule format and enter its quantity.';
       error.hidden = false;
       (productPicker || checks[0])?.focus();
+      return;
+    }
+    const invalidQuantity = checks.some(check => {
+      if (!check.checked) return false;
+      const quantity = Number(document.getElementById(check.dataset.quantity).value);
+      return !Number.isInteger(quantity) || quantity < 1;
+    });
+    if (invalidQuantity) {
+      event.preventDefault();
+      error.textContent = 'Enter a whole-number quantity of at least 1 for each selected format.';
+      error.hidden = false;
+      const firstInvalid = checks.find(check => check.checked && (!Number.isInteger(Number(document.getElementById(check.dataset.quantity).value)) || Number(document.getElementById(check.dataset.quantity).value) < 1));
+      if (firstInvalid) document.getElementById(firstInvalid.dataset.quantity).focus();
       return;
     }
     error.hidden = true;

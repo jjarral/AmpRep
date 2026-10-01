@@ -769,6 +769,9 @@ def dashboard():
     pending_expenses = Expense.query.filter_by(status='pending').count()
     pending_payroll = PayrollPayment.query.filter_by(status='pending').count()
     pending_leave = LeaveRequest.query.filter_by(status='pending').count()
+    painting_queue = PaintingOrder.query.filter(
+        PaintingOrder.status.in_(['pending', 'in_progress'])
+    ).count()
 
     recent_orders = Order.query.order_by(Order.created_at.desc()).limit(5).all()
     recent_inquiries = Inquiry.query.filter_by(is_deleted=False).order_by(Inquiry.created_at.desc()).limit(5).all()
@@ -819,6 +822,7 @@ def dashboard():
         pending_expenses=pending_expenses,
         pending_payroll=pending_payroll,
         pending_leave=pending_leave,
+        painting_queue=painting_queue,
         daily_revenue=daily_revenue,
         recent_orders=recent_orders,
         recent_inquiries=recent_inquiries,
@@ -1171,6 +1175,10 @@ def delete_inquiry(id):
 def process_invoice(id):
     """Convert inquiry to order"""
     inquiry = Inquiry.query.get_or_404(id)
+    service_line = (inquiry.notes or '').splitlines()[0] if inquiry.notes else ''
+    if service_line == 'Service requested: Ampoule painting service':
+        flash('This request is for ampoule painting. Create it from the Painting Service action on the inquiry.', 'info')
+        return redirect(url_for('main.edit_inquiry', id=id))
 
     if request.method == 'POST':
         try:
@@ -1260,6 +1268,118 @@ def process_invoice(id):
     return render_template('inquiries/invoice.html',
                          inquiry=inquiry,
                          stock_issues=stock_issues)
+
+
+@main_bp.route('/inquiries/<int:id>/create-painting-order', methods=['POST'])
+@login_required
+def create_painting_order_from_inquiry(id):
+    """Turn a public painting inquiry into a priced painting work order."""
+    inquiry = Inquiry.query.get_or_404(id)
+    notes = inquiry.notes or ''
+    service_line = notes.splitlines()[0] if notes else ''
+    requests_painting = 'Ampoule painting service' in service_line
+
+    if not requests_painting:
+        flash('This inquiry does not request the painting service.', 'error')
+        return redirect(url_for('main.edit_inquiry', id=id))
+    if 'Painting order created:' in notes:
+        flash('A painting work order has already been created from this inquiry.', 'info')
+        return redirect(url_for('main.edit_inquiry', id=id))
+    if inquiry.status == 'cancelled':
+        flash('A cancelled inquiry cannot be converted to a painting work order.', 'error')
+        return redirect(url_for('main.edit_inquiry', id=id))
+    if not inquiry.inquiry_items:
+        flash('This inquiry has no ampoule formats with quantities. Update the inquiry before converting it.', 'error')
+        return redirect(url_for('main.edit_inquiry', id=id))
+
+    try:
+        customer, _ = find_or_create_customer(
+            customer_name=inquiry.customer_name,
+            business_name=inquiry.business_name,
+            email=inquiry.email,
+            phone=inquiry.phone,
+        )
+
+        item_prices = []
+        missing_prices = []
+        for item in inquiry.inquiry_items:
+            if not item.product or item.quantity < 1:
+                continue
+            customer_price = CustomerPaintingPrice.query.filter_by(
+                customer_id=customer.id,
+                product_id=item.product_id,
+                is_active=True,
+            ).first()
+            service_price = PaintingServicePrice.query.filter_by(
+                product_id=item.product_id,
+                is_active=True,
+            ).first()
+            price_record = customer_price or service_price
+            if price_record is None:
+                missing_prices.append(item.product.name)
+                continue
+            item_prices.append((item, price_record))
+
+        if missing_prices:
+            db.session.rollback()
+            flash(
+                'Add painting service prices for these formats before creating the work order: '
+                + ', '.join(missing_prices),
+                'warning',
+            )
+            return redirect(url_for('main.painting_prices'))
+        if not item_prices:
+            db.session.rollback()
+            flash('This inquiry has no valid ampoule quantities to send to painting.', 'error')
+            return redirect(url_for('main.edit_inquiry', id=id))
+
+        paint_specification = next((
+            line.partition(':')[2].strip()
+            for line in notes.splitlines()
+            if line.startswith('Requested paint colour/specification:')
+        ), '')
+        order_number = f"PAINT-{datetime.utcnow().strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
+        order = PaintingOrder(
+            order_number=order_number,
+            customer_id=customer.id,
+            customer_name=customer.name,
+            customer_phone=customer.phone or inquiry.phone,
+            status='pending',
+            notes=f'Source inquiry: {inquiry.inquiry_number}\n{notes}',
+            created_by=current_user.username,
+        )
+        db.session.add(order)
+        db.session.flush()
+
+        for item, price_record in item_prices:
+            unit_price = float(price_record.price_per_unit or 0)
+            setup_charge = float(price_record.setup_charge or 0)
+            subtotal = (unit_price * item.quantity) + setup_charge
+            order.total_amount += subtotal
+            db.session.add(PaintingOrderItem(
+                order_id=order.id,
+                product_id=item.product_id,
+                quantity=item.quantity,
+                price_per_unit=unit_price,
+                setup_charge=setup_charge,
+                subtotal=subtotal,
+                color_specification=paint_specification,
+                special_instructions=f'Created from inquiry {inquiry.inquiry_number}.',
+            ))
+
+        inquiry.notes = f'{notes.rstrip()}\nPainting order created: {order_number}'
+        if service_line == 'Service requested: Ampoule painting service':
+            inquiry.status = 'converted'
+        else:
+            inquiry.status = 'followup'
+        db.session.commit()
+        flash(f'Painting work order {order_number} created from inquiry {inquiry.inquiry_number}.', 'success')
+        return redirect(url_for('main.view_painting_order', id=order.id))
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception('Failed to convert inquiry to a painting work order')
+        flash('We could not create the painting work order. Review the inquiry and try again.', 'error')
+        return redirect(url_for('main.edit_inquiry', id=id))
 
 
 # ============================================================================
@@ -3263,6 +3383,55 @@ def submit_inquiry():
         business_name = request.form.get('business_name', '')
         email = request.form.get('email', '')
         phone = request.form.get('phone', '')
+
+        service_type = request.form.get('service_type', 'supply').strip().lower()
+        service_labels = {
+            'supply': 'Ampoule supply',
+            'painting': 'Ampoule painting service',
+            'supply_and_painting': 'Ampoule supply and painting service',
+        }
+        if service_type not in service_labels:
+            service_type = 'supply'
+        paint_specification = request.form.get('paint_specification', '').strip()[:100]
+
+        if not customer_name.strip() or not business_name.strip() or not phone.strip():
+            flash('Please enter your contact name, company and phone number.', 'error')
+            return redirect(url_for('main.index') + '#contact')
+
+        selected_products = []
+        invalid_selection = False
+        for raw_product_id in dict.fromkeys(product_ids):
+            try:
+                product_id = int(raw_product_id)
+            except (TypeError, ValueError):
+                invalid_selection = True
+                continue
+            product = Product.query.filter_by(id=product_id).filter(
+                or_(Product.is_deleted.is_(False), Product.is_deleted.is_(None)),
+                or_(Product.product_type.is_(None), Product.product_type != 'service')
+            ).first()
+            quantity = request.form.get(f'qty_{product_id}', type=int)
+            if product is None or quantity is None or quantity < 1:
+                invalid_selection = True
+                continue
+            selected_products.append((product, quantity))
+
+        option_labels = {
+            'clear': 'Clear glass ampoules',
+            'amber': 'Amber glass ampoules',
+        }
+        selected_options = []
+        for option_code in dict.fromkeys(request.form.getlist('product_options')):
+            option_label = option_labels.get(option_code)
+            option_quantity = request.form.get(f'option_qty_{option_code}', type=int)
+            if option_label and option_quantity and option_quantity > 0:
+                selected_options.append((option_label, option_quantity))
+            elif option_label:
+                invalid_selection = True
+
+        if invalid_selection or (not selected_products and not selected_options):
+            flash('Choose at least one ampoule format and enter a positive whole-number quantity for each.', 'error')
+            return redirect(url_for('main.index') + '#contact')
         
         customer, is_new = find_or_create_customer(
             customer_name=customer_name,
@@ -3271,20 +3440,16 @@ def submit_inquiry():
             phone=phone
         )
         
-        inquiry_notes = [request.form.get('notes', '').strip()]
+        inquiry_notes = [
+            f"Service requested: {service_labels[service_type]}",
+            request.form.get('notes', '').strip()[:1500],
+        ]
+        if paint_specification and service_type in ('painting', 'supply_and_painting'):
+            inquiry_notes.append(f'Requested paint colour/specification: {paint_specification}')
         glass_finish = request.form.get('glass', '').strip()
         quantity_range = request.form.get('quantity', '').strip()
-        option_labels = {
-            'clear': 'Clear glass ampoules',
-            'amber': 'Amber glass ampoules',
-        }
-        selected_options = []
-        for option_code in request.form.getlist('product_options'):
-            option_label = option_labels.get(option_code)
-            option_quantity = request.form.get(f'option_qty_{option_code}', type=int) or 0
-            if option_label and option_quantity > 0:
-                selected_options.append((option_label, option_quantity))
-                inquiry_notes.append(f'Requested product: {option_label} · Quantity: {option_quantity:,}')
+        for option_label, option_quantity in selected_options:
+            inquiry_notes.append(f'Requested product: {option_label} · Quantity: {option_quantity:,}')
         if glass_finish and glass_finish != 'To be discussed':
             inquiry_notes.append(f'Preferred glass finish: {glass_finish}')
         if quantity_range and quantity_range != 'To be discussed':
@@ -3308,23 +3473,15 @@ def submit_inquiry():
         products_list = []
         
         # ✅ CREATE InquiryItem RECORDS
-        for pid in product_ids:
-            qty = request.form.get(f'qty_{pid}', '1')
-            qty = int(qty) if qty else 1
-            
-            if qty > 0:
-                # Create InquiryItem
-                item = InquiryItem(
-                    inquiry_id=inquiry.id,
-                    product_id=int(pid),
-                    quantity=qty
-                )
-                db.session.add(item)
-                
-                total_quantity += qty
-                product = Product.query.get(int(pid))
-                if product:
-                    products_list.append(f"{product.name} ({product.color})")
+        for product, quantity in selected_products:
+            item = InquiryItem(
+                inquiry_id=inquiry.id,
+                product_id=product.id,
+                quantity=quantity
+            )
+            db.session.add(item)
+            total_quantity += quantity
+            products_list.append(f"{product.name} ({product.color})")
 
         for option_label, option_quantity in selected_options:
             total_quantity += option_quantity
@@ -3340,6 +3497,7 @@ def submit_inquiry():
                 'customer': customer_name,
                 'business': business_name,
                 'products': ', '.join(products_list),
+                'service': service_labels[service_type],
                 'quantity': total_quantity,
                 'status': inquiry.status,
                 'created_at': inquiry.created_at.isoformat(),
