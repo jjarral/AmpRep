@@ -47,7 +47,7 @@
     </div>
   </div>
   <div class="card-body p-0">
-    <table class="table table-hover table-striped mb-0">
+    <div class="table-responsive"><table class="table table-hover table-striped mb-0">
       <thead>
         <tr>
           <th>Code</th>
@@ -127,7 +127,7 @@
           <tr><td colspan="11" class="text-center text-muted py-4">No assets recorded yet. <a href="{{ url_for('main.add_fixed_asset') }}">Add the first asset</a>.</td></tr>
         {% endfor %}
       </tbody>
-    </table>
+    </table></div>
   </div>
 </div>
 {% endblock %}

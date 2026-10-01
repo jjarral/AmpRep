@@ -69,7 +69,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <h5>Employee Loans</h5>
-                        <table class="table table-sm">
+                        <div class="table-responsive"><table class="table table-sm">
                             <thead><tr><th>Employee</th><th>Department</th><th>Outstanding</th></tr></thead>
                             <tbody>
                                 {% for loan in employee_loans %}
@@ -82,7 +82,7 @@
                                 <tr><td colspan="3" class="text-center text-muted">No outstanding loans</td></tr>
                                 {% endfor %}
                             </tbody>
-                        </table>
+                        </table></div>
                     </div>
                     <div class="col-md-6">
                         <h5>Net Position</h5>

@@ -39,7 +39,7 @@
         <div class="row mb-4">
             <div class="col-md-6">
                 <h5><i class="fas fa-info-circle"></i> Voucher Information</h5>
-                <table class="table table-borderless table-sm">
+                <div class="table-responsive"><table class="table table-borderless table-sm">
                     <tr>
                         <th width="40%">Voucher Number:</th>
                         <td><strong>{{ voucher.voucher_number }}</strong></td>
@@ -79,12 +79,12 @@
                         <td>{{ voucher.cheque_number }}</td>
                     </tr>
                     {% endif %}
-                </table>
+                </table></div>
             </div>
             
             <div class="col-md-6">
                 <h5><i class="fas fa-user"></i> Payer Information</h5>
-                <table class="table table-borderless table-sm">
+                <div class="table-responsive"><table class="table table-borderless table-sm">
                     <tr>
                         <th width="40%">Payer Name:</th>
                         <td><strong>{{ voucher.payer_name }}</strong></td>
@@ -119,7 +119,7 @@
                         <td>{{ voucher.created_by }}</td>
                     </tr>
                     {% endif %}
-                </table>
+                </table></div>
             </div>
         </div>
         
@@ -166,7 +166,7 @@
         <!-- Audit Trail -->
         <div class="mt-4">
             <h5><i class="fas fa-history"></i> Audit Trail</h5>
-            <table class="table table-sm table-borderless">
+            <div class="table-responsive"><table class="table table-sm table-borderless">
                 <tr>
                     <th width="30%">Created At:</th>
                     <td>{{ voucher.created_at }}</td>
@@ -177,7 +177,7 @@
                     <td>{{ voucher.created_at }} by {{ voucher.received_by }}</td>
                 </tr>
                 {% endif %}
-            </table>
+            </table></div>
         </div>
     </div>
 </div>

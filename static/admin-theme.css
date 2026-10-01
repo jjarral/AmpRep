@@ -148,6 +148,34 @@ body.ax-admin .content a:not(.btn):not(.nav-link):not(.dropdown-item):hover { co
 body.ax-admin .table .text-dark,
 body.ax-admin .table .text-body { color: var(--ax-heading) !important; }
 body.ax-admin .table-responsive { border-radius: 7px; }
+/* Keep wide tables inside their own scroll area across every dashboard module. */
+body.ax-admin .content .row > *,
+body.ax-admin .content .card,
+body.ax-admin .content .card-body { min-width: 0; }
+body.ax-admin .table-responsive,
+body.ax-admin .cmd-table-wrap,
+body.ax-admin .ax-table-scroll {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y pinch-zoom;
+  scrollbar-color: var(--ax-gold) var(--ax-surface);
+  scrollbar-width: auto;
+}
+body.ax-admin .ax-table-scroll::-webkit-scrollbar { height: 10px; }
+body.ax-admin .ax-table-scroll::-webkit-scrollbar-thumb { background: var(--ax-gold); border: 2px solid var(--ax-surface); border-radius: 10px; }
+body.ax-admin .ax-table-scroll > table { margin-bottom: 0; }
+body.ax-admin .ax-table-scroll:focus-visible { outline-offset: -3px; }
+body.ax-admin .ax-table-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; background: var(--ax-surface-raised); border-bottom: 1px solid var(--ax-line); }
+body.ax-admin .ax-table-controls[hidden] { display: none; }
+body.ax-admin .ax-table-scroll-hint { color: var(--ax-muted); font-size: .875rem; line-height: 1.4; }
+body.ax-admin .ax-table-scroll-buttons { display: flex; flex-shrink: 0; gap: 6px; }
+body.ax-admin .ax-table-scroll-button { width: 44px; height: 44px; padding: 0; border: 1px solid var(--ax-border); border-radius: 8px; background: var(--ax-surface); color: var(--ax-gold-bright); font: inherit; font-size: 1.4rem; cursor: pointer; }
+body.ax-admin .ax-table-scroll-button:disabled { opacity: .35; cursor: default; }
+body.ax-admin .ax-table-scroll-button:not(:disabled):hover { border-color: var(--ax-gold); }
 body.ax-admin .dataTables_wrapper,
 body.ax-admin .dataTables_info { color: var(--ax-muted); }
 body.ax-admin .dataTables_wrapper select,
@@ -373,6 +401,10 @@ body.ax-admin .content [style*="background: #e3f2fd"] { background: rgba(121,215
   body.ax-admin .cmd-footerline { flex-direction: column; }
 }
 @media print {
+  body.ax-admin .ax-table-controls { display: none !important; }
+  body.ax-admin .table-responsive,
+  body.ax-admin .cmd-table-wrap,
+  body.ax-admin .ax-table-scroll { overflow: visible !important; max-width: none; }
   body.ax-admin { color-scheme: light; background: #fff !important; color: #111 !important; }
   body.ax-admin .main-header,
   body.ax-admin .main-sidebar,

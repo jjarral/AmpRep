@@ -1,4 +1,95 @@
 // Shared navigation, account controls, and lightweight live indicators.
+
+// Native touch scrolling plus explicit controls for every module's wide tables.
+function enhanceTableScrolling() {
+    document.querySelectorAll('.content table').forEach((table, index) => {
+        let scroller = table.closest('.table-responsive, .cmd-table-wrap, #payroll-sheet, .ax-table-scroll');
+        if (!scroller) {
+            const parent = table.parentElement;
+            if (['auto', 'scroll'].includes(getComputedStyle(parent).overflowX)) {
+                scroller = parent;
+            } else {
+                scroller = document.createElement('div');
+                scroller.className = 'table-responsive';
+                table.before(scroller);
+                scroller.appendChild(table);
+            }
+        }
+        if (scroller.dataset.scrollEnhanced) return;
+        scroller.dataset.scrollEnhanced = 'true';
+        scroller.classList.add('ax-table-scroll');
+        if (!scroller.id) scroller.id = `ax-table-scroll-${index + 1}`;
+
+        const controls = document.createElement('div');
+        controls.className = 'ax-table-controls';
+        controls.hidden = true;
+        const hint = document.createElement('span');
+        hint.id = `${scroller.id}-hint`;
+        hint.className = 'ax-table-scroll-hint';
+        hint.textContent = 'Swipe or use arrows to see all columns';
+        const buttons = document.createElement('div');
+        buttons.className = 'ax-table-scroll-buttons';
+        const makeButton = (direction, symbol) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'ax-table-scroll-button';
+            button.textContent = symbol;
+            button.setAttribute('aria-label', `Scroll table ${direction}`);
+            button.setAttribute('aria-controls', scroller.id);
+            button.addEventListener('click', () => {
+                const distance = Math.max(160, scroller.clientWidth * .75);
+                scroller.scrollBy({
+                    left: direction === 'left' ? -distance : distance,
+                    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+                });
+            });
+            buttons.appendChild(button);
+            return button;
+        };
+        const left = makeButton('left', '←');
+        const right = makeButton('right', '→');
+        controls.append(hint, buttons);
+        scroller.before(controls);
+
+        const label = table.caption?.textContent.trim()
+            || table.closest('.card, .cmd-panel')?.querySelector('.card-title, h2, h3')?.textContent.trim()
+            || document.querySelector('.content-header h1')?.textContent.trim()
+            || 'Data table';
+        const update = () => {
+            const maximum = scroller.scrollWidth - scroller.clientWidth;
+            const overflow = scroller.clientWidth > 0 && maximum > 2;
+            controls.hidden = !overflow;
+            if (overflow) {
+                scroller.tabIndex = 0;
+                scroller.setAttribute('role', 'region');
+                scroller.setAttribute('aria-label', `${label}: scrollable table`);
+                scroller.setAttribute('aria-describedby', hint.id);
+            } else {
+                scroller.removeAttribute('tabindex');
+                scroller.removeAttribute('role');
+                scroller.removeAttribute('aria-label');
+                scroller.removeAttribute('aria-describedby');
+            }
+            left.disabled = !overflow || scroller.scrollLeft <= 2;
+            right.disabled = !overflow || scroller.scrollLeft >= maximum - 2;
+        };
+        scroller.addEventListener('scroll', update, { passive: true });
+        if ('ResizeObserver' in window) {
+            const observer = new ResizeObserver(update);
+            observer.observe(scroller);
+            observer.observe(table);
+        } else {
+            window.addEventListener('resize', update);
+        }
+        update();
+    });
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', enhanceTableScrolling, { once: true });
+} else {
+    enhanceTableScrolling();
+}
+
 const axMenuToggle = document.getElementById('ax-menu-toggle');
 const axNavScrim = document.getElementById('ax-nav-scrim');
 const axNav = document.getElementById('primary-navigation');

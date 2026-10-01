@@ -17,7 +17,7 @@
         </div>
       </div>
       <div class="card-body p-0">
-        <table class="table table-hover mb-0">
+        <div class="table-responsive"><table class="table table-hover mb-0">
           <thead><tr><th>Name</th><th>Type</th><th>Time</th><th>Hours</th><th></th></tr></thead>
           <tbody>
             {% for s in shifts %}
@@ -41,7 +41,7 @@
             <tr><td colspan="5" class="text-center text-muted py-3">No shifts defined yet.</td></tr>
             {% endfor %}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   </div>
@@ -58,7 +58,7 @@
         </div>
       </div>
       <div class="card-body p-0">
-        <table class="table table-hover mb-0">
+        <div class="table-responsive"><table class="table table-hover mb-0">
           <thead><tr><th>Employee</th><th>Dept</th><th>Current Shift</th><th>Since</th><th></th></tr></thead>
           <tbody>
             {% set ns = namespace(shown=[]) %}
@@ -95,7 +95,7 @@
             <tr><td colspan="5" class="text-center text-muted py-3">No active employees.</td></tr>
             {% endfor %}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   </div>

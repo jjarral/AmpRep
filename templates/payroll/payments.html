@@ -14,7 +14,7 @@
         </div>
     </div>
     <div class="card-body p-0">
-        <table class="table table-striped table-hover">
+        <div class="table-responsive"><table class="table table-striped table-hover">
             <thead>
                 <tr>
                     <th>Employee</th><th>Period</th><th>Earnings</th><th>Deductions</th><th>Net Pay</th><th>Payment Method</th><th>Date</th><th>Status</th>
@@ -36,7 +36,7 @@
                 <tr><td colspan="8" class="text-center text-muted py-4">No payment records found</td></tr>
                 {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     </div>
 </div>
 {% endblock %}

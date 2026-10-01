@@ -62,7 +62,7 @@
             <div class="col-md-12">
                 <h5><i class="fas fa-cubes"></i> Raw Materials Used</h5>
                 {% if batch.raw_materials %}
-                <table class="table table-sm">
+                <div class="table-responsive"><table class="table table-sm">
                     <thead>
                         <tr>
                             <th>Material</th>
@@ -85,7 +85,7 @@
                         </tr>
                         {% endfor %}
                     </tbody>
-                </table>
+                </table></div>
                 {% else %}
                 <p class="text-muted">No materials recorded yet</p>
                 {% endif %}
@@ -123,7 +123,7 @@
             <div class="col-md-12">
                 <h5><i class="fas fa-clipboard-check"></i> Quality Checks</h5>
                 {% if batch.qc_results %}
-                <table class="table table-sm">
+                <div class="table-responsive"><table class="table table-sm">
                     <thead>
                         <tr>
                             <th>Parameter</th>
@@ -152,7 +152,7 @@
                         </tr>
                         {% endfor %}
                     </tbody>
-                </table>
+                </table></div>
                 {% else %}
                 <p class="text-muted">No quality results recorded for this batch yet.</p>
                 {% endif %}

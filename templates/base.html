@@ -13,7 +13,7 @@
     
     <link rel="stylesheet" href="{{ url_for('static', filename='admin-layout.css') }}?v=20261001-mobile-drawer-fix2">
     {% block extra_css %}{% endblock %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='admin-theme.css') }}?v=20261001-workspaces">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin-theme.css') }}?v=20261001-table-scroll">
 </head>
 <body class="ax-admin hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
 <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -256,7 +256,7 @@
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 
-<script src="{{ url_for('static', filename='admin-shell.js') }}?v=20261001-workspaces" defer></script>
+<script src="{{ url_for('static', filename='admin-shell.js') }}?v=20261001-table-scroll" defer></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

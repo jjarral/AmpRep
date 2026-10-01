@@ -27,7 +27,7 @@
         <div class="row mb-4">
             <div class="col-md-6">
                 <h5><i class="fas fa-info-circle"></i> Entry Information</h5>
-                <table class="table table-borderless table-sm">
+                <div class="table-responsive"><table class="table table-borderless table-sm">
                     <tr><th width="40%">Entry Number:</th><td><strong>{{ entry.entry_number }}</strong></td></tr>
                     <tr><th>Date:</th><td>{{ entry.entry_date }}</td></tr>
                     <tr><th>Status:</th>
@@ -35,18 +35,18 @@
                     </tr>
                     <tr><th>Reference:</th><td>{{ entry.reference or '-' }}</td></tr>
                     <tr><th>Reference Type:</th><td>{{ entry.reference_type or '-' }}</td></tr>
-                </table>
+                </table></div>
             </div>
             <div class="col-md-6">
                 <h5><i class="fas fa-user"></i> Audit Information</h5>
-                <table class="table table-borderless table-sm">
+                <div class="table-responsive"><table class="table table-borderless table-sm">
                     <tr><th width="40%">Created By:</th><td>{{ entry.created_by }}</td></tr>
                     <tr><th>Created At:</th><td>{{ entry.created_at }}</td></tr>
                     {% if entry.posted_by %}
                     <tr><th>Posted By:</th><td>{{ entry.posted_by }}</td></tr>
                     <tr><th>Posted At:</th><td>{{ entry.posted_at }}</td></tr>
                     {% endif %}
-                </table>
+                </table></div>
             </div>
         </div>
         

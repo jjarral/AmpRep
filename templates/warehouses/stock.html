@@ -9,7 +9,7 @@
         <h3 class="card-title"><i class="fas fa-boxes"></i> Stock Levels - {{ warehouse.name }}</h3>
     </div>
     <div class="card-body">
-        <table class="table table-striped">
+        <div class="table-responsive"><table class="table table-striped">
             <thead>
                 <tr>
                     <th>Material</th>
@@ -36,7 +36,7 @@
                 </tr>
                 {% endfor %}
             </tbody>
-        </table>
+        </table></div>
     </div>
 </div>
 {% endblock %}

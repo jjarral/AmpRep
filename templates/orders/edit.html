@@ -85,7 +85,7 @@
                 </div>
                 <div class="card-body">
                     {% if order.order_items %}
-                    <table class="table table-sm">
+                    <div class="table-responsive"><table class="table table-sm">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -111,7 +111,7 @@
                             </tr>
                             {% endfor %}
                         </tbody>
-                    </table>
+                    </table></div>
                     {% else %}
                     <p class="text-muted">No items in this order.</p>
                     {% endif %}

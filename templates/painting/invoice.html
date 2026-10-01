@@ -116,7 +116,7 @@
         <div class="row mb-4">
             <div class="col-md-6">
                 <h5><strong>Payment Summary:</strong></h5>
-                <table class="table table-sm table-borderless">
+                <div class="table-responsive"><table class="table table-sm table-borderless">
                     <tr>
                         <td>Total Amount:</td>
                         <td class="text-right"><strong>PKR {{ "%.2f"|format(order.total_amount) }}</strong></td>
@@ -129,7 +129,7 @@
                         <td><strong>Balance Due:</strong></td>
                         <td class="text-right"><strong>PKR {{ "%.2f"|format(order.total_amount - order.paid_amount) }}</strong></td>
                     </tr>
-                </table>
+                </table></div>
             </div>
             <div class="col-md-6">
                 {% if order.notes %}

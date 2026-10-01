@@ -42,7 +42,7 @@
             </div>
         </div>
         
-        <table class="table table-bordered">
+        <div class="table-responsive"><table class="table table-bordered">
             <thead class="bg-light">
                 <tr>
                     <th>Account</th>
@@ -65,7 +65,7 @@
                     <th class="text-right">PKR {{ "%.2f"|format(voucher.total_amount) }}</th>
                 </tr>
             </tfoot>
-        </table>
+        </table></div>
         
         {% if voucher.description %}
         <div class="mt-4">

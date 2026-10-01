@@ -27,7 +27,7 @@
         <div class="row mb-4">
             <div class="col-md-6">
                 <h5><i class="fas fa-info-circle"></i> Voucher Information</h5>
-                <table class="table table-borderless table-sm">
+                <div class="table-responsive"><table class="table table-borderless table-sm">
                     <tr><th width="40%">Voucher Number:</th><td><strong>{{ voucher.voucher_number }}</strong></td></tr>
                     <tr><th>Date:</th><td>{{ voucher.voucher_date }}</td></tr>
                     <tr><th>Status:</th>
@@ -37,18 +37,18 @@
                     {% if voucher.cheque_number %}
                     <tr><th>Cheque Number:</th><td>{{ voucher.cheque_number }}</td></tr>
                     {% endif %}
-                </table>
+                </table></div>
             </div>
             <div class="col-md-6">
                 <h5><i class="fas fa-user"></i> Payee Information</h5>
-                <table class="table table-borderless table-sm">
+                <div class="table-responsive"><table class="table table-borderless table-sm">
                     <tr><th width="40%">Payee Name:</th><td><strong>{{ voucher.payee_name }}</strong></td></tr>
                     <tr><th>Payee Type:</th><td>{{ voucher.payee_type or 'Other' }}</td></tr>
                     {% if voucher.paid_by %}
                     <tr><th>Paid By:</th><td>{{ voucher.paid_by }}</td></tr>
                     <tr><th>Paid At:</th><td>{{ voucher.paid_at }}</td></tr>
                     {% endif %}
-                </table>
+                </table></div>
             </div>
         </div>
         
