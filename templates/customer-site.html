@@ -179,7 +179,11 @@
     <section class="contact-section" id="contact" aria-labelledby="contact-title">
         <div class="shell contact-layout">
             <div class="contact-copy"><p class="eyebrow">06 / LET’S MAKE IT HAPPEN</p><h2 id="contact-title">Your next<br>order starts<br><span>right here.</span></h2><p>Choose your ampoules, request painting, or ask us about both. Our team will follow up with pricing, availability and delivery details.</p>
-                <div class="contact-links"><a href="tel:+923405336238"><small>CALL OUR TEAM</small><strong>+92 340 533 6238 <span aria-hidden="true">↗</span></strong></a><a href="tel:+923319980906"><small>ALTERNATE NUMBER</small><strong>+92 331 998 0906 <span aria-hidden="true">↗</span></strong></a><a href="mailto:info@ampoulex.com"><small>EMAIL US</small><strong>info@ampoulex.com <span aria-hidden="true">↗</span></strong></a></div>
+                <div class="contact-links">
+                    {% if business_settings and business_settings.phone_1 %}<a href="tel:{{ business_settings.phone_1|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '')|replace('.', '') }}"><small>CALL OUR TEAM</small><strong>{{ business_settings.phone_1 }} <span aria-hidden="true">↗</span></strong></a>{% endif %}
+                    {% if business_settings and business_settings.phone_2 %}<a href="tel:{{ business_settings.phone_2|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '')|replace('.', '') }}"><small>ALTERNATE NUMBER</small><strong>{{ business_settings.phone_2 }} <span aria-hidden="true">↗</span></strong></a>{% endif %}
+                    <a href="mailto:info@ampoulex.com"><small>EMAIL US</small><strong>info@ampoulex.com <span aria-hidden="true">↗</span></strong></a>
+                </div>
                 <address><span class="eyebrow">FIND US / WAH CANTT</span>Malik Arshad Farm House (Malik Akram Street), Darbar-e-Kareemi Stop, G.T. Road, Wah Cantt, Rawalpindi, Punjab, 47000</address>
             </div>
             <form id="quote-form" class="quote-form" action="{{ url_for('main.submit_inquiry') }}" method="post">

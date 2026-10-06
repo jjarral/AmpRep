@@ -3417,7 +3417,12 @@ def customer_site():
         or_(Product.is_deleted.is_(False), Product.is_deleted.is_(None)),
         or_(Product.product_type.is_(None), Product.product_type != 'service')
     ).order_by(Product.volume_cc.asc().nullslast(), Product.color.desc(), Product.name.asc()).all()
-    return render_template('customer-site.html', products=products)
+    business_settings = BusinessSettings.query.first()
+    return render_template(
+        'customer-site.html',
+        products=products,
+        business_settings=business_settings,
+    )
 
 @main_bp.route('/submit-inquiry', methods=['POST'])
 def submit_inquiry():
