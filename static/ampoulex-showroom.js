@@ -224,3 +224,39 @@
     document.getElementById('contact').scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
   }
 })();
+
+/* hero light follows the pointer (mouse only, skipped for reduced motion) */
+(function () {
+  var v = document.querySelector('.hero-visual');
+  if (!v || !window.matchMedia('(hover: hover)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  v.addEventListener('pointermove', function (e) {
+    var r = v.getBoundingClientRect();
+    v.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    v.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+})();
+
+/* hero ampoule tilt (mouse only) and compact header on scroll */
+(function () {
+  var h = document.querySelector('.site-header');
+  if (h) { var f = function () { h.classList.toggle('is-compact', window.scrollY > 40); }; f(); window.addEventListener('scroll', f, { passive: true }); }
+  var v = document.querySelector('.hero-visual');
+  if (!v || !window.matchMedia('(hover: hover)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  v.addEventListener('pointermove', function (e) {
+    var r = v.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+    v.style.setProperty('--ry', (x * 7).toFixed(2) + 'deg'); v.style.setProperty('--rx', (-y * 5).toFixed(2) + 'deg');
+  });
+  v.addEventListener('pointerleave', function () { v.style.setProperty('--ry', '0deg'); v.style.setProperty('--rx', '0deg'); });
+})();
+
+/* Section 3: highlight the matching dimension on the technical drawing (hover, tap, or keyboard focus) */
+(function () {
+  var rows = document.querySelectorAll('.spec-table tbody tr[data-k]'), fig = document.querySelector('.spec-drawing');
+  if (!rows.length || !fig) return;
+  function set(k) { fig.querySelectorAll('.dim').forEach(function (g) { g.classList.toggle('on', !!k && g.getAttribute('data-k') === k); }); }
+  rows.forEach(function (r) {
+    r.addEventListener('pointerenter', function () { set(r.getAttribute('data-k')); });
+    r.addEventListener('pointerleave', function () { set(null); });
+    r.addEventListener('click', function () { set(r.getAttribute('data-k')); });
+  });
+})();
