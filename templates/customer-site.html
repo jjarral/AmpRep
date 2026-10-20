@@ -47,6 +47,7 @@
     <script src="{{ url_for('static', filename='vendor/motion.js') }}?v=20261020" defer></script>
     <script src="{{ url_for('static', filename='ampoulex-motion.js') }}?v=20261020-open" defer></script>
     <script src="{{ url_for('static', filename='ampoulex-dust.js') }}?v=20261020-open" defer></script>
+    <script src="{{ url_for('static', filename='ampoulex-process.js') }}?v=20261020-p1" defer></script>
     <script src="{{ url_for('static', filename='inquiry-email.js') }}?v=20261001-email-confirmation" defer></script>
 </head>
 <body>
@@ -178,13 +179,27 @@
                 </svg>
                 <div class="paint-swatches" role="group" aria-label="Preview a painted finish"><button type="button" class="paint-swatch is-on" data-name="Gold" data-h="41" data-s="52" data-k="1" aria-pressed="true" aria-label="Preview Gold finish" style="--sw:hsl(41 52% 52%)"></button><button type="button" class="paint-swatch" data-name="Midnight blue" data-h="218" data-s="58" data-k="1" aria-pressed="false" aria-label="Preview Midnight blue finish" style="--sw:hsl(218 58% 52%)"></button><button type="button" class="paint-swatch" data-name="Emerald" data-h="152" data-s="52" data-k="1" aria-pressed="false" aria-label="Preview Emerald finish" style="--sw:hsl(152 52% 52%)"></button><button type="button" class="paint-swatch" data-name="Ruby" data-h="352" data-s="62" data-k="1" aria-pressed="false" aria-label="Preview Ruby finish" style="--sw:hsl(352 62% 52%)"></button><button type="button" class="paint-swatch" data-name="Pearl" data-h="45" data-s="10" data-k="1.15" aria-pressed="false" aria-label="Preview Pearl finish" style="--sw:hsl(45 10% 52%)"></button><button type="button" class="paint-swatch" data-name="Matte black" data-h="0" data-s="4" data-k=".45" aria-pressed="false" aria-label="Preview Matte black finish" style="--sw:hsl(0 4% 52%)"></button></div>
                 <div class="painting-spec-tag"><span>COLOUR / FINISH</span><strong>SPECIFIED WITH YOU</strong><i aria-hidden="true"></i></div>
-                <div class="painting-visual-foot"><span>ILLUSTRATIVE FINISH</span><span>CONFIRMED PER ENQUIRY</span></div>
+                <div class="painting-visual-foot"><span>ILLUSTRATIVE FINISH</span><span>COLOURS SUBJECT TO AVAILABILITY</span></div>
             </div>
         </div>
     </section>
 
+    <section class="process" id="process" aria-labelledby="process-title" data-three="{{ url_for('static', filename='vendor/three.min.js') }}?v=20261020" data-profile="{{ url_for('static', filename='ampoulex-profile.json') }}?v=20261020">
+        <div class="process-sticky">
+            <div class="process-head shell"><p class="eyebrow">05 / FROM TUBE TO AMPOULE</p><h2 id="process-title">Made in <span>fire</span><br>shaped by hand<br>and precision.</h2></div>
+            <div class="process-stage" aria-hidden="true"><canvas id="process-canvas"></canvas><div class="process-readout"><span>STAGE</span><strong id="process-stage-name">GLASS TUBE</strong><i><b id="process-bar"></b></i></div></div>
+            <ol class="process-steps shell">
+                <li class="process-step is-on" data-i="0"><span>01</span><h3>Glass tube</h3><p>Every ampoule begins as a precision glass tube, cut to length and inspected before it meets a flame.</p></li>
+                <li class="process-step" data-i="1"><span>02</span><h3>Heat</h3><p>The tube is rotated in a controlled flame until the glass softens evenly along its length.</p></li>
+                <li class="process-step" data-i="2"><span>03</span><h3>Form</h3><p>The base is closed and flattened, the shoulder and neck are drawn, and the tip is left open and clean.</p></li>
+                <li class="process-step" data-i="3"><span>04</span><h3>Anneal</h3><p>Slow, controlled cooling relieves internal stress so every ampoule is strong and consistent.</p></li>
+                <li class="process-step" data-i="4"><span>05</span><h3>Finish</h3><p>Inspected, then colour-banded to your specification (gold shown; colours are subject to availability) and packed ready for dispatch.</p></li>
+            </ol>
+        </div>
+    </section>
+
     <section class="approach shell" id="approach" aria-labelledby="approach-title">
-        <div class="approach-intro"><p class="eyebrow">05 / THE WAY WE WORK</p><h2 id="approach-title">Considered.<br>From glass<br><span>to delivery.</span></h2><p>Manufactured in Wah Cantt.<br>Supplied across Pakistan.</p><a class="text-link" href="#contact">Start a conversation <span aria-hidden="true">↗</span></a></div>
+        <div class="approach-intro"><p class="eyebrow">06 / THE WAY WE WORK</p><h2 id="approach-title">Considered.<br>From glass<br><span>to delivery.</span></h2><p>Manufactured in Wah Cantt.<br>Supplied across Pakistan.</p><a class="text-link" href="#contact">Start a conversation <span aria-hidden="true">↗</span></a></div>
         <div class="approach-steps">
             <article><span class="step-number">01</span><div><h3>Your specification, understood.</h3><p>Choose your capacity and glass colour. Share quantities, dimensions and any particular requirements.</p></div><span aria-hidden="true">↗</span></article>
             <article><span class="step-number">02</span><div><h3>Checked with care.</h3><p>Batch checks are part of our process before glass ampoules leave the facility.</p></div><span aria-hidden="true">⊕</span></article>
@@ -195,7 +210,7 @@
 
     <section class="contact-section" id="contact" aria-labelledby="contact-title">
         <div class="shell contact-layout">
-            <div class="contact-copy"><p class="eyebrow">06 / LET’S MAKE IT HAPPEN</p><h2 id="contact-title">Your next<br>order starts<br><span>right here.</span></h2><p>Choose your ampoules, request painting, or ask us about both. Our team will follow up with pricing, availability and delivery details.</p>
+            <div class="contact-copy"><p class="eyebrow">07 / LET’S MAKE IT HAPPEN</p><h2 id="contact-title">Your next<br>order starts<br><span>right here.</span></h2><p>Choose your ampoules, request painting, or ask us about both. Our team will follow up with pricing, availability and delivery details.</p>
                 <div class="contact-links">
                     {% if business_settings and business_settings.phone_1 %}{% set wa = business_settings.phone_1|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '')|replace('.', '')|replace('+', '') %}{% set wa = ('92' ~ wa[1:]) if wa.startswith('0') else wa %}<a href="https://wa.me/{{ wa }}" rel="noopener"><small>WHATSAPP</small><strong>Message us on WhatsApp <span aria-hidden="true">↗</span></strong></a>{% endif %}
                     {% if business_settings and business_settings.phone_1 %}<a href="tel:{{ business_settings.phone_1|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '')|replace('.', '') }}"><small>CALL OUR TEAM</small><strong>{{ business_settings.phone_1 }} <span aria-hidden="true">↗</span></strong></a>{% endif %}
