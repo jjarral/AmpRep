@@ -260,3 +260,17 @@
     r.addEventListener('click', function () { set(r.getAttribute('data-k')); });
   });
 })();
+
+/* Painting section: try a finish on the ampoule */
+(function () {
+  var sw = document.querySelectorAll('.paint-swatch'), stops = document.querySelectorAll('#paint-finish stop'), tag = document.querySelector('.painting-spec-tag strong'), lab = document.querySelector('.painting-visual-foot span');
+  if (!sw.length || stops.length < 6) return;
+  var L = [24, 70, 36, 54, 80, 28];
+  function paint(b) {
+    var h = b.dataset.h, s = +b.dataset.s, k = +b.dataset.k;
+    stops.forEach(function (st, i) { st.style.stopColor = 'hsl(' + h + ' ' + s + '% ' + Math.min(92, L[i] * k + (k < 1 ? 4 : 0)) + '%)'; });
+    sw.forEach(function (x) { var on = x === b; x.classList.toggle('is-on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    if (tag) tag.textContent = b.dataset.name.toUpperCase() + ' · PREVIEW'; if (lab) lab.textContent = 'ILLUSTRATIVE FINISH';
+  }
+  sw.forEach(function (b) { b.addEventListener('click', function () { paint(b); }); });
+})();
