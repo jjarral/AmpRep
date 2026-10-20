@@ -48,6 +48,14 @@
       G.timeline({ scrollTrigger: { trigger: '.spec-figure', start: 'top 80%', once: true } }).to(ol, { strokeDashoffset: 0, duration: 1.8, ease: 'power2.inOut' }).to(dm, { autoAlpha: 1, duration: .6, stagger: .08, clearProps: 'opacity,visibility' }, '-=.5');
     }
 
+    /* atmosphere: drifting aurora, ghost word, pointer spotlight */
+    var au = document.createElement('div'); au.id = 'aurora'; au.setAttribute('aria-hidden', 'true'); au.innerHTML = '<i></i><i></i><i></i>'; document.body.appendChild(au);
+    var hero = document.getElementById('top');
+    if (hero) { var gh = document.createElement('div'); gh.id = 'ghost'; gh.setAttribute('aria-hidden', 'true'); gh.textContent = 'AMPOULEX'; hero.appendChild(gh);
+      if (ST) G.fromTo(gh, { xPercent: -6, autoAlpha: 0 }, { xPercent: 6, autoAlpha: 1, ease: 'none', scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } }); }
+    if (fine) { var sp = document.createElement('div'); sp.id = 'spot'; sp.setAttribute('aria-hidden', 'true'); document.body.appendChild(sp);
+      window.addEventListener('pointermove', function (e) { sp.style.setProperty('--sx', e.clientX + 'px'); sp.style.setProperty('--sy', e.clientY + 'px'); sp.classList.add('on'); }, { passive: true }); }
+
     /* hero parallax + progress line */
     var hv = document.querySelector('.hero-visual');
     if (hv && ST) G.to(hv, { yPercent: -5, ease: 'none', scrollTrigger: { trigger: hv, start: 'top bottom', end: 'bottom top', scrub: true } });

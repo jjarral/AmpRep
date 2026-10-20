@@ -4,7 +4,7 @@
   var ctx = cv.getContext('2d'); if (!ctx) return;
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches, small = window.innerWidth < 760;
   var dpr = Math.min(window.devicePixelRatio || 1, small ? 1.5 : 2), W = 0, H = 0, mx = 0, my = 0, tmx = 0, tmy = 0, running = false, last = 0, t = 0;
-  var COLORS = ['239,207,142', '214,181,115', '255,244,214'], parts = [], sprites = [];
+  var star = null, COLORS = ['239,207,142', '214,181,115', '255,244,214'], parts = [], sprites = [];
   COLORS.forEach(function (c) {                       /* pre-rendered soft glow sprite per colour */
     var s = document.createElement('canvas'); s.width = s.height = 64; var g = s.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
     r.addColorStop(0, 'rgba(' + c + ',1)'); r.addColorStop(.25, 'rgba(' + c + ',.55)'); r.addColorStop(1, 'rgba(' + c + ',0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64); sprites.push(s);
@@ -28,6 +28,14 @@
       var tw = .5 + .5 * Math.sin(t * p.tw + p.s), a = (.16 + .62 * p.z) * (.25 + .75 * tw * tw), r = (1.3 + 4.6 * p.z) * (p.z > .85 ? 1.7 : 1);
       ctx.globalAlpha = Math.min(a, .85); ctx.drawImage(sprites[p.c], X - r * 2, Y - r * 2, r * 4, r * 4);
       if (p.star && tw > .82) { var L = r * 5 * tw; ctx.globalAlpha = a * .7; ctx.fillStyle = '#fff4d6'; ctx.fillRect(X - L, Y - .5, L * 2, 1); ctx.fillRect(X - .5, Y - L, 1, L * 2); }   /* glitter flare */
+    }
+    if (!reduce) {                                    /* occasional shooting star */
+      if (!star && Math.random() < dt * .16) { var ang = .35 + Math.random() * .3; star = { x: Math.random() * W * .8, y: Math.random() * H * .45, vx: Math.cos(ang) * (900 + Math.random() * 500), vy: Math.sin(ang) * (900 + Math.random() * 500), life: 1 }; }
+      if (star) { star.x += star.vx * dt; star.y += star.vy * dt; star.life -= dt * 1.25;
+        var tx = star.x - star.vx * .12, ty = star.y - star.vy * .12, g = ctx.createLinearGradient(star.x, star.y, tx, ty);
+        g.addColorStop(0, 'rgba(255,244,214,' + Math.max(star.life, 0) + ')'); g.addColorStop(1, 'rgba(214,181,115,0)');
+        ctx.globalAlpha = 1; ctx.strokeStyle = g; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(star.x, star.y); ctx.lineTo(tx, ty); ctx.stroke();
+        if (star.life <= 0 || star.x > W + 60 || star.y > H + 60) star = null; }
     }
     ctx.globalAlpha = 1;
     if (!reduce && !document.hidden) requestAnimationFrame(frame); else running = false;
