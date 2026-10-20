@@ -662,7 +662,7 @@ html, body { overflow-x: clip; }
   .process.is-live .process-sticky { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; padding-top: 3.6rem; }
   .process.is-live .process-head h2 { font-size: clamp(1.7rem, 7vw, 2.4rem); }
   .process.is-live .process-stage { grid-column: 1; grid-row: 2; }
-  .process.is-live .process-steps { grid-column: 1; grid-row: 3; height: 9.5rem; margin-bottom: 1rem; }
+  .process.is-live .process-steps { grid-column: 1; grid-row: 3; height: 9.5rem; margin-bottom: 4.6rem; }
   .process.is-live .process-step { width: 100%; padding: .9rem 1rem; }
   .process.is-live .process-step h3 { font-size: 1.3rem; }
   .process.is-live .process-step p { font-size: .88rem; line-height: 1.45; }
