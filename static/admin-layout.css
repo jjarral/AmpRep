@@ -227,3 +227,10 @@ body.ax-admin ::selection { color: #091012; background: var(--ax-gold-bright); }
   html { scroll-behavior: auto; }
   body.ax-admin *, body.ax-admin *::before, body.ax-admin *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* One scroller only: the whole sidebar scrolls. AdminLTE also gives the inner
+   menu area a fixed height and its own scrollbar, which showed two bars. */
+body.ax-admin .main-sidebar .sidebar {
+  height: auto !important;
+  overflow: visible !important;
+}
