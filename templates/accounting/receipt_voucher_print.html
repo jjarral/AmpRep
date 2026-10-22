@@ -62,7 +62,7 @@
             <tfoot class="bg-light">
                 <tr>
                     <th colspan="2" class="text-right">TOTAL:</th>
-                    <th class="text-right">PKR {{ "%.2f"|format(voucher.total_amount) }}</th>
+                    <th class="text-right">PKR {{ '{:,.2f}'.format(voucher.total_amount) }}</th>
                 </tr>
             </tfoot>
         </table></div>

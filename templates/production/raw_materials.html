@@ -50,7 +50,7 @@
                         </td>
                         <td>{{ material.reorder_level }}</td>
                         <td>{{ material.unit }}</td>
-                        <td>PKR {{ "%.2f"|format(material.cost_per_unit) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(material.cost_per_unit) }}</td>
                         <td>{{ material.supplier or '-' }}</td>
                         <td>
                             {% if material.current_stock <= material.reorder_level %}

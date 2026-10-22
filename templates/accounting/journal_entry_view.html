@@ -84,8 +84,8 @@
                 <tfoot class="bg-light">
                     <tr>
                         <th colspan="2" class="text-right">TOTAL:</th>
-                        <th class="text-right">PKR {{ "%.2f"|format(entry.lines|sum(attribute='debit')) }}</th>
-                        <th class="text-right">PKR {{ "%.2f"|format(entry.lines|sum(attribute='credit')) }}</th>
+                        <th class="text-right">PKR {{ '{:,.2f}'.format(entry.lines|sum(attribute='debit')) }}</th>
+                        <th class="text-right">PKR {{ '{:,.2f}'.format(entry.lines|sum(attribute='credit')) }}</th>
                     </tr>
                 </tfoot>
             </table>

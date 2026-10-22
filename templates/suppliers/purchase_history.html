@@ -22,7 +22,7 @@
             <div class="col-lg-4 col-4">
                 <div class="small-box bg-success">
                     <div class="inner">
-                        <h3>PKR {{ "%.2f"|format(total_spent) }}</h3>
+                        <h3>PKR {{ '{:,.2f}'.format(total_spent) }}</h3>
                         <p>Total Spent</p>
                     </div>
                 </div>
@@ -30,7 +30,7 @@
             <div class="col-lg-4 col-4">
                 <div class="small-box bg-warning">
                     <div class="inner">
-                        <h3>PKR {{ "%.2f"|format(avg_order_value) }}</h3>
+                        <h3>PKR {{ '{:,.2f}'.format(avg_order_value) }}</h3>
                         <p>Avg Order Value</p>
                     </div>
                 </div>
@@ -58,7 +58,7 @@
                         <td>{{ po.order_date.strftime('%Y-%m-%d') }}</td>
                         <td>{{ po.expected_date.strftime('%Y-%m-%d') if po.expected_date else '-' }}</td>
                         <td>{{ po.received_date.strftime('%Y-%m-%d') if po.received_date else '-' }}</td>
-                        <td>PKR {{ "%.2f"|format(po.grand_total) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(po.grand_total) }}</td>
                         <td>
                             <span class="badge badge-{{ 'success' if po.status == 'received' else 'info' if po.status == 'sent' else 'warning' if po.status == 'draft' else 'danger' }}">
                                 {{ po.status|title }}

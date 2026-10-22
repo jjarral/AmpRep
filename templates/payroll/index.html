@@ -57,7 +57,7 @@
                     <td>{{ employee.cnic or '-' }}</td>
                     <td>{{ employee.payment_frequency }}</td>
                     <td>{{ "%.2f"|format(employee.base_salary) }}</td>
-                    <td>{% if employee.outstanding_loan > 0 %}<span class="text-danger">PKR {{ "%.2f"|format(employee.outstanding_loan) }}</span>{% else %}<span class="text-success">None</span>{% endif %}</td>
+                    <td>{% if employee.outstanding_loan > 0 %}<span class="text-danger">PKR {{ '{:,.2f}'.format(employee.outstanding_loan) }}</span>{% else %}<span class="text-success">None</span>{% endif %}</td>
                     <td>
                         <a href="{{ url_for('main.edit_employee', id=employee.id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
                         <a href="{{ url_for('main.delete_employee', id=employee.id) }}" data-method="post" class="btn btn-sm btn-danger" data-confirm="Deactivate?"><i class="fas fa-user-slash"></i></a>

@@ -35,7 +35,7 @@
                     <td>{{ ts.period_type }}</td>
                     <td>{{ "%.1f"|format(ts.regular_hours) }}</td>
                     <td>{{ "%.1f"|format(ts.overtime_hours) }}</td>
-                    <td>PKR {{ "%.2f"|format(ts.net_pay) }}</td>
+                    <td>PKR {{ '{:,.2f}'.format(ts.net_pay) }}</td>
                     <td><span class="badge badge-{{ 'secondary' if ts.status == 'draft' else 'success' if ts.status == 'approved' else 'primary' if ts.status == 'paid' else 'warning' }}">{{ ts.status }}</span></td>
                     <td>
                         <a href="{{ url_for('main.edit_timesheet', id=ts.id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>

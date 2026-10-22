@@ -40,7 +40,7 @@
                         <td>{{ order.customer_name }}</td>
                         <td>{{ order.customer_phone or '-' }}</td>
                         <td>{{ order.items|length }} product(s)</td>
-                        <td>PKR {{ "%.2f"|format(order.total_amount) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(order.total_amount) }}</td>
                         <td>
                             <span class="badge badge-{{ 
                                 'warning' if order.status == 'pending' else 

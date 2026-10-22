@@ -115,7 +115,7 @@
         <div class="alert alert-{{ 'success' if total_assets == (total_liabilities + equity) else 'warning' }} mt-4">
             <strong>Balance Sheet Verification:</strong><br>
             Total Assets ({{ "%.2f"|format(total_assets) }}) = Total Liabilities ({{ "%.2f"|format(total_liabilities) }}) + Equity ({{ "%.2f"|format(equity) }})<br>
-            <strong>Difference: PKR {{ "%.2f"|format(total_assets - (total_liabilities + equity)) }}</strong>
+            <strong>Difference: PKR {{ '{:,.2f}'.format(total_assets - (total_liabilities + equity)) }}</strong>
         </div>
     </div>
 </div>

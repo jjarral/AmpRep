@@ -59,15 +59,15 @@
                         {% elif customer.is_deleted %}<span class="badge badge-danger">Archived</span>
                         {% else %}<span class="badge badge-success">Active</span>{% endif %}
                     </td>
-                    <td>PKR {{ "%.2f"|format(customer.credit_limit) }}</td>
+                    <td>PKR {{ '{:,.2f}'.format(customer.credit_limit) }}</td>
                     <td class="{{ 'text-danger' if customer.current_balance > 0 else 'text-success' }}">
-                        PKR {{ "%.2f"|format(customer.current_balance) }}
+                        PKR {{ '{:,.2f}'.format(customer.current_balance) }}
                         {% if customer.current_balance > 0 %}<br><small>Owes Us</small>
                         {% elif customer.current_balance < 0 %}<br><small>We Owe</small>{% endif %}
                     </td>
                     <td>
                         {% set pending = customer.pending_balance | default(0) %}
-                        {% if pending > 0 %}<span class="text-danger font-weight-bold">PKR {{ "%.2f"|format(pending) }}</span>
+                        {% if pending > 0 %}<span class="text-danger font-weight-bold">PKR {{ '{:,.2f}'.format(pending) }}</span>
                         {% else %}<span class="text-success">Clear</span>{% endif %}
                     </td>
                     <td>

@@ -52,7 +52,7 @@
                             </td>
                             <td>
                                 {% if base_price %}
-                                PKR {{ "%.2f"|format(base_price.price_per_unit) }}
+                                PKR {{ '{:,.2f}'.format(base_price.price_per_unit) }}
                                 {% else %}
                                 <span class="text-muted">Not set</span>
                                 {% endif %}

@@ -53,7 +53,7 @@
                     <div class="form-group" id="paidAmountGroup" style="display: {% if order.payment_status == 'partial' %}block{% else %}none{% endif %};">
                         <label>Paid Amount (PKR)</label>
                         <input type="number" name="paid_amount" class="form-control" step="0.01" value="{{ order.paid_amount }}" min="0" max="{{ order.total_amount }}">
-                        <small class="text-muted">Total: PKR {{ "%.2f"|format(order.total_amount) }}</small>
+                        <small class="text-muted">Total: PKR {{ '{:,.2f}'.format(order.total_amount) }}</small>
                     </div>
                 </div>
             </div>
@@ -68,12 +68,12 @@
                     </div>
                     <div class="col-md-4">
                         <strong>Order Total:</strong><br>
-                        <span class="text-primary">PKR {{ "%.2f"|format(order.total_amount) }}</span>
+                        <span class="text-primary">PKR {{ '{:,.2f}'.format(order.total_amount) }}</span>
                     </div>
                     <div class="col-md-4">
                         <strong>Current Paid:</strong><br>
-                        <span class="text-success">PKR {{ "%.2f"|format(order.paid_amount) }}</span><br>
-                        <strong>Balance:</strong> PKR {{ "%.2f"|format(order.total_amount - order.paid_amount) }}
+                        <span class="text-success">PKR {{ '{:,.2f}'.format(order.paid_amount) }}</span><br>
+                        <strong>Balance:</strong> PKR {{ '{:,.2f}'.format(order.total_amount - order.paid_amount) }}
                     </div>
                 </div>
             </div>
@@ -106,8 +106,8 @@
                                     {% endif %}
                                 </td>
                                 <td>{{ item.quantity }}</td>
-                                <td>PKR {{ "%.2f"|format(item.unit_price) }}</td>
-                                <td><strong>PKR {{ "%.2f"|format(item.subtotal) }}</strong></td>
+                                <td>PKR {{ '{:,.2f}'.format(item.unit_price) }}</td>
+                                <td><strong>PKR {{ '{:,.2f}'.format(item.subtotal) }}</strong></td>
                             </tr>
                             {% endfor %}
                         </tbody>

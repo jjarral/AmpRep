@@ -40,9 +40,9 @@
                                 {{ price.product.color }}
                             </span>
                         </td>
-                        <td>PKR {{ "%.2f"|format(price.price_per_unit) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(price.price_per_unit) }}</td>
                         <td>{{ price.minimum_quantity }}</td>
-                        <td>PKR {{ "%.2f"|format(price.setup_charge) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(price.setup_charge) }}</td>
                         <td>
                             {% if price.is_active %}
                             <span class="badge badge-success">Active</span>

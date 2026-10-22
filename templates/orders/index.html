@@ -106,9 +106,9 @@
                             {% endif %}
                         </td>
                         <td>
-                            <strong>PKR {{ "%.2f"|format(order.total_amount) }}</strong>
+                            <strong>PKR {{ '{:,.2f}'.format(order.total_amount) }}</strong>
                             {% if order.paid_amount > 0 %}
-                            <br><small class="text-success">Paid: PKR {{ "%.2f"|format(order.paid_amount) }}</small>
+                            <br><small class="text-success">Paid: PKR {{ '{:,.2f}'.format(order.paid_amount) }}</small>
                             {% endif %}
                         </td>
                         <td>

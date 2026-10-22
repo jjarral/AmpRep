@@ -25,7 +25,7 @@
                                 <strong>Phone:</strong><br>{{ customer.phone or 'N/A' }}
                             </div>
                             <div class="col-md-3">
-                                <strong>Current Balance:</strong><br>PKR {{ "%.2f"|format(customer.current_balance) }}
+                                <strong>Current Balance:</strong><br>PKR {{ '{:,.2f}'.format(customer.current_balance) }}
                             </div>
                         </div>
                     </div>
@@ -46,7 +46,7 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-success">
                     <div class="inner">
-                        <h3>PKR {{ "%.2f"|format(total_spent) }}</h3>
+                        <h3>PKR {{ '{:,.2f}'.format(total_spent) }}</h3>
                         <p>Total Spent</p>
                     </div>
                 </div>
@@ -54,7 +54,7 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-warning">
                     <div class="inner">
-                        <h3>PKR {{ "%.2f"|format(avg_order_value) }}</h3>
+                        <h3>PKR {{ '{:,.2f}'.format(avg_order_value) }}</h3>
                         <p>Avg Order Value</p>
                     </div>
                 </div>
@@ -62,7 +62,7 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-primary">
                     <div class="inner">
-                        <h3>PKR {{ "%.2f"|format(total_paid) }}</h3>
+                        <h3>PKR {{ '{:,.2f}'.format(total_paid) }}</h3>
                         <p>Total Paid</p>
                     </div>
                 </div>
@@ -86,7 +86,7 @@
                         <tr>
                             <td>{{ product.name }}</td>
                             <td>{{ product.quantity }}</td>
-                            <td>PKR {{ "%.2f"|format(product.revenue) }}</td>
+                            <td>PKR {{ '{:,.2f}'.format(product.revenue) }}</td>
                         </tr>
                         {% else %}
                         <tr>
@@ -117,7 +117,7 @@
                         <td><a href="{{ url_for('main.view_order', id=order.id) }}">{{ order.order_number }}</a></td>
                         <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
                         <td>{{ order.order_items|length }} items</td>
-                        <td>PKR {{ "%.2f"|format(order.total_amount) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(order.total_amount) }}</td>
                         <td>
                             <span class="badge badge-{{ 'success' if order.payment_status == 'paid' else 'warning' if order.payment_status == 'partial' else 'danger' }}">
                                 {{ order.payment_status|title }}

@@ -131,7 +131,7 @@
                                             {% if product.specification %}
                                             <span class="text-xs text-gray-500 block">({{ product.specification }})</span>
                                             {% endif %}
-                                            <span class="text-xs font-semibold text-indigo-600 block">PKR {{ "%.2f"|format(product.base_price or 0) }}</span>
+                                            <span class="text-xs font-semibold text-indigo-600 block">PKR {{ '{:,.2f}'.format(product.base_price or 0) }}</span>
                                         </div>
                                     </label>
                                     {% endfor %}

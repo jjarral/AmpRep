@@ -71,24 +71,24 @@
                         <td>{{ item.material.name }}</td>
                         <td>{{ item.quantity_ordered }} {{ item.material.unit }}</td>
                         <td>{{ item.quantity_received }} {{ item.material.unit }}</td>
-                        <td>PKR {{ "%.2f"|format(item.unit_price) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(item.unit_price) }}</td>
                         <td>{{ item.tax_rate }}%</td>
-                        <td>PKR {{ "%.2f"|format(item.total) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(item.total) }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
                 <tfoot>
                     <tr>
                         <th colspan="5" class="text-right">Subtotal:</th>
-                        <th>PKR {{ "%.2f"|format(po.total_amount) }}</th>
+                        <th>PKR {{ '{:,.2f}'.format(po.total_amount) }}</th>
                     </tr>
                     <tr>
                         <th colspan="5" class="text-right">Tax:</th>
-                        <th>PKR {{ "%.2f"|format(po.tax_amount) }}</th>
+                        <th>PKR {{ '{:,.2f}'.format(po.tax_amount) }}</th>
                     </tr>
                     <tr>
                         <th colspan="5" class="text-right">Grand Total:</th>
-                        <th>PKR {{ "%.2f"|format(po.grand_total) }}</th>
+                        <th>PKR {{ '{:,.2f}'.format(po.grand_total) }}</th>
                     </tr>
                 </tfoot>
             </table>

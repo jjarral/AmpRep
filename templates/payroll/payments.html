@@ -25,9 +25,9 @@
                 <tr>
                     <td><strong>{{ payment.employee.name }}</strong></td>
                     <td>{{ payment.period_start.strftime('%Y-%m-%d') }} to {{ payment.period_end.strftime('%Y-%m-%d') }}</td>
-                    <td>PKR {{ "%.2f"|format(payment.total_earnings) }}</td>
-                    <td class="text-danger">PKR {{ "%.2f"|format(payment.total_deductions) }}</td>
-                    <td class="text-success font-weight-bold">PKR {{ "%.2f"|format(payment.net_pay) }}</td>
+                    <td>PKR {{ '{:,.2f}'.format(payment.total_earnings) }}</td>
+                    <td class="text-danger">PKR {{ '{:,.2f}'.format(payment.total_deductions) }}</td>
+                    <td class="text-success font-weight-bold">PKR {{ '{:,.2f}'.format(payment.net_pay) }}</td>
                     <td>{{ payment.payment_method }}</td>
                     <td>{{ payment.payment_date.strftime('%Y-%m-%d') if payment.payment_date else '-' }}</td>
                     <td><span class="badge badge-{{ 'warning' if payment.status == 'pending' else 'success' if payment.status == 'paid' else 'secondary' }}">{{ payment.status }}</span></td>

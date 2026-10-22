@@ -460,3 +460,104 @@ body.ax-admin dialog.ax-confirm.is-leaving { animation: ax-toast-out .16s ease-i
 @keyframes ax-toast-timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 @media (max-width: 600px) { body.ax-admin dialog.ax-confirm { right: 16px; top: auto; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); } }
 @media (prefers-reduced-motion: reduce) { body.ax-admin dialog.ax-confirm, body.ax-admin dialog.ax-confirm.is-leaving, .ax-confirm-timer { animation: none; } }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Unified design layer (2026-10-22). Gold is reserved for the one main action
+   on a page; everything else is quiet. Applies to every admin page.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Page header: compact and not sticky, so it stops eating the screen while scrolling. */
+body.ax-admin .content-header { position: static; padding: 18px var(--ax-content-gutter) 10px; background: transparent !important; }
+body.ax-admin .content-header .row { align-items: baseline; gap: 4px 16px; flex-wrap: wrap; }
+body.ax-admin .content-header h1 { font-size: clamp(1.3rem, 2vw, 1.6rem) !important; letter-spacing: -.035em; }
+body.ax-admin .content-header .breadcrumb { padding: 0; font-size: .76rem; }
+
+/* Buttons ---------------------------------------------------------------- */
+body.ax-admin .btn { min-height: 36px; padding: 6px 13px; border-radius: 8px; font-size: .86rem; font-weight: 600; transition-property: background-color, border-color, color, transform; transition-duration: .14s; }
+body.ax-admin .btn-sm, body.ax-admin .btn-group-sm > .btn { min-height: 30px; padding: 4px 10px; font-size: .8rem; }
+/* Main action: gold (primary and warning both read as "do this"). */
+body.ax-admin .btn-primary, body.ax-admin .btn-warning { border-color: var(--ax-gold) !important; background: var(--ax-gold) !important; color: #15130d !important; }
+body.ax-admin .btn-primary:hover, body.ax-admin .btn-warning:hover { border-color: var(--ax-gold-bright) !important; background: var(--ax-gold-bright) !important; }
+/* Everything else is tinted, not solid. */
+body.ax-admin .btn-success { border-color: rgba(130,213,169,.38) !important; background: rgba(130,213,169,.1) !important; color: #a6e8c2 !important; }
+body.ax-admin .btn-success:hover { background: rgba(130,213,169,.18) !important; }
+body.ax-admin .btn-info { border-color: rgba(121,215,207,.38) !important; background: rgba(121,215,207,.09) !important; color: #a4ece4 !important; }
+body.ax-admin .btn-info:hover { background: rgba(121,215,207,.17) !important; }
+body.ax-admin .btn-danger { border-color: rgba(240,155,134,.38) !important; background: rgba(240,155,134,.09) !important; color: #ffb7a4 !important; }
+body.ax-admin .btn-danger:hover { background: rgba(240,155,134,.18) !important; }
+body.ax-admin .btn-secondary, body.ax-admin .btn-default, body.ax-admin .btn-light, body.ax-admin .btn-dark { border-color: var(--ax-border) !important; background: rgba(255,255,255,.035) !important; color: var(--ax-copy) !important; }
+body.ax-admin [class*="btn-outline-"] { background: transparent !important; }
+body.ax-admin .btn-outline-success { border-color: rgba(130,213,169,.38) !important; color: #a6e8c2 !important; }
+body.ax-admin .btn-outline-danger { border-color: rgba(240,155,134,.38) !important; color: #ffb7a4 !important; }
+body.ax-admin .btn-outline-info, body.ax-admin .btn-outline-secondary { border-color: var(--ax-border) !important; color: var(--ax-copy) !important; }
+body.ax-admin .btn-outline-warning { border-color: rgba(212,177,95,.5) !important; color: var(--ax-gold-bright) !important; }
+
+/* Row actions inside tables: small quiet icon buttons, colour only on the icon. */
+body.ax-admin .table td .btn, body.ax-admin .table td .btn-group > .btn {
+  display: inline-grid; place-items: center; width: 32px; min-width: 32px; height: 32px; min-height: 32px; padding: 0 !important;
+  border: 1px solid var(--ax-border) !important; background: rgba(255,255,255,.03) !important; font-size: .78rem;
+}
+body.ax-admin .table td .btn:hover { border-color: rgba(121,215,207,.45) !important; background: rgba(121,215,207,.08) !important; }
+body.ax-admin .table td .btn-warning, body.ax-admin .table td .btn-primary { color: var(--ax-gold-bright) !important; }
+body.ax-admin .table td .btn-info, body.ax-admin .table td .btn-secondary, body.ax-admin .table td .btn-default { color: var(--ax-cyan) !important; }
+body.ax-admin .table td .btn-success { color: var(--ax-green) !important; }
+body.ax-admin .table td .btn-danger { color: var(--ax-red) !important; }
+body.ax-admin .table td .btn-danger:hover { border-color: rgba(240,155,134,.5) !important; background: rgba(240,155,134,.1) !important; }
+body.ax-admin .table td .btn-group { display: inline-flex; gap: 4px; }
+body.ax-admin .table td .btn-group > .btn { border-radius: 8px !important; margin: 0 !important; }
+body.ax-admin .table td form.d-inline { display: inline-block; margin: 0; }
+body.ax-admin .table td .btn + .btn, body.ax-admin .table td .btn + form, body.ax-admin .table td form + .btn, body.ax-admin .table td a.btn + a.btn { margin-left: 4px; }
+/* Text buttons in table cells (e.g. "View all") keep their label. */
+body.ax-admin .table td .btn:not(:has(> i:only-child)) { width: auto; padding: 0 10px !important; }
+
+/* Status pills ------------------------------------------------------------ */
+body.ax-admin .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: .74rem; font-weight: 600; letter-spacing: .01em; line-height: 1.35; }
+body.ax-admin .badge-secondary, body.ax-admin .badge-light, body.ax-admin .badge-dark, body.ax-admin .badge-draft { background: rgba(255,255,255,.07) !important; color: var(--ax-copy) !important; }
+body.ax-admin .badge-primary { background: rgba(212,177,95,.15) !important; color: #f0d792 !important; }
+body.ax-admin .badge-pending { background: rgba(212,177,95,.15) !important; color: #f0d792 !important; }
+body.ax-admin .badge-paid, body.ax-admin .badge-processed { background: rgba(130,213,169,.13) !important; color: #9de4b9 !important; }
+body.ax-admin .badge-rejected { background: rgba(240,155,134,.15) !important; color: #ffb7a4 !important; }
+
+/* Summary tiles (AdminLTE small-box / info-box) to match the dashboard metrics. */
+body.ax-admin .small-box { min-height: 0; padding: 0; border: 1px solid var(--ax-border) !important; border-left: 3px solid var(--ax-gold) !important; border-radius: 10px; background: var(--ax-surface) !important; box-shadow: none !important; }
+body.ax-admin .small-box > .inner { padding: 14px 16px 10px; }
+body.ax-admin .small-box h3 { margin: 0 0 4px; font-size: 1.6rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+body.ax-admin .small-box p { margin: 0; font-size: .82rem; letter-spacing: 0; }
+body.ax-admin .small-box .icon { display: none; }
+body.ax-admin .small-box .small-box-footer { padding: 7px 16px; font-size: .78rem; color: var(--ax-cyan) !important; }
+body.ax-admin .small-box.bg-success { border-left-color: var(--ax-green) !important; }
+body.ax-admin .small-box.bg-danger { border-left-color: var(--ax-red) !important; }
+body.ax-admin .small-box.bg-info, body.ax-admin .small-box.bg-primary { border-left-color: var(--ax-cyan) !important; }
+body.ax-admin .info-box { border: 1px solid var(--ax-border) !important; border-radius: 10px; box-shadow: none !important; }
+
+/* Cards ------------------------------------------------------------------ */
+body.ax-admin .card { border-radius: 10px; box-shadow: none !important; }
+body.ax-admin .card-header { padding: 12px 16px; }
+body.ax-admin .card-header .card-title, body.ax-admin .card-header h3, body.ax-admin .card-header h5 { font-size: 1rem !important; font-weight: 650; }
+body.ax-admin .card-header .card-title > i:first-child, body.ax-admin .card-header h5 > i:first-child, body.ax-admin .card-header h3 > i:first-child { margin-right: 6px; color: var(--ax-gold); }
+body.ax-admin .card[class*="card-outline"] { border-top-width: 1px !important; }
+body.ax-admin .card-header.bg-primary, body.ax-admin .card-header.bg-info, body.ax-admin .card-header.bg-success, body.ax-admin .card-header.bg-warning, body.ax-admin .card-header.bg-danger, body.ax-admin .card-header.bg-dark { background: transparent !important; color: var(--ax-heading) !important; }
+
+/* Tables ----------------------------------------------------------------- */
+body.ax-admin .table td, body.ax-admin .table th { vertical-align: middle; }
+body.ax-admin .table td { font-variant-numeric: tabular-nums; }
+body.ax-admin .table-striped tbody tr:nth-of-type(odd) { background: rgba(255,255,255,.015) !important; }
+
+/* Page-specific light-theme leftovers ------------------------------------- */
+body.ax-admin #payroll-table thead th { background: #172124 !important; color: var(--ax-muted) !important; border-color: var(--ax-border) !important; }
+body.ax-admin #payroll-table td { border-color: var(--ax-line) !important; }
+body.ax-admin #payroll-table tbody tr:hover { background: rgba(255,255,255,.03) !important; }
+body.ax-admin #payroll-table tbody tr.dept-header td { background: rgba(212,177,95,.08) !important; color: var(--ax-gold-bright) !important; }
+body.ax-admin #payroll-table td.ro { background: rgba(255,255,255,.025) !important; color: var(--ax-copy) !important; }
+body.ax-admin #payroll-table td.net { background: rgba(130,213,169,.08) !important; color: #9de4b9 !important; }
+body.ax-admin #payroll-table td.tax { background: rgba(212,177,95,.07) !important; color: #f0d792 !important; }
+body.ax-admin .cell-input, body.ax-admin .cell-select { color: var(--ax-heading) !important; background: transparent !important; }
+body.ax-admin .cell-input:focus, body.ax-admin .cell-select:focus { background: rgba(121,215,207,.1) !important; }
+body.ax-admin .cell-select option { background: #111a1c; }
+body.ax-admin #expense-grid td.editing { outline-color: var(--ax-cyan) !important; }
+body.ax-admin #expense-grid .cell-input, body.ax-admin #expense-grid input, body.ax-admin #expense-grid select { background: rgba(121,215,207,.08) !important; color: var(--ax-heading) !important; }
+body.ax-admin #expense-grid tr.new-row td.cell-display { background: rgba(130,213,169,.05) !important; color: var(--ax-muted) !important; }
+body.ax-admin #expense-grid tr:hover td.cell-display:not(.no-hover) { background: rgba(255,255,255,.03) !important; }
+body.ax-admin #expense-grid .row-num { background: transparent !important; color: var(--ax-subtle) !important; }
+body.ax-admin .timeline-marker { border-color: var(--ax-surface) !important; }
+body.ax-admin .timeline-marker:not(.active) { background: #2b3a3b !important; }

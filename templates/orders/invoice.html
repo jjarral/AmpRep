@@ -447,8 +447,8 @@
                             {% endif %}
                         </td>
                         <td class="text-center">{{ item.quantity }}</td>
-                        <td class="text-right">PKR {{ "%.2f"|format(item.unit_price) }}</td>
-                        <td class="text-right"><strong>PKR {{ "%.2f"|format(item.subtotal) }}</strong></td>
+                        <td class="text-right">PKR {{ '{:,.2f}'.format(item.unit_price) }}</td>
+                        <td class="text-right"><strong>PKR {{ '{:,.2f}'.format(item.subtotal) }}</strong></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -460,27 +460,27 @@
             <table class="totals-table">
                 <tr>
                     <td class="label">Subtotal:</td>
-                    <td class="amount">PKR {{ "%.2f"|format(order.total_amount - order.tax_amount) }}</td>
+                    <td class="amount">PKR {{ '{:,.2f}'.format(order.total_amount - order.tax_amount) }}</td>
                 </tr>
                 <tr>
                     <td class="label">GST @ 17%:</td>
-                    <td class="amount">PKR {{ "%.2f"|format(order.tax_amount) }}</td>
+                    <td class="amount">PKR {{ '{:,.2f}'.format(order.tax_amount) }}</td>
                 </tr>
                 {% if order.paid_amount > 0 %}
                 <tr>
                     <td class="label">Paid:</td>
-                    <td class="amount" style="color: #059669;">- PKR {{ "%.2f"|format(order.paid_amount) }}</td>
+                    <td class="amount" style="color: #059669;">- PKR {{ '{:,.2f}'.format(order.paid_amount) }}</td>
                 </tr>
                 {% endif %}
                 <tr class="grand-total">
                     <td class="label">TOTAL:</td>
-                    <td class="amount">PKR {{ "%.2f"|format(order.total_amount) }}</td>
+                    <td class="amount">PKR {{ '{:,.2f}'.format(order.total_amount) }}</td>
                 </tr>
                 {% if order.payment_status != 'paid' %}
                 <tr>
                     <td class="label" style="color: #dc2626; font-weight: 700;">Balance Due:</td>
                     <td class="amount" style="color: #dc2626; font-weight: 700;">
-                        PKR {{ "%.2f"|format(order.total_amount - order.paid_amount) }}
+                        PKR {{ '{:,.2f}'.format(order.total_amount - order.paid_amount) }}
                     </td>
                 </tr>
                 {% endif %}

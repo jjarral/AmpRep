@@ -90,9 +90,9 @@
                                 </span>
                             </td>
                             <td>{{ item.quantity }}</td>
-                            <td>PKR {{ "%.2f"|format(item.price_per_unit) }}</td>
-                            <td>PKR {{ "%.2f"|format(item.setup_charge) }}</td>
-                            <td><strong>PKR {{ "%.2f"|format(item.subtotal) }}</strong></td>
+                            <td>PKR {{ '{:,.2f}'.format(item.price_per_unit) }}</td>
+                            <td>PKR {{ '{:,.2f}'.format(item.setup_charge) }}</td>
+                            <td><strong>PKR {{ '{:,.2f}'.format(item.subtotal) }}</strong></td>
                             <td>{{ item.color_specification or '-' }}</td>
                         </tr>
                         {% endfor %}
@@ -100,7 +100,7 @@
                     <tfoot class="bg-light">
                         <tr>
                             <th colspan="5" class="text-right">Total Amount:</th>
-                            <th colspan="2"><strong>PKR {{ "%.2f"|format(order.total_amount) }}</strong></th>
+                            <th colspan="2"><strong>PKR {{ '{:,.2f}'.format(order.total_amount) }}</strong></th>
                         </tr>
                     </tfoot>
                 </table></div>
@@ -118,15 +118,15 @@
                         <div class="row">
                             <div class="col-6">
                                 <strong>Total Amount:</strong><br>
-                                PKR {{ "%.2f"|format(order.total_amount) }}
+                                PKR {{ '{:,.2f}'.format(order.total_amount) }}
                             </div>
                             <div class="col-6">
                                 <strong>Paid Amount:</strong><br>
-                                PKR {{ "%.2f"|format(order.paid_amount) }}
+                                PKR {{ '{:,.2f}'.format(order.paid_amount) }}
                             </div>
                             <div class="col-6 mt-3">
                                 <strong>Balance:</strong><br>
-                                PKR {{ "%.2f"|format(order.total_amount - order.paid_amount) }}
+                                PKR {{ '{:,.2f}'.format(order.total_amount - order.paid_amount) }}
                             </div>
                             <div class="col-6 mt-3">
                                 <strong>Payment Status:</strong><br>

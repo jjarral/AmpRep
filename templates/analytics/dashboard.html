@@ -9,7 +9,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-success">
             <div class="inner">
-                <h3>PKR {{ "%.2f"|format(revenue_today) }}</h3>
+                <h3>PKR {{ '{:,.2f}'.format(revenue_today) }}</h3>
                 <p>Revenue Today</p>
             </div>
             <div class="icon"><i class="fas fa-rupee-sign"></i></div>
@@ -18,7 +18,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-info">
             <div class="inner">
-                <h3>PKR {{ "%.2f"|format(revenue_7_days) }}</h3>
+                <h3>PKR {{ '{:,.2f}'.format(revenue_7_days) }}</h3>
                 <p>Revenue (7 Days)</p>
             </div>
             <div class="icon"><i class="fas fa-calendar-week"></i></div>
@@ -27,7 +27,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-warning">
             <div class="inner">
-                <h3>PKR {{ "%.2f"|format(revenue_30_days) }}</h3>
+                <h3>PKR {{ '{:,.2f}'.format(revenue_30_days) }}</h3>
                 <p>Revenue (30 Days)</p>
             </div>
             <div class="icon"><i class="fas fa-calendar-alt"></i></div>
@@ -36,7 +36,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-primary">
             <div class="inner">
-                <h3>PKR {{ "%.2f"|format(revenue_90_days) }}</h3>
+                <h3>PKR {{ '{:,.2f}'.format(revenue_90_days) }}</h3>
                 <p>Revenue (90 Days)</p>
             </div>
             <div class="icon"><i class="fas fa-calendar"></i></div>
@@ -57,7 +57,7 @@
     <div class="col-lg-3 col-6">
         <div class="card">
             <div class="card-body text-center">
-                <h3>PKR {{ "%.2f"|format(avg_order_value) }}</h3>
+                <h3>PKR {{ '{:,.2f}'.format(avg_order_value) }}</h3>
                 <p class="text-muted">Avg Order Value</p>
             </div>
         </div>
@@ -136,7 +136,7 @@
                                     </span>
                                 </td>
                                 <td>{{ product.total_sold }}</td>
-                                <td>PKR {{ "%.2f"|format(product.total_revenue) }}</td>
+                                <td>PKR {{ '{:,.2f}'.format(product.total_revenue) }}</td>
                                 <td>
                                     <div class="progress" style="height: 20px;">
                                         <div class="progress-bar bg-success" role="progressbar" 
@@ -196,7 +196,7 @@
                     </tr>
                     <tr>
                         <td>Average Order Value</td>
-                        <td class="text-right"><strong>PKR {{ "%.2f"|format(avg_order_value) }}</strong></td>
+                        <td class="text-right"><strong>PKR {{ '{:,.2f}'.format(avg_order_value) }}</strong></td>
                     </tr>
                     <tr>
                         <td>Growth Rate (MoM)</td>

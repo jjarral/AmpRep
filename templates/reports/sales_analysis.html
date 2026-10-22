@@ -38,7 +38,7 @@
             <div class="col-lg-4 col-4">
                 <div class="small-box bg-success">
                     <div class="inner">
-                        <h3>PKR {{ "%.2f"|format(total_revenue) }}</h3>
+                        <h3>PKR {{ '{:,.2f}'.format(total_revenue) }}</h3>
                         <p>Total Revenue</p>
                     </div>
                 </div>
@@ -54,7 +54,7 @@
             <div class="col-lg-4 col-4">
                 <div class="small-box bg-warning">
                     <div class="inner">
-                        <h3>PKR {{ "%.2f"|format(avg_order_value) }}</h3>
+                        <h3>PKR {{ '{:,.2f}'.format(avg_order_value) }}</h3>
                         <p>Avg Order Value</p>
                     </div>
                 </div>
@@ -106,19 +106,19 @@
                         {% if group_by == 'product' %}
                         <td><strong>{{ item.name }}</strong></td>
                         <td>{{ item.quantity }}</td>
-                        <td>PKR {{ "%.2f"|format(item.revenue) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(item.revenue) }}</td>
                         <td>{{ item.orders }}</td>
                         <td>{{ "%.1f"|format((item.revenue / total_revenue * 100) if total_revenue > 0 else 0) }}%</td>
                         {% elif group_by == 'customer' %}
                         <td><strong>{{ item.name }}</strong></td>
                         <td>{{ item.orders }}</td>
-                        <td>PKR {{ "%.2f"|format(item.revenue) }}</td>
-                        <td>PKR {{ "%.2f"|format(item.avg_order) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(item.revenue) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(item.avg_order) }}</td>
                         <td>{{ "%.1f"|format((item.revenue / total_revenue * 100) if total_revenue > 0 else 0) }}%</td>
                         {% elif group_by == 'date' %}
                         <td>{{ item.date }}</td>
                         <td>{{ item.orders }}</td>
-                        <td>PKR {{ "%.2f"|format(item.revenue) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(item.revenue) }}</td>
                         <td>{{ "%.1f"|format((item.revenue / total_revenue * 100) if total_revenue > 0 else 0) }}%</td>
                         {% endif %}
                     </tr>

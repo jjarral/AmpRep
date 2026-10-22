@@ -22,7 +22,7 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-success">
                     <div class="inner">
-                        <h3>PKR {{ "%.2f"|format(total_stock_value) }}</h3>
+                        <h3>PKR {{ '{:,.2f}'.format(total_stock_value) }}</h3>
                         <p>Total Stock Value</p>
                     </div>
                 </div>
@@ -67,11 +67,11 @@
                                 {{ product.color }}
                             </span>
                         </td>
-                        <td>PKR {{ "%.2f"|format(product.base_price) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(product.base_price) }}</td>
                         <td class="{{ 'text-danger' if product.stock < 10000 else 'text-success' }}">
                             {{ product.stock }}
                         </td>
-                        <td>PKR {{ "%.2f"|format(product.stock * product.base_price) }}</td>
+                        <td>PKR {{ '{:,.2f}'.format(product.stock * product.base_price) }}</td>
                         <td>
                             {% if product.stock == 0 %}
                             <span class="badge badge-danger">Out of Stock</span>

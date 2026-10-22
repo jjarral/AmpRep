@@ -80,8 +80,8 @@
                             <td>{{ material.material_type or '-' }}</td>
                             <td>{{ material.quantity_used }}</td>
                             <td>{{ material.unit }}</td>
-                            <td>PKR {{ "%.2f"|format(material.cost_per_unit) }}</td>
-                            <td>PKR {{ "%.2f"|format(material.total_cost) }}</td>
+                            <td>PKR {{ '{:,.2f}'.format(material.cost_per_unit) }}</td>
+                            <td>PKR {{ '{:,.2f}'.format(material.total_cost) }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>

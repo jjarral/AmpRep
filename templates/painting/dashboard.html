@@ -45,7 +45,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-primary">
             <div class="inner">
-                <h3>PKR {{ "%.2f"|format(total_revenue) }}</h3>
+                <h3>PKR {{ '{:,.2f}'.format(total_revenue) }}</h3>
                 <p>Monthly Revenue</p>
             </div>
             <div class="icon"><i class="fas fa-rupee-sign"></i></div>
@@ -88,7 +88,7 @@
                                 <td><strong>{{ order.order_number }}</strong></td>
                                 <td>{{ order.customer_name }}</td>
                                 <td>{{ order.items|length }} product(s)</td>
-                                <td>PKR {{ "%.2f"|format(order.total_amount) }}</td>
+                                <td>PKR {{ '{:,.2f}'.format(order.total_amount) }}</td>
                                 <td>
                                     <span class="badge badge-{{ 
                                         'warning' if order.status == 'pending' else 
@@ -164,7 +164,7 @@
                     </div>
                     <div class="col-6">
                         <div class="text-center">
-                            <h4 class="text-primary">PKR {{ "%.2f"|format(total_revenue) }}</h4>
+                            <h4 class="text-primary">PKR {{ '{:,.2f}'.format(total_revenue) }}</h4>
                             <small class="text-muted">Revenue</small>
                         </div>
                     </div>

@@ -79,11 +79,11 @@
                 <div class="row">
                     <div class="col-md-4">
                         <strong>Price per 1000:</strong><br>
-                        PKR {{ "%.2f"|format(product.base_price) }}
+                        PKR {{ '{:,.2f}'.format(product.base_price) }}
                     </div>
                     <div class="col-md-4">
                         <strong>Unit Price:</strong><br>
-                        PKR {{ "%.4f"|format(product.unit_price) }}
+                        PKR {{ '{:,.4f}'.format(product.unit_price) }}
                     </div>
                     <div class="col-md-4">
                         <strong>Current Stock:</strong><br>
@@ -126,7 +126,7 @@
                                  style="max-width: 150px; height: 50px;"
                                  onerror="this.style.display='none'">
                             <p class="small mt-2 mb-0"><strong>ID:</strong> {{ product.id }}</p>
-                            <p class="small mb-0"><strong>Price:</strong> PKR {{ "%.2f"|format(product.base_price) }}/1000</p>
+                            <p class="small mb-0"><strong>Price:</strong> PKR {{ '{:,.2f}'.format(product.base_price) }}/1000</p>
                         </div>
                     </div>
                     {% endfor %}

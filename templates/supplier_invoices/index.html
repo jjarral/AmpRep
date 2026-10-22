@@ -40,9 +40,9 @@
                     <td>{{ invoice.purchase_order.po_number if invoice.purchase_order else '-' }}</td>
                     <td>{{ invoice.invoice_date.strftime('%Y-%m-%d') }}</td>
                     <td>{{ invoice.due_date.strftime('%Y-%m-%d') if invoice.due_date else '-' }}</td>
-                    <td>PKR {{ "%.2f"|format(invoice.total_amount) }}</td>
-                    <td>PKR {{ "%.2f"|format(invoice.paid_amount) }}</td>
-                    <td>PKR {{ "%.2f"|format(invoice.balance_amount) }}</td>
+                    <td>PKR {{ '{:,.2f}'.format(invoice.total_amount) }}</td>
+                    <td>PKR {{ '{:,.2f}'.format(invoice.paid_amount) }}</td>
+                    <td>PKR {{ '{:,.2f}'.format(invoice.balance_amount) }}</td>
                     <td>
                         <span class="badge badge-{{ 'success' if invoice.status == 'paid' else 'warning' if invoice.status == 'partial' else 'danger' }}">
                             {{ invoice.status|title }}

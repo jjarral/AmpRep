@@ -98,7 +98,7 @@
                 <tfoot class="bg-light">
                     <tr>
                         <th colspan="6" class="text-right">Subtotal:</th>
-                        <th class="text-right">PKR {{ "%.2f"|format(order.total_amount) }}</th>
+                        <th class="text-right">PKR {{ '{:,.2f}'.format(order.total_amount) }}</th>
                     </tr>
                     <tr>
                         <th colspan="6" class="text-right">Tax (0%):</th>
@@ -106,7 +106,7 @@
                     </tr>
                     <tr class="table-primary">
                         <th colspan="6" class="text-right"><strong>GRAND TOTAL:</strong></th>
-                        <th class="text-right"><strong>PKR {{ "%.2f"|format(order.total_amount) }}</strong></th>
+                        <th class="text-right"><strong>PKR {{ '{:,.2f}'.format(order.total_amount) }}</strong></th>
                     </tr>
                 </tfoot>
             </table>
@@ -119,15 +119,15 @@
                 <div class="table-responsive"><table class="table table-sm table-borderless">
                     <tr>
                         <td>Total Amount:</td>
-                        <td class="text-right"><strong>PKR {{ "%.2f"|format(order.total_amount) }}</strong></td>
+                        <td class="text-right"><strong>PKR {{ '{:,.2f}'.format(order.total_amount) }}</strong></td>
                     </tr>
                     <tr>
                         <td>Paid Amount:</td>
-                        <td class="text-right">PKR {{ "%.2f"|format(order.paid_amount) }}</td>
+                        <td class="text-right">PKR {{ '{:,.2f}'.format(order.paid_amount) }}</td>
                     </tr>
                     <tr class="table-warning">
                         <td><strong>Balance Due:</strong></td>
-                        <td class="text-right"><strong>PKR {{ "%.2f"|format(order.total_amount - order.paid_amount) }}</strong></td>
+                        <td class="text-right"><strong>PKR {{ '{:,.2f}'.format(order.total_amount - order.paid_amount) }}</strong></td>
                     </tr>
                 </table></div>
             </div>

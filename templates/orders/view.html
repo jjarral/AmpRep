@@ -152,32 +152,32 @@
                                     {% endif %}
                                 </td>
                                 <td>{{ item.quantity }}</td>
-                                <td>PKR {{ "%.2f"|format(item.unit_price) }}</td>
-                                <td><strong>PKR {{ "%.2f"|format(item.subtotal) }}</strong></td>
+                                <td>PKR {{ '{:,.2f}'.format(item.unit_price) }}</td>
+                                <td><strong>PKR {{ '{:,.2f}'.format(item.subtotal) }}</strong></td>
                             </tr>
                             {% endfor %}
                         </tbody>
                         <tfoot class="bg-light">
                             <tr>
                                 <th colspan="6" class="text-right">Subtotal:</th>
-                                <th>PKR {{ "%.2f"|format(order.total_amount - order.tax_amount) }}</th>
+                                <th>PKR {{ '{:,.2f}'.format(order.total_amount - order.tax_amount) }}</th>
                             </tr>
                             <tr>
                                 <th colspan="6" class="text-right">Tax:</th>
-                                <th>PKR {{ "%.2f"|format(order.tax_amount) }}</th>
+                                <th>PKR {{ '{:,.2f}'.format(order.tax_amount) }}</th>
                             </tr>
                             <tr>
                                 <th colspan="6" class="text-right">Total:</th>
-                                <th class="text-primary">PKR {{ "%.2f"|format(order.total_amount) }}</th>
+                                <th class="text-primary">PKR {{ '{:,.2f}'.format(order.total_amount) }}</th>
                             </tr>
                             <tr>
                                 <th colspan="6" class="text-right">Paid:</th>
-                                <th>PKR {{ "%.2f"|format(order.paid_amount) }}</th>
+                                <th>PKR {{ '{:,.2f}'.format(order.paid_amount) }}</th>
                             </tr>
                             <tr>
                                 <th colspan="6" class="text-right">Balance:</th>
                                 <th class="{{ 'text-danger' if order.total_amount - order.paid_amount > 0 else 'text-success' }}">
-                                    PKR {{ "%.2f"|format(order.total_amount - order.paid_amount) }}
+                                    PKR {{ '{:,.2f}'.format(order.total_amount - order.paid_amount) }}
                                 </th>
                             </tr>
                         </tfoot>
