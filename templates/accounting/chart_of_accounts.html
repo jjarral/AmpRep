@@ -59,7 +59,7 @@
                                 <a href="{{ url_for('main.edit_account', id=account.id) }}" class="btn btn-info">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ url_for('main.delete_account', id=account.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Deactivate this account?')">
+                                <form action="{{ url_for('main.delete_account', id=account.id) }}" method="POST" class="d-inline" data-confirm="Deactivate this account?">
                                     <button type="submit" class="btn btn-danger">
                                         <i class="fas fa-trash"></i>
                                     </button>

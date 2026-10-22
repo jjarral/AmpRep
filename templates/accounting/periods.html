@@ -50,13 +50,13 @@
                             <div class="btn-group btn-group-sm">
                                 {% if period.is_closed %}
                                 <form action="{{ url_for('main.reopen_accounting_period', id=period.id) }}" method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-warning" onclick="return confirm('Reopen this period?')">
+                                    <button type="submit" class="btn btn-warning" data-confirm="Reopen this period?">
                                         <i class="fas fa-lock-open"></i> Reopen
                                     </button>
                                 </form>
                                 {% else %}
                                 <form action="{{ url_for('main.close_accounting_period', id=period.id) }}" method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Close this period? This will prevent new journal entries.')">
+                                    <button type="submit" class="btn btn-danger" data-confirm="Close this period? This will prevent new journal entries.">
                                         <i class="fas fa-lock"></i> Close
                                     </button>
                                 </form>

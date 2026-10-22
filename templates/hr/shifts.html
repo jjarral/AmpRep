@@ -32,7 +32,7 @@
               <td>{{ s.duration_hours }}h</td>
               <td>
                 <form method="POST" action="{{ url_for('main.delete_shift', id=s.id) }}"
-                      onsubmit="return confirm('Delete this shift?')" class="d-inline">
+                      data-confirm="Delete this shift?" class="d-inline">
                   <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
                 </form>
               </td>
@@ -85,7 +85,7 @@
               <td>
                 {% if asgn %}
                 <form method="POST" action="{{ url_for('main.unassign_shift', id=asgn.id) }}" class="d-inline"
-                      onsubmit="return confirm('Remove shift assignment?')">
+                      data-confirm="Remove shift assignment?">
                   <button class="btn btn-sm btn-outline-danger" title="Unassign"><i class="fas fa-times"></i></button>
                 </form>
                 {% endif %}

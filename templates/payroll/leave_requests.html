@@ -32,7 +32,7 @@
                     <td><span class="badge badge-{{ 'warning' if req.status == 'pending' else 'success' if req.status == 'approved' else 'danger' }}">{{ req.status }}</span></td>
                     <td>
                         {% if req.status == 'pending' %}
-                        <a href="{{ url_for('main.approve_leave', id=req.id) }}" class="btn btn-sm btn-success"><i class="fas fa-check"></i></a>
+                        <a href="{{ url_for('main.approve_leave', id=req.id) }}" data-method="post" class="btn btn-sm btn-success"><i class="fas fa-check"></i></a>
                         <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#rejectModal{{ req.id }}"><i class="fas fa-times"></i></button>
                         
                         <!-- Reject Modal -->

@@ -610,7 +610,10 @@ def login():
             if user.must_change_password:
                 flash('You must change your password before continuing.', 'warning')
                 return redirect(url_for('main.change_password'))
-            next_page = request.args.get('next')
+            next_page = request.args.get('next') or ''
+            # Only follow same-site paths; '//host' and 'https://host' would leave the site.
+            if not next_page.startswith('/') or next_page.startswith('//') or '\\' in next_page:
+                next_page = None
             return redirect(next_page or url_for('main.dashboard'))
         else:
             # Record failed attempt if user exists
@@ -1073,7 +1076,7 @@ def edit_product(id):
     
     return render_template('products/form.html', product=product)
 
-@main_bp.route('/products/delete/<int:id>')
+@main_bp.route('/products/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_product(id):
     try:
@@ -1256,7 +1259,7 @@ def edit_inquiry(id):
     return render_template('inquiries/edit.html', inquiry=inquiry, products=products)
 
 
-@main_bp.route('/inquiries/delete/<int:id>')
+@main_bp.route('/inquiries/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_inquiry(id):
     try:
@@ -1875,7 +1878,7 @@ def delete_customer_payment(payment_id):
     return redirect(back)
 
 
-@main_bp.route('/orders/delete/<int:id>')
+@main_bp.route('/orders/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_order(id):
     try:
@@ -1966,7 +1969,7 @@ def edit_customer(id):
     return render_template('customers/form.html', customer=customer)
 
 
-@main_bp.route('/customers/delete/<int:id>')
+@main_bp.route('/customers/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_customer(id):
     try:
@@ -2152,7 +2155,7 @@ def edit_supplier(id):
     return render_template('suppliers/form.html', supplier=supplier)
 
 
-@main_bp.route('/suppliers/delete/<int:id>')
+@main_bp.route('/suppliers/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_supplier(id):
     try:
@@ -4087,7 +4090,7 @@ def edit_employee(id):
     return render_template('payroll/form.html', employee=employee)
 
 
-@main_bp.route('/employees/delete/<int:id>')
+@main_bp.route('/employees/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_employee(id):
     try:
@@ -4190,7 +4193,7 @@ def edit_expense(id):
         return redirect(url_for('main.expenses'))
     return render_template('expenses/form.html', expense=expense)
 
-@main_bp.route('/expenses/delete/<int:id>')
+@main_bp.route('/expenses/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_expense(id):
     try:
@@ -4832,7 +4835,7 @@ def edit_timesheet(id):
     return render_template('payroll/timesheet_form.html', employees=Employee.query.all(), timesheet=timesheet)
 
 
-@main_bp.route('/timesheets/approve/<int:id>')
+@main_bp.route('/timesheets/approve/<int:id>', methods=['POST'])
 @login_required
 def approve_timesheet(id):
     timesheet = Timesheet.query.get_or_404(id)
@@ -4844,7 +4847,7 @@ def approve_timesheet(id):
     return redirect(url_for('main.timesheets'))
 
 
-@main_bp.route('/timesheets/delete/<int:id>')
+@main_bp.route('/timesheets/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_timesheet(id):
     timesheet = Timesheet.query.get_or_404(id)
@@ -4908,7 +4911,7 @@ def add_leave_request():
     return render_template('payroll/leave_form.html', employees=employees, leave_request=None)
 
 
-@main_bp.route('/leave-requests/approve/<int:id>')
+@main_bp.route('/leave-requests/approve/<int:id>', methods=['POST'])
 @login_required
 def approve_leave(id):
     leave_request = LeaveRequest.query.get_or_404(id)
@@ -5388,7 +5391,7 @@ def edit_painting_price(id):
     return render_template('painting/price_form.html', products=products, price=price)
 
 
-@main_bp.route('/painting/prices/delete/<int:id>')
+@main_bp.route('/painting/prices/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_painting_price(id):
     """Delete painting price"""

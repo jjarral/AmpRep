@@ -123,7 +123,7 @@ class AdminWorkflowTests(unittest.TestCase):
     def test_order_with_payments_cannot_be_deleted(self):
         order = self.make_order(total=100000)
         self.client.post(f'/orders/{order.id}/payments', data={'amount': '1000', 'method': 'bank'})
-        self.client.get(f'/orders/delete/{order.id}')
+        self.client.post(f'/orders/delete/{order.id}')
         self.assertIsNotNone(db.session.get(Order, order.id))
 
     def test_receivables_aging_buckets(self):
@@ -146,6 +146,33 @@ class AdminWorkflowTests(unittest.TestCase):
         r = self.client.get('/dashboard')
         self.assertEqual(r.status_code, 200)
         self.assertIn(b'To collect', r.data)
+
+    # --- audit fixes ------------------------------------------------------------------
+    def test_statement_rows_do_not_use_framework_invoice_class(self):
+        order = self.make_order(total=100000)
+        r = self.client.get(f'/receivables/customer/{order.customer_id}')
+        self.assertNotIn(b'<tr class="invoice"', r.data)  # AdminLTE paints .invoice white
+
+    def test_login_ignores_external_next_url(self):
+        self.client.get('/logout')
+        r = self.client.post('/login?next=https://evil.example/phish',
+                             data={'username': 'tester', 'password': 'pass-for-tests-only'})
+        self.assertEqual(r.status_code, 302)
+        self.assertNotIn('evil.example', r.headers['Location'])
+
+    def test_login_keeps_internal_next_url(self):
+        self.client.get('/logout')
+        r = self.client.post('/login?next=/receivables',
+                             data={'username': 'tester', 'password': 'pass-for-tests-only'})
+        self.assertTrue(r.headers['Location'].endswith('/receivables'))
+
+    def test_delete_by_plain_link_is_refused(self):
+        customer = Customer(name='Keep Me', email='keep@example.test')
+        db.session.add(customer)
+        db.session.commit()
+        r = self.client.get(f'/customers/delete/{customer.id}')
+        self.assertEqual(r.status_code, 405)
+        self.assertIsNotNone(db.session.get(Customer, customer.id))
 
     def test_customer_bulk_upload_page_opens(self):
         self.assertEqual(self.client.get('/customers/bulk-upload').status_code, 200)

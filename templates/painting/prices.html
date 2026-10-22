@@ -55,7 +55,7 @@
                                 <a href="{{ url_for('main.edit_painting_price', id=price.id) }}" class="btn btn-info">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="{{ url_for('main.delete_painting_price', id=price.id) }}" class="btn btn-danger" onclick="return confirm('Archive this price?')">
+                                <a href="{{ url_for('main.delete_painting_price', id=price.id) }}" data-method="post" class="btn btn-danger" data-confirm="Archive this price?">
                                     <i class="fas fa-trash"></i>
                                 </a>
                             </div>

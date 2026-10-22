@@ -79,7 +79,7 @@
                                 </a>
                                 {% if batch.status == 'planned' %}
                                 <form action="{{ url_for('main.start_production_batch', id=batch.id) }}" method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-success" title="Start Production" onclick="return confirm('Start this batch?')">
+                                    <button type="submit" class="btn btn-success" title="Start Production" data-confirm="Start this batch?">
                                         <i class="fas fa-play"></i>
                                     </button>
                                 </form>

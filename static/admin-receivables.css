@@ -55,7 +55,7 @@
 .rc-st-balance { display:grid; align-content:start; justify-items:end; gap:4px; text-align:right; }
 .rc-st-balance strong { color:var(--cmd-gold); font-size:1.6rem; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
 .rc-st-balance span:last-child { color:var(--cmd-muted); font-size:.8rem; }
-.rc-ledger tr.payment td { background:rgba(121,208,168,.03); }
+.rc-ledger tr.rc-row-payment td { background:rgba(121,208,168,.03); }
 .rc-ledger tfoot th { padding:10px; border-top:1px solid var(--cmd-line); color:var(--cmd-ink); }
 .rc-print-note { margin:10px 2px 0; color:var(--cmd-dim); font-size:.78rem; }
 .ord-pay-card .card-body { padding:0; }

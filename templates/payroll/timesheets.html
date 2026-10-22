@@ -40,9 +40,9 @@
                     <td>
                         <a href="{{ url_for('main.edit_timesheet', id=ts.id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
                         {% if ts.status == 'draft' %}
-                        <a href="{{ url_for('main.approve_timesheet', id=ts.id) }}" class="btn btn-sm btn-success"><i class="fas fa-check"></i></a>
+                        <a href="{{ url_for('main.approve_timesheet', id=ts.id) }}" data-method="post" class="btn btn-sm btn-success"><i class="fas fa-check"></i></a>
                         {% endif %}
-                        <a href="{{ url_for('main.delete_timesheet', id=ts.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')"><i class="fas fa-trash"></i></a>
+                        <a href="{{ url_for('main.delete_timesheet', id=ts.id) }}" data-method="post" class="btn btn-sm btn-danger" data-confirm="Delete?"><i class="fas fa-trash"></i></a>
                     </td>
                 </tr>
                 {% else %}

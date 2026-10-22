@@ -55,7 +55,7 @@
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ url_for('main.merge_customers') }}"
-                      onsubmit="return confirm('Are you sure? This cannot be undone. The secondary customers will be deactivated.')">
+                      data-confirm="Are you sure? This cannot be undone. The secondary customers will be deactivated.">
 
                     <div class="row">
                         <div class="col-md-6">

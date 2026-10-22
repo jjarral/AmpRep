@@ -418,3 +418,45 @@ body.ax-admin .content [style*="background: #e3f2fd"] { background: rgba(121,215
   body.ax-admin .table,
   body.ax-admin .content { background: #fff !important; color: #111 !important; box-shadow: none !important; }
 }
+
+/* Top-bar buttons (menu, account) had the browser's default grey fill, which made
+   the account name hard to read (3.2:1). Match the dark bar instead. */
+body.ax-admin .main-header button.nav-link { background: rgba(255,255,255,.04) !important; border: 1px solid var(--ax-border) !important; border-radius: 9px; color: var(--ax-heading) !important; }
+body.ax-admin .main-header button.nav-link:hover { border-color: rgba(121,215,207,.45) !important; }
+
+/* Confirmation toast (replaces the browser's confirm box). Slides in under the top bar. */
+body.ax-admin dialog.ax-confirm {
+  position: fixed; inset: auto; top: calc(var(--ax-top-height, 76px) + 14px); right: 18px; left: auto; z-index: 2000;
+  width: min(380px, calc(100vw - 32px)); margin: 0; padding: 0; border: 0; background: transparent; color: var(--ax-copy);
+  animation: ax-toast-in .22s cubic-bezier(.2,.9,.3,1.2);
+}
+body.ax-admin dialog.ax-confirm.is-leaving { animation: ax-toast-out .16s ease-in forwards; }
+@keyframes ax-toast-in { from { opacity: 0; transform: translate(24px, -6px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes ax-toast-out { to { opacity: 0; transform: translateX(24px); } }
+.ax-confirm-card {
+  position: relative; overflow: hidden; display: grid; grid-template-columns: 38px minmax(0,1fr); gap: 10px 12px; margin: 0;
+  padding: 14px 14px 12px; border: 1px solid var(--ax-border); border-left: 3px solid var(--ax-gold); border-radius: 12px;
+  background: linear-gradient(120deg, rgba(212,177,95,.08), transparent 60%), #111a1c;
+  box-shadow: 0 18px 44px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3);
+}
+.ax-confirm[data-tone="danger"] .ax-confirm-card { border-left-color: var(--ax-red); background: linear-gradient(120deg, rgba(240,155,134,.09), transparent 60%), #111a1c; }
+.ax-confirm-icon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 10px; color: var(--ax-gold-bright); background: var(--ax-gold-soft); font-size: .95rem; }
+.ax-confirm[data-tone="danger"] .ax-confirm-icon { color: #ffb4a3; background: rgba(240,155,134,.14); }
+.ax-confirm[data-tone="ok"] .ax-confirm-icon { color: var(--ax-green); background: rgba(130,213,169,.13); }
+.ax-confirm-copy { min-width: 0; align-self: center; }
+.ax-confirm-copy h2 { margin: 0; color: var(--ax-heading); font: 650 .95rem/1.35 "IBM Plex Sans", sans-serif; text-wrap: pretty; }
+.ax-confirm-detail { margin: 3px 0 0; color: var(--ax-muted); font-size: .8rem; }
+.ax-confirm-actions { grid-column: 2; display: flex; justify-content: flex-end; gap: 8px; }
+.ax-confirm-actions button { min-height: 34px; padding: 0 14px; border: 1px solid var(--ax-border); border-radius: 8px; font: 600 .82rem "IBM Plex Sans", sans-serif; cursor: pointer; transition-property: background-color, border-color, color, transform; transition-duration: .14s; }
+.ax-confirm-actions button:active { transform: scale(.97); }
+.ax-confirm-cancel { color: var(--ax-copy); background: rgba(255,255,255,.04); }
+.ax-confirm-cancel:hover { border-color: rgba(121,215,207,.45); color: var(--ax-heading); }
+.ax-confirm-ok { color: #10181a; border-color: var(--ax-gold) !important; background: var(--ax-gold); }
+.ax-confirm-ok:hover { background: var(--ax-gold-bright); }
+.ax-confirm[data-tone="danger"] .ax-confirm-ok { color: #1a0d0a; border-color: #f09b86 !important; background: #f09b86; }
+.ax-confirm[data-tone="danger"] .ax-confirm-ok:hover { background: #ffb4a3; }
+.ax-confirm-timer { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: currentColor; color: var(--ax-gold); opacity: .55; transform-origin: left; animation: ax-toast-timer 10s linear forwards; }
+.ax-confirm[data-tone="danger"] .ax-confirm-timer { color: var(--ax-red); }
+@keyframes ax-toast-timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@media (max-width: 600px) { body.ax-admin dialog.ax-confirm { right: 16px; top: auto; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); } }
+@media (prefers-reduced-motion: reduce) { body.ax-admin dialog.ax-confirm, body.ax-admin dialog.ax-confirm.is-leaving, .ax-confirm-timer { animation: none; } }

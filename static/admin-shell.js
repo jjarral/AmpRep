@@ -320,3 +320,112 @@ document.addEventListener('DOMContentLoaded', () => {
     updateInquiryBadge();
     window.setInterval(updateInquiryBadge, 45_000);
 });
+
+
+// ── Confirmation dialog ────────────────────────────────────────────────────────
+// Replaces the browser's plain confirm() box. Use data-confirm="Question?" on a
+// link, button or form, or `await axConfirm('Question?')` in scripts.
+const axConfirmWords = [
+    [/\b(delete|remove)\b/i, 'Delete', 'danger', 'fa-trash'],
+    [/\barchive\b/i, 'Archive', 'danger', 'fa-box-archive'],
+    [/\bdeactivate\b/i, 'Deactivate', 'danger', 'fa-user-slash'],
+    [/\bclose\b/i, 'Close period', 'danger', 'fa-lock'],
+    [/\breopen\b/i, 'Reopen', 'warn', 'fa-lock-open'],
+    [/\bapprove\b/i, 'Approve', 'ok', 'fa-check'],
+    [/\bpost\b/i, 'Post entry', 'ok', 'fa-check'],
+    [/\bstart\b/i, 'Start', 'ok', 'fa-play'],
+    [/\bmark\b|\bprocess/i, 'Mark processed', 'ok', 'fa-check-double'],
+    [/\bcreate\b/i, 'Create', 'ok', 'fa-plus'],
+    [/\bmerge\b|cannot be undone/i, 'Merge', 'danger', 'fa-code-merge'],
+];
+let axConfirmEl = null;
+function axConfirm(message, options = {}) {
+    const match = axConfirmWords.find(([pattern]) => pattern.test(message)) || [null, 'Confirm', 'ok', 'fa-circle-question'];
+    const [, defaultLabel, tone, icon] = match;
+    const label = options.confirmLabel || defaultLabel;
+    if (!window.HTMLDialogElement) return Promise.resolve(window.confirm(message));
+    if (!axConfirmEl) {
+        axConfirmEl = document.createElement('dialog');
+        axConfirmEl.className = 'ax-confirm';
+        axConfirmEl.setAttribute('aria-labelledby', 'ax-confirm-title');
+        axConfirmEl.innerHTML = '<form method="dialog" class="ax-confirm-card">'
+            + '<span class="ax-confirm-icon" aria-hidden="true"><i class="fas"></i></span><span class="ax-confirm-timer" aria-hidden="true"></span>'
+            + '<div class="ax-confirm-copy"><h2 id="ax-confirm-title"></h2><p class="ax-confirm-detail"></p></div>'
+            + '<div class="ax-confirm-actions"><button value="cancel" class="ax-confirm-cancel">Cancel</button>'
+            + '<button value="ok" class="ax-confirm-ok"></button></div></form>';
+        document.body.appendChild(axConfirmEl);
+    }
+    const dialog = axConfirmEl;
+    dialog.dataset.tone = tone;
+    dialog.querySelector('.ax-confirm-icon i').className = `fas ${icon}`;
+    dialog.querySelector('#ax-confirm-title').textContent = message;
+    const detail = options.detail || (tone === 'danger' ? 'This changes your records straight away.' : '');
+    const detailEl = dialog.querySelector('.ax-confirm-detail');
+    detailEl.textContent = detail;
+    detailEl.hidden = !detail;
+    dialog.querySelector('.ax-confirm-ok').textContent = label;
+    return new Promise(resolve => {
+        const done = () => { dialog.removeEventListener('close', done); resolve(dialog.returnValue === 'ok'); };
+        dialog.returnValue = 'cancel';
+        dialog.addEventListener('close', done);
+        if (dialog.open) dialog.close('cancel');
+        dialog.classList.remove('is-leaving');
+        const timer = dialog.querySelector('.ax-confirm-timer');
+        timer.style.animation = 'none'; void timer.offsetWidth; timer.style.animation = '';  // restart countdown bar
+        dialog.show();  // non-modal: slides in as a toast, page stays visible
+        clearTimeout(dialog._axTimer);
+        dialog._axTimer = setTimeout(() => dialog.open && axCloseToast('cancel'), 10000);
+        (tone === 'danger' ? dialog.querySelector('.ax-confirm-cancel') : dialog.querySelector('.ax-confirm-ok')).focus();
+    });
+}
+function axCloseToast(value) {
+    const dialog = axConfirmEl;
+    if (!dialog || !dialog.open) return;
+    clearTimeout(dialog._axTimer);
+    dialog.classList.add('is-leaving');
+    const finish = () => { dialog.classList.remove('is-leaving'); if (dialog.open) dialog.close(value); };
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) finish(); else setTimeout(finish, 160);
+}
+document.addEventListener('keydown', event => { if (event.key === 'Escape') axCloseToast('cancel'); });
+document.addEventListener('click', event => {
+    const btn = event.target.closest('.ax-confirm button');
+    if (!btn) return;
+    event.preventDefault();
+    axCloseToast(btn.value);
+});
+window.axConfirm = axConfirm;
+
+// Links marked data-method="post" (delete, approve) are sent as a form POST, never as a
+// plain link, so a link opened from outside the app cannot trigger them.
+function axPostLink(link) {
+    const form = document.createElement('form');
+    form.method = 'post';
+    form.action = link.href;
+    form.hidden = true;
+    document.body.appendChild(form);
+    form.submit();
+}
+
+document.addEventListener('click', async event => {
+    const el = event.target.closest('a[data-confirm], button[data-confirm], a[data-method="post"]');
+    if (!el || el.closest('.ax-confirm') || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey) return;
+    if (el.dataset.axConfirmed) { delete el.dataset.axConfirmed; return; }
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (el.dataset.confirm && !(await axConfirm(el.dataset.confirm))) return;
+    if (el.matches('a[data-method="post"]')) { axPostLink(el); return; }
+    if (el.tagName === 'A') { window.location.href = el.href; return; }
+    const form = el.form;  // a confirmed submit button
+    if (form) { form.dataset.axConfirmed = '1'; form.requestSubmit(el); }
+}, true);
+
+document.addEventListener('submit', async event => {
+    const form = event.target;
+    if (form.dataset.axConfirmed) { delete form.dataset.axConfirmed; return; }
+    if (!form.matches('form[data-confirm]')) return;
+    event.preventDefault();
+    if (await axConfirm(form.dataset.confirm)) {
+        form.dataset.axConfirmed = '1';
+        form.requestSubmit(event.submitter || undefined);
+    }
+}, true);

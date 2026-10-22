@@ -130,7 +130,7 @@
                                 </a>
                                 {% endif %}
                                 {% if not inquiry.is_deleted %}
-                                <a href="{{ url_for('main.delete_inquiry', id=inquiry.id) }}" class="btn btn-danger" title="Delete" onclick="return confirm('Archive this inquiry?')">
+                                <a href="{{ url_for('main.delete_inquiry', id=inquiry.id) }}" data-method="post" class="btn btn-danger" title="Delete" data-confirm="Archive this inquiry?">
                                     <i class="fas fa-trash"></i>
                                 </a>
                                 {% else %}

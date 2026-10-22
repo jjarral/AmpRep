@@ -92,7 +92,7 @@
                                 </a>
                                 {% if entry.status == 'draft' %}
                                 <form action="{{ url_for('main.post_journal_entry', id=entry.id) }}" method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-success" onclick="return confirm('Post this entry?')">
+                                    <button type="submit" class="btn btn-success" data-confirm="Post this entry?">
                                         <i class="fas fa-check"></i>
                                     </button>
                                 </form>

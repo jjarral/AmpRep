@@ -382,7 +382,7 @@ async function deleteRow(btn) {
   const tr = btn.closest('tr');
   const id = tr.dataset.id;
   if (!id) { tr.remove(); return; }
-  if (!confirm('Delete this expense?')) return;
+  if (!(await axConfirm('Delete this expense?'))) return;
   const res = await fetch(`/api/expenses/${id}`, { method:'DELETE' });
   const json = await res.json();
   if (json.success) {

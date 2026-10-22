@@ -268,7 +268,7 @@ function updateSummary(){
 
 /* ── Delete a draft row ── */
 async function deleteRow(id, tr){
-  if(!confirm('Remove this draft payroll record?')) return;
+  if (!(await axConfirm('Remove this draft payroll record?'))) return;
   const res = await fetch(`/api/payroll/payments/${id}`,{method:'DELETE'});
   if(res.ok){
     rows = rows.filter(r=>r.id!==id);
@@ -337,7 +337,7 @@ async function loadPayroll(){
 /* ── Process All ── */
 document.getElementById('btn-process-all').addEventListener('click', async ()=>{
   const month = document.getElementById('month-picker').value;
-  if(!confirm(`Mark all draft/pending payments for ${month} as Processed?`)) return;
+  if (!(await axConfirm(`Mark all draft/pending payments for ${month} as Processed?`))) return;
   setSaving();
   try {
     const res = await fetch('/api/payroll/run/process-all',{

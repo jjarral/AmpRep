@@ -73,7 +73,7 @@
                     <td>
                         <a href="{{ url_for('main.customer_painting_pricing', id=customer.id) }}" class="btn btn-sm btn-info"><i class="fas fa-palette"></i></a>
                         <a href="{{ url_for('main.edit_customer', id=customer.id) }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
-                        <a href="{{ url_for('main.delete_customer', id=customer.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Deactivate?')"><i class="fas fa-user-slash"></i></a>
+                        <a href="{{ url_for('main.delete_customer', id=customer.id) }}" data-method="post" class="btn btn-sm btn-danger" data-confirm="Deactivate?"><i class="fas fa-user-slash"></i></a>
                     </td>
                 </tr>
                 {% else %}

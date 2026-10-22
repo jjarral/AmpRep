@@ -196,7 +196,7 @@
 {% from "receivables/_payment_form.html" import payment_form %}
 {% set owed = (order.total_amount or 0) - (order.paid_amount or 0) %}
 <link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}?v=20261022-rc">
-<link rel="stylesheet" href="{{ url_for('static', filename='admin-receivables.css') }}?v=20261022-rc">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-receivables.css') }}?v=20261022-audit">
 <div class="ax-command ord-payments" id="payments" style="margin-top:16px">
     <section class="cmd-panel" aria-labelledby="ord-pay-heading">
         <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="ord-pay-heading"><i class="fas fa-hand-holding-dollar" aria-hidden="true"></i> Payments</h3>
@@ -253,16 +253,17 @@
 .timeline-content {
     flex: 1;
     padding: 10px;
-    background: #f8fafc;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(234,239,230,.11);
     border-radius: 8px;
 }
 .timeline-content h6 {
     margin: 0;
-    color: #1e3a8a;
+    color: #f0f0e9;
 }
 .timeline-content p {
     margin: 5px 0 0;
-    color: #64748b;
+    color: #b9c2bb;
     font-size: 0.9rem;
 }
 </style>

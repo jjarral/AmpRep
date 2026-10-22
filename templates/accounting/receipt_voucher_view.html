@@ -25,7 +25,7 @@
                     <i class="fas fa-edit"></i> Edit
                 </a>
                 <form action="{{ url_for('main.approve_receipt_voucher', id=voucher.id) }}" method="POST" class="d-inline">
-                    <button type="submit" class="btn btn-success" onclick="return confirm('Approve this receipt?')">
+                    <button type="submit" class="btn btn-success" data-confirm="Approve this receipt?">
                         <i class="fas fa-check"></i> Approve
                     </button>
                 </form>

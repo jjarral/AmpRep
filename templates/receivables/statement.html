@@ -6,7 +6,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}?v=20261022-rc">
-<link rel="stylesheet" href="{{ url_for('static', filename='admin-receivables.css') }}?v=20261022-rc">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-receivables.css') }}?v=20261022-audit">
 {% endblock %}
 
 {% block content %}
@@ -59,7 +59,7 @@
             <caption class="sr-only">All orders and payments for this customer with running balance</caption>
             <thead><tr><th scope="col">Date</th><th scope="col">Details</th><th scope="col">Reference</th><th scope="col" class="is-num">Charged</th><th scope="col" class="is-num">Paid</th><th scope="col" class="is-num">Balance</th></tr></thead>
             <tbody>{% for l in lines %}
-                <tr class="{{ l.kind }}"><td>{{ l.date.strftime('%d %b %Y') }}</td><td class="is-primary">{{ l.detail }}</td><td>{{ l.ref or '—' }}</td>
+                <tr class="rc-row-{{ l.kind }}"><td>{{ l.date.strftime('%d %b %Y') }}</td><td class="is-primary">{{ l.detail }}</td><td>{{ l.ref or '—' }}</td>
                     <td class="is-num">{{ '{:,.0f}'.format(l.debit) if l.debit else '' }}</td>
                     <td class="is-num rc-paid">{{ '{:,.0f}'.format(l.credit) if l.credit else '' }}</td>
                     <td class="is-num rc-total">{{ '{:,.0f}'.format(l.balance) }}</td></tr>

@@ -94,7 +94,7 @@
               <button type="button" class="btn btn-sm btn-info" title="Run Depreciation"
                       data-toggle="modal" data-target="#deprModal{{ a.id }}"><i class="fas fa-calculator"></i></button>
               <form method="POST" action="{{ url_for('main.delete_fixed_asset', id=a.id) }}" class="d-inline"
-                    onsubmit="return confirm('Delete this asset permanently?')">
+                    data-confirm="Delete this asset permanently?">
                 <button type="submit" class="btn btn-sm btn-danger" title="Delete"><i class="fas fa-trash"></i></button>
               </form>
 
