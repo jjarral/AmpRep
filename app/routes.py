@@ -767,10 +767,6 @@ def dashboard():
         Order.status.in_(['completed', 'processing'])
     ).scalar() or 0
 
-    revenue_today = db.session.query(db.func.sum(Order.total_amount)).filter(
-        Order.status.in_(['completed', 'processing']),
-        db.func.date(Order.created_at) == today
-    ).scalar() or 0
     orders_today = Order.query.filter(db.func.date(Order.created_at) == today).count()
     orders_this_week = Order.query.filter(Order.created_at >= seven_days_ago).count()
     total_orders = Order.query.count()
@@ -823,33 +819,51 @@ def dashboard():
         PaintingOrder.status.in_(['pending', 'in_progress'])
     ).count()
 
-    recent_orders = Order.query.order_by(Order.created_at.desc()).limit(5).all()
+    recent_orders = Order.query.order_by(Order.created_at.desc()).limit(10).all()
     recent_inquiries = Inquiry.query.filter_by(is_deleted=False).order_by(Inquiry.created_at.desc()).limit(5).all()
     recent_batches = ProductionBatch.query.order_by(ProductionBatch.created_at.desc()).limit(4).all()
 
-    # A small, honest seven-day revenue trace; no client-side chart library or fake sample data.
-    revenue_by_day = dict(db.session.query(
+    # Sixty days of daily revenue: the 7/30-day chart plus the previous period
+    # for comparison. Keys are normalised because SQLite returns date strings
+    # while PostgreSQL returns date objects.
+    window_start = now - timedelta(days=59)
+    revenue_rows = db.session.query(
         db.func.date(Order.created_at),
         db.func.sum(Order.total_amount)
     ).filter(
-        Order.created_at >= seven_days_ago,
+        Order.created_at >= window_start,
         Order.status.in_(['completed', 'processing'])
-    ).group_by(db.func.date(Order.created_at)).all())
-    daily_revenue = []
-    for offset in range(6, -1, -1):
+    ).group_by(db.func.date(Order.created_at)).all()
+    revenue_lookup = {str(day)[:10]: float(amount or 0) for day, amount in revenue_rows}
+    revenue_series = []
+    for offset in range(59, -1, -1):
         day = today - timedelta(days=offset)
-        amount = float(revenue_by_day.get(day.isoformat(), 0) or 0)
-        daily_revenue.append({
+        revenue_series.append({
+            'iso': day.isoformat(),
             'label': day.strftime('%a'),
             'date': day.strftime('%d %b'),
-            'amount': amount,
+            'amount': revenue_lookup.get(day.isoformat(), 0.0),
         })
-    peak_revenue = max((item['amount'] for item in daily_revenue), default=0)
-    for item in daily_revenue:
-        item['height'] = min(100, round(item['amount'] / peak_revenue * 100)) if peak_revenue else 0
+    week_revenue = sum(d['amount'] for d in revenue_series[-7:])
+    prev_week_revenue = sum(d['amount'] for d in revenue_series[-14:-7])
+    month_revenue = sum(d['amount'] for d in revenue_series[-30:])
+    prev_month_revenue = sum(d['amount'] for d in revenue_series[:30])
+    revenue_today = revenue_series[-1]['amount']
+
+    unpaid_filter = (
+        Order.payment_status.in_(['unpaid', 'partial']),
+        or_(Order.status.is_(None), ~Order.status.in_(['cancelled', 'canceled'])),
+    )
+    receivables = db.session.query(
+        db.func.sum(Order.total_amount - db.func.coalesce(Order.paid_amount, 0))
+    ).filter(*unpaid_filter).scalar() or 0
+    unpaid_orders = Order.query.filter(*unpaid_filter).count()
 
     return render_template('dashboard.html',
         now=now,
+        revenue_series=revenue_series, week_revenue=week_revenue, prev_week_revenue=prev_week_revenue,
+        month_revenue=month_revenue, prev_month_revenue=prev_month_revenue,
+        receivables=receivables, unpaid_orders=unpaid_orders,
         total_revenue=total_revenue,
         total_orders=total_orders,
         revenue_today=revenue_today,
@@ -873,7 +887,6 @@ def dashboard():
         pending_payroll=pending_payroll,
         pending_leave=pending_leave,
         painting_queue=painting_queue,
-        daily_revenue=daily_revenue,
         recent_orders=recent_orders,
         recent_inquiries=recent_inquiries,
         recent_batches=recent_batches)

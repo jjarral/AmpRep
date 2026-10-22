@@ -4,119 +4,274 @@
 {% block breadcrumb_active %}Command center{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}?v=20261001-workspaces">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}?v=20261021-v2">
 {% endblock %}
+
+{% macro money(v) -%}
+{%- if v >= 1000000 -%}{{ '%.2f'|format(v / 1000000) }}M{%- elif v >= 10000 -%}{{ '%.0f'|format(v / 1000) }}K{%- else -%}{{ '{:,.0f}'.format(v) }}{%- endif -%}
+{%- endmacro %}
+{% macro delta(cur, prev, label) -%}
+{%- if prev -%}{% set pct = ((cur - prev) / prev * 100)|round(0)|int %}<span class="cmd-delta {{ 'up' if pct >= 0 else 'down' }}" title="Compared with the previous {{ label }}">{{ '▲' if pct >= 0 else '▼' }} {{ pct|abs }}% <span>vs prev {{ label }}</span></span>
+{%- elif cur -%}<span class="cmd-delta up">New activity <span>vs prev {{ label }}</span></span>
+{%- else -%}<span class="cmd-delta">No sales <span>in either {{ label }}</span></span>{%- endif -%}
+{%- endmacro %}
 
 {% block content %}
 {% set stock_queue = low_stock_products + low_stock_materials %}
 {% set quality_queue = recent_qc_failures + open_complaints + open_capa + due_calibrations %}
 {% set supply_queue = open_purchase_orders + pending_receipts + overdue_supplier_invoices %}
 {% set people_queue = pending_expenses + pending_payroll + pending_leave %}
-{% set flagged_total = stock_queue + quality_queue + supply_queue + people_queue + active_inquiries + open_orders + painting_queue %}
+{% set demand_queue = active_inquiries + open_orders %}
+{% set queues = [
+    {'id': 'stock', 'short': 'Stock', 'icon': 'fa-boxes-stacked', 'title': 'Material and product stock', 'count': stock_queue,
+     'detail': low_stock_products ~ ' products below the 10,000 alert line · ' ~ low_stock_materials ~ ' raw materials under reorder level',
+     'links': [('Products & stock', url_for('main.products')), ('Raw materials', url_for('main.raw_materials'))]},
+    {'id': 'quality', 'short': 'Quality', 'icon': 'fa-microscope', 'title': 'Quality and corrective action', 'count': quality_queue,
+     'detail': recent_qc_failures ~ ' failed tests in 14 days · ' ~ open_complaints ~ ' complaints · ' ~ open_capa ~ ' open CAPAs · ' ~ due_calibrations ~ ' calibrations due in 30 days',
+     'links': [('Complaints', url_for('main.customer_complaints')), ('CAPA', url_for('main.capa_records')), ('Calibration', url_for('main.calibration_records'))]},
+    {'id': 'supply', 'short': 'Procurement', 'icon': 'fa-truck-ramp-box', 'title': 'Procurement and receipts', 'count': supply_queue,
+     'detail': open_purchase_orders ~ ' draft or sent POs · ' ~ pending_receipts ~ ' receipts to inspect · ' ~ overdue_supplier_invoices ~ ' overdue supplier invoices',
+     'links': [('Purchase orders', url_for('main.purchase_orders')), ('Goods receipts', url_for('main.goods_receipts')), ('Invoices', url_for('main.supplier_invoices'))]},
+    {'id': 'people', 'short': 'Cash & people', 'icon': 'fa-user-clock', 'title': 'Cash and people', 'count': people_queue,
+     'detail': pending_expenses ~ ' expenses to review · ' ~ pending_payroll ~ ' payroll payments pending · ' ~ pending_leave ~ ' leave requests',
+     'links': [('Expenses', url_for('main.expenses')), ('Payroll', url_for('main.payroll_payments')), ('Leave', url_for('main.leave_requests'))]},
+    {'id': 'demand', 'short': 'Orders & inquiries', 'icon': 'fa-handshake', 'title': 'Demand and delivery', 'count': demand_queue,
+     'detail': active_inquiries ~ ' inquiries need follow-up · ' ~ open_orders ~ ' orders pending or processing',
+     'links': [('Inquiry desk', url_for('main.inquiries')), ('Order book', url_for('main.orders'))]},
+    {'id': 'painting', 'short': 'Painting', 'icon': 'fa-palette', 'title': 'Ampoule painting service', 'count': painting_queue,
+     'detail': painting_queue ~ ' painting orders pending or in progress',
+     'links': [('Painting orders', url_for('main.painting_orders')), ('Service pricing', url_for('main.painting_prices'))]},
+] %}
+{% set hot = queues|selectattr('count')|list %}
+{% set clear = queues|rejectattr('count')|list %}
+{% set flagged_total = hot|sum(attribute='count') %}
+{% set w7 = revenue_series[-7:] %}{% set w30 = revenue_series[-30:] %}
+{% set max7 = w7|map(attribute='amount')|max %}{% set max30 = w30|map(attribute='amount')|max %}
+{% set statuses = recent_orders|map(attribute='status')|map('lower')|list %}
+
 <div class="ax-command">
     <header class="cmd-topline">
-        <div class="cmd-brandline"><span class="cmd-brand-mark"><i class="fas fa-industry" aria-hidden="true"></i></span><strong>Operations control</strong><span>/</span><span>Daily shift board</span></div>
-        <div class="cmd-top-tools"><span>SHIFT BOARD · {{ now.strftime('%d %b %Y') }}</span><time class="cmd-clock" id="cmd-clock" aria-label="Local time">--:--:--</time><button class="cmd-refresh" type="button" onclick="window.location.reload()"><i class="fas fa-sync-alt" aria-hidden="true"></i><span>Refresh</span></button></div>
+        <div class="cmd-brandline"><span class="cmd-brand-mark"><i class="fas fa-industry" aria-hidden="true"></i></span><strong>Operations control</strong><span class="cmd-hide-sm">/</span><span class="cmd-hide-sm">{{ now.strftime('%A %d %b %Y') }}</span></div>
+        <div class="cmd-top-tools">
+            <span class="cmd-updated">Updated <time datetime="{{ now.isoformat() }}Z" id="cmd-updated">{{ now.strftime('%H:%M') }} UTC</time></span>
+            <button class="cmd-refresh cmd-auto" id="cmd-auto" type="button" aria-pressed="false" title="Reload the board every 2 minutes while this tab is open"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i><span id="cmd-auto-label">Auto-refresh off</span></button>
+            <button class="cmd-refresh" type="button" onclick="window.location.reload()"><i class="fas fa-sync-alt" aria-hidden="true"></i><span>Refresh</span></button>
+        </div>
     </header>
 
-    <section class="cmd-hero" aria-labelledby="cmd-heading">
-        <div class="cmd-hero-copy">
-            <div class="cmd-kicker"><span class="cmd-indicator {% if flagged_total > 0 %}is-alert{% endif %}" aria-hidden="true"></span> Continuity board · updated on page load</div>
-            <h2 id="cmd-heading">Hold the line. Close every loop.</h2>
-            <p>One control surface for customer demand, the factory floor, supply, quality, finance and people. <strong>{{ flagged_total }} tracked items are in active queues.</strong></p>
+    <section class="cmd-attn {% if flagged_total %}is-alert{% endif %}" aria-label="What needs attention">
+        <div class="cmd-attn-copy">
+            <span class="cmd-indicator {% if flagged_total %}is-alert{% endif %}" aria-hidden="true"></span>
+            {% if flagged_total %}
+            <p><strong>{{ flagged_total }} items need attention</strong> in {{ hot|length }} of {{ queues|length }} areas. {% if clear %}The other {{ clear|length }} are clear.{% endif %}</p>
+            {% else %}
+            <p><strong>All clear.</strong> No open items in any of the {{ queues|length }} areas.</p>
+            {% endif %}
         </div>
-        <div class="cmd-hero-readout" aria-label="Tracked items in active queues">
-            <span class="cmd-readout-label">Active queue</span><strong class="cmd-readout-value">{{ '%02d'|format(flagged_total) if flagged_total < 100 else flagged_total }}</strong><span class="cmd-readout-caption">work items to scan</span>
-        </div>
+        {% if hot %}<nav class="cmd-attn-chips" aria-label="Jump to an area">
+            {% for q in hot|sort(attribute='count', reverse=True) %}<a href="#q-{{ q.id }}" class="cmd-chip"><i class="fas {{ q.icon }}" aria-hidden="true"></i>{{ q.short }}<b>{{ q.count }}</b></a>{% endfor %}
+        </nav>{% endif %}
     </section>
 
     <section class="cmd-metrics" aria-label="Current operating metrics">
-        <a class="cmd-metric gold" href="{{ url_for('main.orders') }}"><span class="cmd-metric-head">Revenue · today <i class="fas fa-coins cmd-metric-icon" aria-hidden="true"></i></span><strong class="cmd-metric-value">PKR {{ '{:,.0f}'.format(revenue_today) }}</strong><span class="cmd-metric-foot">all time PKR {{ '{:,.0f}'.format(total_revenue) }} · paid & processing</span></a>
-        <a class="cmd-metric" href="{{ url_for('main.orders') }}"><span class="cmd-metric-head">Orders · today <i class="fas fa-file-invoice cmd-metric-icon" aria-hidden="true"></i></span><strong class="cmd-metric-value">{{ orders_today }}</strong><span class="cmd-metric-foot">{{ orders_this_week }} orders over 7 days</span></a>
-        <a class="cmd-metric gold" href="{{ url_for('main.inquiries') }}"><span class="cmd-metric-head">Inquiries to work <i class="fas fa-inbox cmd-metric-icon" aria-hidden="true"></i></span><strong class="cmd-metric-value">{{ active_inquiries }}</strong><span class="cmd-metric-foot">new or awaiting follow-up</span></a>
-        <a class="cmd-metric" href="{{ url_for('main.orders') }}"><span class="cmd-metric-head">Open orders <i class="fas fa-truck-loading cmd-metric-icon" aria-hidden="true"></i></span><strong class="cmd-metric-value">{{ open_orders }}</strong><span class="cmd-metric-foot">pending or processing</span></a>
-        <a class="cmd-metric {% if stock_queue > 0 %}red{% endif %}" href="{{ url_for('main.products') }}"><span class="cmd-metric-head">Stock signals <i class="fas fa-boxes-stacked cmd-metric-icon" aria-hidden="true"></i></span><strong class="cmd-metric-value">{{ stock_queue }}</strong><span class="cmd-metric-foot">products and materials below threshold</span></a>
-        <a class="cmd-metric" href="{{ url_for('main.production_batches') }}"><span class="cmd-metric-head">Batches in motion <i class="fas fa-industry cmd-metric-icon" aria-hidden="true"></i></span><strong class="cmd-metric-value">{{ active_batches + planned_batches }}</strong><span class="cmd-metric-foot">{{ active_batches }} in progress · {{ planned_batches }} planned</span></a>
+        <a class="cmd-metric gold" href="{{ url_for('main.analytics_dashboard') }}">
+            <span class="cmd-metric-head">This week <i class="fas fa-coins cmd-metric-icon" aria-hidden="true"></i></span>
+            <strong class="cmd-metric-value" title="PKR {{ '{:,.0f}'.format(week_revenue) }}"><small>PKR</small> {{ money(week_revenue) }}</strong>
+            <span class="cmd-metric-foot">{{ delta(week_revenue, prev_week_revenue, 'week') }}</span>
+        </a>
+        <a class="cmd-metric" href="{{ url_for('main.orders') }}">
+            <span class="cmd-metric-head">Today <i class="fas fa-file-invoice cmd-metric-icon" aria-hidden="true"></i></span>
+            <strong class="cmd-metric-value" title="PKR {{ '{:,.0f}'.format(revenue_today) }}"><small>PKR</small> {{ money(revenue_today) }}</strong>
+            <span class="cmd-metric-foot">{{ orders_today }} order{{ '' if orders_today == 1 else 's' }} today · {{ orders_this_week }} this week</span>
+        </a>
+        <a class="cmd-metric {% if receivables > 0 %}gold{% endif %}" href="{{ url_for('main.orders') }}">
+            <span class="cmd-metric-head">To collect <i class="fas fa-hand-holding-dollar cmd-metric-icon" aria-hidden="true"></i></span>
+            <strong class="cmd-metric-value" title="PKR {{ '{:,.0f}'.format(receivables) }}"><small>PKR</small> {{ money(receivables) }}</strong>
+            <span class="cmd-metric-foot">{{ unpaid_orders }} unpaid or part-paid order{{ '' if unpaid_orders == 1 else 's' }}</span>
+        </a>
+        <a class="cmd-metric" href="{{ url_for('main.orders') }}">
+            <span class="cmd-metric-head">Open orders <i class="fas fa-truck-loading cmd-metric-icon" aria-hidden="true"></i></span>
+            <strong class="cmd-metric-value">{{ open_orders }}</strong>
+            <span class="cmd-metric-foot">pending or processing</span>
+        </a>
+        <a class="cmd-metric {% if active_inquiries %}gold{% endif %}" href="{{ url_for('main.inquiries') }}">
+            <span class="cmd-metric-head">Inquiries <i class="fas fa-inbox cmd-metric-icon" aria-hidden="true"></i></span>
+            <strong class="cmd-metric-value">{{ active_inquiries }}</strong>
+            <span class="cmd-metric-foot">new or awaiting follow-up</span>
+        </a>
+        <a class="cmd-metric" href="{{ url_for('main.production_batches') }}">
+            <span class="cmd-metric-head">Batches <i class="fas fa-industry cmd-metric-icon" aria-hidden="true"></i></span>
+            <strong class="cmd-metric-value">{{ active_batches + planned_batches }}</strong>
+            <span class="cmd-metric-foot">{{ active_batches }} running · {{ planned_batches }} planned</span>
+        </a>
     </section>
 
     <div class="cmd-main-grid">
-        <div>
+        <aside class="cmd-col cmd-side">
+            <section class="cmd-panel" aria-labelledby="triage-heading">
+                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="triage-heading"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Needs attention</h3><span class="cmd-panel-meta">Busiest first</span></header>
+                <div class="cmd-queue-list">
+                    {% for q in hot|sort(attribute='count', reverse=True) %}
+                    <article class="cmd-queue" id="q-{{ q.id }}">
+                        <span class="cmd-queue-index is-alert"><i class="fas {{ q.icon }}" aria-hidden="true"></i></span>
+                        <div><h4>{{ q.title }}</h4><p>{{ q.detail }}.</p>
+                            <div class="cmd-row-actions">{% for label, href in q.links %}<a class="cmd-queue-link" href="{{ href }}">{{ label }}</a>{% endfor %}</div></div>
+                        <span class="cmd-queue-count is-alert">{{ q.count }}</span>
+                    </article>
+                    {% else %}
+                    <div class="cmd-empty is-compact"><i class="fas fa-check-circle" aria-hidden="true"></i>Every queue is empty.</div>
+                    {% endfor %}
+                </div>
+                {% if clear %}<details class="cmd-clear">
+                    <summary><i class="fas fa-circle-check" aria-hidden="true"></i> {{ clear|length }} area{{ '' if clear|length == 1 else 's' }} clear <span>{{ clear|map(attribute='short')|join(' · ') }}</span></summary>
+                    <ul>{% for q in clear %}<li><i class="fas {{ q.icon }}" aria-hidden="true"></i><span>{{ q.title }}</span><span class="cmd-row-actions">{% for label, href in q.links %}<a class="cmd-queue-link" href="{{ href }}">{{ label }}</a>{% endfor %}</span></li>{% endfor %}</ul>
+                </details>{% endif %}
+            </section>
+
+            <section class="cmd-panel" aria-labelledby="launch-heading">
+                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="launch-heading"><i class="fas fa-bolt" aria-hidden="true"></i> Quick actions</h3>
+                    <label class="cmd-find"><span class="sr-only">Filter quick actions</span><i class="fas fa-magnifying-glass" aria-hidden="true"></i><input id="cmd-find" type="search" placeholder="Filter" autocomplete="off"></label></header>
+                <div class="cmd-launch" id="cmd-launch">
+                    <a class="cmd-command-link" href="{{ url_for('main.add_order') }}"><i class="fas fa-plus" aria-hidden="true"></i>New order</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.add_inquiry') }}"><i class="fas fa-inbox" aria-hidden="true"></i>New inquiry</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.add_painting_order') }}"><i class="fas fa-brush" aria-hidden="true"></i>New painting order</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.add_production_batch') }}"><i class="fas fa-industry" aria-hidden="true"></i>New batch</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.add_purchase_order') }}"><i class="fas fa-cart-plus" aria-hidden="true"></i>New purchase order</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.add_expense') }}"><i class="fas fa-receipt" aria-hidden="true"></i>Log expense</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.painting_dashboard') }}"><i class="fas fa-palette" aria-hidden="true"></i>Painting service</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.material_batches') }}"><i class="fas fa-barcode" aria-hidden="true"></i>Material lots</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.customer_complaints') }}"><i class="fas fa-microscope" aria-hidden="true"></i>Review complaints</a>
+                    <a class="cmd-command-link" href="{{ url_for('main.reports_dashboard') }}"><i class="fas fa-chart-pie" aria-hidden="true"></i>Open reports</a>
+                    <p class="cmd-empty is-compact" id="cmd-find-empty" hidden>No action matches. Try the sidebar search.</p>
+                </div>
+            </section>
+        </aside>
+
+        <div class="cmd-col cmd-primary">
             <section class="cmd-panel" aria-labelledby="revenue-heading">
-                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="revenue-heading"><i class="fas fa-chart-area" aria-hidden="true"></i> Revenue tempo</h3><span class="cmd-panel-meta">7 days · completed and processing orders</span></header>
-                <div class="cmd-panel-body">
-                    <div class="cmd-chart" role="img" aria-label="Daily order revenue for the last seven days. {% for day in daily_revenue %}{{ day.date }}: PKR {{ '{:,.0f}'.format(day.amount) }}. {% endfor %}">
-                        {% for day in daily_revenue %}
-                        <div class="cmd-chart-day {% if loop.last %}today{% endif %}" title="{{ day.date }} · PKR {{ '{:,.0f}'.format(day.amount) }}">
-                            <div class="cmd-chart-track"><span class="cmd-chart-bar" style="height:{{ [day.height, 2]|max }}%"></span></div><span class="cmd-chart-date">{{ day.label }}</span><span class="cmd-chart-amount">{{ '{:,.0f}'.format(day.amount) }}</span>
-                        </div>
-                        {% endfor %}
+                <header class="cmd-panel-head">
+                    <h3 class="cmd-panel-title" id="revenue-heading"><i class="fas fa-chart-column" aria-hidden="true"></i> Revenue</h3>
+                    <div class="cmd-seg" role="tablist" aria-label="Chart period">
+                        <button type="button" role="tab" aria-selected="true" data-range="7">7 days</button>
+                        <button type="button" role="tab" aria-selected="false" data-range="30">30 days</button>
                     </div>
-                    <div class="cmd-chart-legend"><span>PKR · daily total</span><a class="cmd-queue-link" href="{{ url_for('main.analytics_dashboard') }}">Open sales analytics <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
+                </header>
+                <div class="cmd-panel-body">
+                    {% for range_days, days, peak, total, prev, label in [(7, w7, max7, week_revenue, prev_week_revenue, 'week'), (30, w30, max30, month_revenue, prev_month_revenue, '30 days')] %}
+                    <div class="cmd-range" data-range-panel="{{ range_days }}" {% if range_days == 30 %}hidden{% endif %}>
+                        <div class="cmd-range-sum">
+                            <strong>PKR {{ '{:,.0f}'.format(total) }}</strong>
+                            {{ delta(total, prev, label) }}
+                            <span class="cmd-range-avg">avg PKR {{ money(total / range_days) }} / day</span>
+                        </div>
+                        <div class="cmd-chart d{{ range_days }}" role="img" aria-label="Daily revenue, last {{ range_days }} days, total PKR {{ '{:,.0f}'.format(total) }}">
+                            {% if peak %}<span class="cmd-chart-avg" style="top:calc(110px * {{ (1 - total / range_days / peak)|round(3) }})" aria-hidden="true"></span>{% endif %}
+                            {% for day in days %}
+                            <div class="cmd-chart-day {% if loop.last %}today{% endif %}" tabindex="0" data-tip="{{ day.date }} · PKR {{ '{:,.0f}'.format(day.amount) }}">
+                                <div class="cmd-chart-track"><span class="cmd-chart-bar" style="height:{{ [((day.amount / peak * 100)|round(1) if peak else 0), 1.5]|max }}%"></span></div>
+                                {% if range_days == 7 or loop.index0 % 5 == 4 or loop.last %}<span class="cmd-chart-date">{{ day.label if range_days == 7 else day.date }}</span>{% else %}<span class="cmd-chart-date" aria-hidden="true">&nbsp;</span>{% endif %}
+                                {% if range_days == 7 %}<span class="cmd-chart-amount">{{ money(day.amount) }}</span>{% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="cmd-chart-legend"><span><i class="cmd-key gold"></i>Completed and processing orders <i class="cmd-key line"></i>Daily average</span><a class="cmd-queue-link" href="{{ url_for('main.analytics_dashboard') }}">Sales analytics <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div>
                 </div>
             </section>
 
             <section class="cmd-panel" aria-labelledby="orders-heading">
-                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="orders-heading"><i class="fas fa-list-check" aria-hidden="true"></i> Latest orders</h3><a class="cmd-queue-link" href="{{ url_for('main.orders') }}">All orders <i class="fas fa-arrow-right" aria-hidden="true"></i></a></header>
-                {% if recent_orders %}<div class="cmd-table-wrap"><table class="cmd-table"><caption class="sr-only">Five most recent orders</caption><thead><tr><th scope="col">Reference</th><th scope="col">Customer</th><th scope="col">Value</th><th scope="col">State</th><th scope="col">Opened</th></tr></thead><tbody>
-                    {% for order in recent_orders %}{% set order_status = (order.status or 'pending')|lower|replace(' ','-')|replace('_','-') %}<tr><td><a href="{{ url_for('main.view_order', id=order.id) }}">{{ order.order_number or ('#' ~ order.id) }}</a></td><td class="is-primary">{{ order.customer_name_snapshot or (order.customer.name if order.customer else '—') }}</td><td>PKR {{ '{:,.0f}'.format(order.total_amount or 0) }}</td><td><span class="cmd-status {{ order_status }}">{{ (order.status or 'pending')|replace('_',' ')|capitalize }}</span></td><td>{{ order.created_at.strftime('%d %b') if order.created_at else '—' }}</td></tr>{% endfor %}
-                </tbody></table></div>{% else %}<div class="cmd-empty"><i class="fas fa-inbox" aria-hidden="true"></i>No orders in the ledger yet.</div>{% endif %}
+                <header class="cmd-panel-head">
+                    <h3 class="cmd-panel-title" id="orders-heading"><i class="fas fa-list-check" aria-hidden="true"></i> Latest orders</h3>
+                    <a class="cmd-queue-link" href="{{ url_for('main.orders') }}">All orders <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                </header>
+                {% if recent_orders %}
+                <div class="cmd-filter" role="toolbar" aria-label="Filter latest orders">
+                    <button type="button" class="is-on" data-filter="all">All <b>{{ recent_orders|length }}</b></button>
+                    {% for st in ['pending', 'processing', 'completed'] %}<button type="button" data-filter="{{ st }}">{{ st|capitalize }} <b>{{ statuses|select('equalto', st)|list|length }}</b></button>{% endfor %}
+                    {% set unpaid_recent = recent_orders|selectattr('payment_status', 'in', ['unpaid', 'partial'])|rejectattr('status', 'in', ['cancelled', 'canceled'])|list %}<button type="button" data-filter="unpaid">Unpaid <b>{{ unpaid_recent|length }}</b></button>
+                </div>
+                <div class="cmd-table-wrap"><table class="cmd-table cmd-cards"><caption class="sr-only">Ten most recent orders</caption>
+                    <thead><tr><th scope="col">Reference</th><th scope="col">Customer</th><th scope="col">Value</th><th scope="col">Payment</th><th scope="col">State</th><th scope="col">Opened</th></tr></thead>
+                    <tbody>
+                    {% for order in recent_orders %}{% set order_status = (order.status or 'pending')|lower|replace(' ','-')|replace('_','-') %}{% set pay = (order.payment_status or 'unpaid')|lower %}
+                    <tr data-status="{{ order_status }}" data-pay="{{ 'unpaid' if pay in ['unpaid', 'partial'] and order_status not in ['cancelled', 'canceled'] else 'paid' }}">
+                        <td data-label="Ref"><a href="{{ url_for('main.view_order', id=order.id) }}">{{ order.order_number or ('#' ~ order.id) }}</a></td>
+                        <td class="is-primary" data-label="Customer">{{ order.customer_name_snapshot or (order.customer.name if order.customer else '—') }}</td>
+                        <td class="is-num" data-label="Value">PKR {{ '{:,.0f}'.format(order.total_amount or 0) }}</td>
+                        <td data-label="Payment"><span class="cmd-pay {{ pay }}">{{ pay|capitalize }}</span></td>
+                        <td data-label="State"><span class="cmd-status {{ order_status }}">{{ (order.status or 'pending')|replace('_',' ')|capitalize }}</span></td>
+                        <td data-label="Opened">{{ order.created_at.strftime('%d %b') if order.created_at else '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody></table>
+                    <p class="cmd-empty cmd-filter-empty" hidden>No orders with this status among the latest {{ recent_orders|length }}.</p>
+                </div>
+                {% else %}<div class="cmd-empty"><i class="fas fa-inbox" aria-hidden="true"></i>No orders in the ledger yet.</div>{% endif %}
             </section>
 
-            <section class="cmd-panel" aria-labelledby="inquiries-heading">
-                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="inquiries-heading"><i class="fas fa-headset" aria-hidden="true"></i> Customer signals</h3><a class="cmd-queue-link" href="{{ url_for('main.inquiries') }}">Inquiry desk <i class="fas fa-arrow-right" aria-hidden="true"></i></a></header>
-                {% if recent_inquiries %}<div class="cmd-table-wrap"><table class="cmd-table"><caption class="sr-only">Five latest customer inquiries</caption><thead><tr><th scope="col">Business / contact</th><th scope="col">Status</th><th scope="col">Received</th><th scope="col">Open</th></tr></thead><tbody>
-                    {% for inquiry in recent_inquiries %}{% set inquiry_status = (inquiry.status or 'new')|lower|replace(' ','-')|replace('_','-') %}<tr><td class="is-primary">{{ inquiry.business_name or inquiry.customer_name or 'Unknown' }}<br><small>{{ inquiry.customer_name or '' }}</small></td><td><span class="cmd-status {{ inquiry_status }}">{{ (inquiry.status or 'new')|capitalize }}</span></td><td>{{ inquiry.created_at.strftime('%d %b') if inquiry.created_at else '—' }}</td><td><a href="{{ url_for('main.edit_inquiry', id=inquiry.id) }}">Review</a></td></tr>{% endfor %}
-                </tbody></table></div>{% else %}<div class="cmd-empty"><i class="fas fa-check-circle" aria-hidden="true"></i>No customer signals waiting in the inbox.</div>{% endif %}
-            </section>
-
-            <section class="cmd-panel" aria-labelledby="batches-heading">
-                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="batches-heading"><i class="fas fa-gears" aria-hidden="true"></i> Production docket</h3><a class="cmd-queue-link" href="{{ url_for('main.production_batches') }}">All batches <i class="fas fa-arrow-right" aria-hidden="true"></i></a></header>
-                {% if recent_batches %}<div class="cmd-table-wrap"><table class="cmd-table"><caption class="sr-only">Four most recently created production batches</caption><thead><tr><th scope="col">Batch</th><th scope="col">Planned output</th><th scope="col">State</th><th scope="col">Started</th></tr></thead><tbody>
-                    {% for batch in recent_batches %}{% set batch_status = (batch.status or 'planned')|lower|replace('_','-') %}<tr><td><a href="{{ url_for('main.view_production_batch', id=batch.id) }}">{{ batch.batch_number }}</a></td><td>{{ '{:,.0f}'.format(batch.planned_quantity or 0) }}</td><td><span class="cmd-status {{ batch_status }}">{{ (batch.status or 'planned')|replace('_',' ')|capitalize }}</span></td><td>{{ batch.start_date.strftime('%d %b') if batch.start_date else '—' }}</td></tr>{% endfor %}
-                </tbody></table></div>{% else %}<div class="cmd-empty"><i class="fas fa-industry" aria-hidden="true"></i>No production batches have been scheduled.</div>{% endif %}
-            </section>
+            <div class="cmd-pair">
+                <section class="cmd-panel" aria-labelledby="inquiries-heading">
+                    <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="inquiries-heading"><i class="fas fa-headset" aria-hidden="true"></i> Inquiries</h3><a class="cmd-queue-link" href="{{ url_for('main.inquiries') }}">Inquiry desk <i class="fas fa-arrow-right" aria-hidden="true"></i></a></header>
+                    {% if recent_inquiries %}<ul class="cmd-mini">
+                        {% for inquiry in recent_inquiries %}{% set inquiry_status = (inquiry.status or 'new')|lower|replace(' ','-')|replace('_','-') %}
+                        <li><a href="{{ url_for('main.edit_inquiry', id=inquiry.id) }}"><span class="is-primary">{{ inquiry.business_name or inquiry.customer_name or 'Unknown' }}</span><small>{{ inquiry.customer_name or '' }}{% if inquiry.created_at %} · {{ inquiry.created_at.strftime('%d %b') }}{% endif %}</small></a><span class="cmd-status {{ inquiry_status }}">{{ (inquiry.status or 'new')|capitalize }}</span></li>
+                        {% endfor %}
+                    </ul>{% else %}<div class="cmd-empty is-compact"><i class="fas fa-check-circle" aria-hidden="true"></i>Inbox clear. <a class="cmd-queue-link" href="{{ url_for('main.add_inquiry') }}">Log an inquiry</a></div>{% endif %}
+                </section>
+                <section class="cmd-panel" aria-labelledby="batches-heading">
+                    <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="batches-heading"><i class="fas fa-gears" aria-hidden="true"></i> Production</h3><a class="cmd-queue-link" href="{{ url_for('main.production_batches') }}">All batches <i class="fas fa-arrow-right" aria-hidden="true"></i></a></header>
+                    {% if recent_batches %}<ul class="cmd-mini">
+                        {% for batch in recent_batches %}{% set batch_status = (batch.status or 'planned')|lower|replace('_','-') %}
+                        <li><a href="{{ url_for('main.view_production_batch', id=batch.id) }}"><span class="is-primary">{{ batch.batch_number }}</span><small>{{ '{:,.0f}'.format(batch.planned_quantity or 0) }} planned{% if batch.start_date %} · {{ batch.start_date.strftime('%d %b') }}{% endif %}</small></a><span class="cmd-status {{ batch_status }}">{{ (batch.status or 'planned')|replace('_',' ')|capitalize }}</span></li>
+                        {% endfor %}
+                    </ul>{% else %}<div class="cmd-empty is-compact"><i class="fas fa-industry" aria-hidden="true"></i>No batches scheduled. <a class="cmd-queue-link" href="{{ url_for('main.add_production_batch') }}">Plan a batch</a></div>{% endif %}
+                </section>
+            </div>
         </div>
-
-        <aside>
-            <section class="cmd-panel" aria-labelledby="triage-heading">
-                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="triage-heading"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Triage board</h3><span class="cmd-panel-meta">Review these loops</span></header>
-                <div class="cmd-queue-list">
-                    <article class="cmd-queue"><span class="cmd-queue-index {% if stock_queue %}is-alert{% endif %}">01</span><div><h4>Material and product stock</h4><p>{{ low_stock_products }} products below the 10,000 alert line · {{ low_stock_materials }} raw materials under reorder level.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.products') }}">Products & stock</a><a class="cmd-queue-link" href="{{ url_for('main.raw_materials') }}">Raw materials</a></div></div><span class="cmd-queue-count {% if stock_queue %}is-alert{% endif %}">{{ stock_queue }}</span></article>
-                    <article class="cmd-queue"><span class="cmd-queue-index {% if quality_queue %}is-alert{% endif %}">02</span><div><h4>Quality and corrective action</h4><p>{{ recent_qc_failures }} failed tests in 14 days · {{ open_complaints }} complaints · {{ open_capa }} open CAPAs · {{ due_calibrations }} calibrations due within 30 days.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.customer_complaints') }}">Complaints</a><a class="cmd-queue-link" href="{{ url_for('main.capa_records') }}">CAPA</a><a class="cmd-queue-link" href="{{ url_for('main.calibration_records') }}">Calibration</a></div></div><span class="cmd-queue-count {% if quality_queue %}is-alert{% endif %}">{{ quality_queue }}</span></article>
-                    <article class="cmd-queue"><span class="cmd-queue-index {% if supply_queue %}is-alert{% endif %}">03</span><div><h4>Procurement and receipts</h4><p>{{ open_purchase_orders }} draft or sent purchase orders · {{ pending_receipts }} receipts to inspect · {{ overdue_supplier_invoices }} overdue supplier invoices.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.purchase_orders') }}">Purchase orders</a><a class="cmd-queue-link" href="{{ url_for('main.goods_receipts') }}">Goods receipts</a><a class="cmd-queue-link" href="{{ url_for('main.supplier_invoices') }}">Invoices</a></div></div><span class="cmd-queue-count {% if supply_queue %}is-alert{% endif %}">{{ supply_queue }}</span></article>
-                    <article class="cmd-queue"><span class="cmd-queue-index {% if people_queue %}is-alert{% endif %}">04</span><div><h4>Cash and people</h4><p>{{ pending_expenses }} expenses awaiting review · {{ pending_payroll }} payroll payments pending · {{ pending_leave }} leave requests to decide.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.expenses') }}">Expenses</a><a class="cmd-queue-link" href="{{ url_for('main.payroll_payments') }}">Payroll</a><a class="cmd-queue-link" href="{{ url_for('main.leave_requests') }}">Leave</a></div></div><span class="cmd-queue-count {% if people_queue %}is-alert{% endif %}">{{ people_queue }}</span></article>
-                    <article class="cmd-queue"><span class="cmd-queue-index {% if active_inquiries + open_orders %}is-alert{% endif %}">05</span><div><h4>Demand and delivery</h4><p>{{ active_inquiries }} inquiries need follow-up · {{ open_orders }} orders are pending or processing.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.inquiries') }}">Inquiry desk</a><a class="cmd-queue-link" href="{{ url_for('main.orders') }}">Order book</a></div></div><span class="cmd-queue-count {% if active_inquiries + open_orders %}is-alert{% endif %}">{{ active_inquiries + open_orders }}</span></article>
-                    <article class="cmd-queue"><span class="cmd-queue-index {% if painting_queue %}is-alert{% endif %}">06</span><div><h4>Ampoule painting service</h4><p>{{ painting_queue }} painting orders are pending or in progress.</p><div class="cmd-row-actions"><a class="cmd-queue-link" href="{{ url_for('main.painting_orders') }}">Painting orders</a><a class="cmd-queue-link" href="{{ url_for('main.painting_prices') }}">Service pricing</a></div></div><span class="cmd-queue-count {% if painting_queue %}is-alert{% endif %}">{{ painting_queue }}</span></article>
-                </div>
-            </section>
-
-            <section class="cmd-panel" aria-labelledby="launch-heading">
-                <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="launch-heading"><i class="fas fa-bolt" aria-hidden="true"></i> Fast launch</h3><span class="cmd-panel-meta">Create or inspect</span></header>
-                <div class="cmd-launch">
-                    <a class="cmd-command-link" href="{{ url_for('main.add_order') }}"><i class="fas fa-plus" aria-hidden="true"></i>New order</a>
-                    <a class="cmd-command-link" href="{{ url_for('main.add_inquiry') }}"><i class="fas fa-inbox" aria-hidden="true"></i>New inquiry</a>
-                    <a class="cmd-command-link" href="{{ url_for('main.painting_dashboard') }}"><i class="fas fa-palette" aria-hidden="true"></i>Painting service</a>
-                    <a class="cmd-command-link" href="{{ url_for('main.add_painting_order') }}"><i class="fas fa-brush" aria-hidden="true"></i>New painting order</a>
-                    <a class="cmd-command-link" href="{{ url_for('main.add_production_batch') }}"><i class="fas fa-industry" aria-hidden="true"></i>New batch</a>
-                    <a class="cmd-command-link" href="{{ url_for('main.add_purchase_order') }}"><i class="fas fa-cart-plus" aria-hidden="true"></i>New purchase order</a>
-                    <a class="cmd-command-link" href="{{ url_for('main.customer_complaints') }}"><i class="fas fa-microscope" aria-hidden="true"></i>Review complaints</a>
-                    <a class="cmd-command-link" href="{{ url_for('main.material_batches') }}"><i class="fas fa-barcode" aria-hidden="true"></i>Material lots</a>
-                    <a class="cmd-command-link" href="{{ url_for('main.add_expense') }}"><i class="fas fa-receipt" aria-hidden="true"></i>Log expense</a>
-                    <a class="cmd-command-link" href="{{ url_for('main.reports_dashboard') }}"><i class="fas fa-chart-pie" aria-hidden="true"></i>Open reports</a>
-                </div>
-            </section>
-        </aside>
     </div>
 
-    <footer class="cmd-footerline"><span><strong>{{ total_orders }}</strong> orders · <strong>{{ total_customers }}</strong> active customers · <strong>{{ active_batches + planned_batches }}</strong> planned or active batches</span><span>Figures reflect the current database snapshot · Refresh to pull the latest</span></footer>
+    <footer class="cmd-footerline"><span><strong>{{ total_orders }}</strong> orders · <strong>{{ total_customers }}</strong> active customers · all-time revenue <strong>PKR {{ '{:,.0f}'.format(total_revenue) }}</strong></span><span>Figures reflect the database at the time shown above</span></footer>
 </div>
+<div class="cmd-tip" id="cmd-tip" role="status" hidden></div>
 <script>
 (() => {
-    const clock = document.getElementById('cmd-clock');
-    const updateClock = () => { if (clock) clock.textContent = new Intl.DateTimeFormat(undefined, {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date()); };
-    updateClock();
-    window.setInterval(updateClock, 1000);
+    const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+    const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
 
+    const up = $('#cmd-updated');
+    if (up) { const d = new Date(up.getAttribute('datetime')); if (!isNaN(d)) up.textContent = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }).format(d); }
+
+    const tabs = $$('.cmd-seg [data-range]');
+    const setRange = (r) => {
+        tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.range === r)));
+        $$('[data-range-panel]').forEach(p => { p.hidden = p.dataset.rangePanel !== r; });
+        store.set('ax-dash-range', r);
+    };
+    tabs.forEach(t => t.addEventListener('click', () => setRange(t.dataset.range)));
+    if (store.get('ax-dash-range') === '30') setRange('30');
+
+    const tip = $('#cmd-tip');
+    const showTip = (el) => { const r = el.getBoundingClientRect(); tip.textContent = el.dataset.tip; tip.hidden = false; const w = tip.offsetWidth; tip.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px'; tip.style.top = (r.top + window.scrollY - 34) + 'px'; };
+    $$('.cmd-chart-day').forEach(el => { el.addEventListener('mouseenter', () => showTip(el)); el.addEventListener('focus', () => showTip(el)); el.addEventListener('mouseleave', () => { tip.hidden = true; }); el.addEventListener('blur', () => { tip.hidden = true; }); });
+
+    const rows = $$('.cmd-cards tbody tr'), empty = $('.cmd-filter-empty');
+    $$('.cmd-filter button').forEach(b => b.addEventListener('click', () => {
+        $$('.cmd-filter button').forEach(x => x.classList.toggle('is-on', x === b));
+        const f = b.dataset.filter; let shown = 0;
+        rows.forEach(r => { const ok = f === 'all' || r.dataset.status === f || (f === 'unpaid' && r.dataset.pay === 'unpaid'); r.hidden = !ok; if (ok) shown++; });
+        if (empty) empty.hidden = shown > 0;
+    }));
+
+    const find = $('#cmd-find'), acts = $$('#cmd-launch .cmd-command-link'), none = $('#cmd-find-empty');
+    if (find) find.addEventListener('input', () => { const q = find.value.trim().toLowerCase(); let n = 0; acts.forEach(a => { const ok = !q || a.textContent.toLowerCase().includes(q); a.hidden = !ok; if (ok) n++; }); none.hidden = n > 0; });
+    if (find) find.addEventListener('keydown', (e) => { if (e.key === 'Enter') { const first = acts.find(a => !a.hidden); if (first) window.location.href = first.href; } });
+
+    const auto = $('#cmd-auto'), label = $('#cmd-auto-label'); let left = 120, timer = null;
+    const paint = () => { const on = !!timer; auto.setAttribute('aria-pressed', String(on)); auto.classList.toggle('is-on', on); label.textContent = on ? 'Auto · ' + Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0') : 'Auto-refresh off'; };
+    const tick = () => { if (document.hidden) return; left -= 1; if (left <= 0) { window.location.reload(); return; } paint(); };
+    const setAuto = (on) => { clearInterval(timer); timer = on ? setInterval(tick, 1000) : null; left = 120; store.set('ax-dash-auto', on ? '1' : '0'); paint(); };
+    if (auto) { auto.addEventListener('click', () => setAuto(!timer)); if (store.get('ax-dash-auto') === '1') setAuto(true); }
 })();
 </script>
 {% endblock %}
