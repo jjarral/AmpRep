@@ -77,134 +77,136 @@
             </div>
             <nav class="mt-2" aria-label="Workspace sections">
                 {% set endpoint = request.endpoint or '' %}
-                {% set accounting_accounts_path = request.path.startswith('/accounting/accounts') %}
-                {% set finance_path = request.path.startswith('/accounting') or request.path.startswith('/financials') %}
+                {#- Menu: one list, grouped by how the work flows. Each item lights up by web address;
+                    the longest matching address wins, so a page always maps to exactly one item. -#}
+                {%- set nav = [
+                    ('COMMAND', [
+                        ('Operations overview', 'dashboard', 'fa-crosshairs', ['/dashboard'], None),
+                    ]),
+                    ('SALES & SERVICE', [
+                        ('Sales', 'fa-handshake', [
+                            ('Inquiry queue', 'inquiries', 'fa-inbox', ['/inquiry']),
+                            ('Sales orders', 'orders', 'fa-file-invoice', []),
+                            ('Receivables', 'receivables', 'fa-hand-holding-dollar', ['/payments']),
+                            ('Customers', 'customers', 'fa-users', []),
+                        ]),
+                        ('Painting service', 'fa-palette', [
+                            ('Painting orders', 'painting_orders', 'fa-list-check', []),
+                            ('New painting order', 'add_painting_order', 'fa-plus', []),
+                            ('Service pricing', 'painting_prices', 'fa-tags', []),
+                            ('Service overview', 'painting_dashboard', 'fa-gauge-high', []),
+                        ]),
+                    ]),
+                    ('FACTORY', [
+                        ('Production', 'fa-industry', [
+                            ('Production floor', 'production', 'fa-gauge-high', []),
+                            ('Batch travelers', 'production_batches', 'fa-layer-group', ['/production/batch']),
+                            ('Product catalogue', 'products', 'fa-box', []),
+                            ('Raw materials', 'raw_materials', 'fa-cubes', ['/raw-materials', '/materials']),
+                            ('Material lots', 'material_batches', 'fa-barcode', []),
+                            ('Factory equipment', 'fixed_assets_list', 'fa-screwdriver-wrench', []),
+                        ]),
+                        ('Quality', 'fa-microscope', [
+                            ('Inspection standards', 'qc_parameters', 'fa-list-check', ['/qc/results', '/qc/coa']),
+                            ('Customer complaints', 'customer_complaints', 'fa-message', []),
+                            ('Corrective actions', 'capa_records', 'fa-rotate', []),
+                            ('Calibration schedule', 'calibration_records', 'fa-ruler-combined', []),
+                        ]),
+                        ('Stock & purchasing', 'fa-warehouse', [
+                            ('Purchase orders', 'purchase_orders', 'fa-cart-flatbed', []),
+                            ('Goods receipts', 'goods_receipts', 'fa-dolly', []),
+                            ('Suppliers', 'suppliers', 'fa-truck-field', []),
+                            ('Supplier invoices', 'supplier_invoices', 'fa-file-invoice-dollar', []),
+                            ('Warehouses & stock', 'warehouses', 'fa-warehouse', []),
+                            ('Stock transfers', 'stock_transfers', 'fa-right-left', []),
+                        ]),
+                    ]),
+                    ('MONEY', [
+                        ('Cash & banking', 'fa-money-bill-transfer', [
+                            ('Finance overview', 'accounting_dashboard', 'fa-chart-pie', []),
+                            ('Expenses', 'expenses', 'fa-receipt', []),
+                            ('Receipt vouchers', 'receipt_vouchers', 'fa-arrow-down-to-bracket', []),
+                            ('Payment vouchers', 'payment_vouchers', 'fa-arrow-up-from-bracket', []),
+                            ('Bank accounts', 'bank_accounts', 'fa-building-columns', []),
+                            ('Reconciliation', 'bank_reconciliation', 'fa-arrows-rotate', []),
+                        ]),
+                        ('Books', 'fa-book-open', [
+                            ('Journal entries', 'journal_entries', 'fa-book', []),
+                            ('General ledger', 'general_ledger', 'fa-book-open', []),
+                            ('Trial balance', 'trial_balance', 'fa-scale-balanced', []),
+                            ('Chart of accounts', 'chart_of_accounts', 'fa-list-ol', ['/accounting/accounts']),
+                            ('Accounting periods', 'accounting_periods', 'fa-calendar-days', []),
+                            ('Audit trail', 'audit_log', 'fa-clock-rotate-left', []),
+                        ]),
+                        ('Statements & tax', 'fa-chart-line', [
+                            ('Profit & loss', 'profit_loss', 'fa-chart-line', []),
+                            ('Balance sheet', 'balance_sheet', 'fa-scale-balanced', []),
+                            ('Cash flow', 'cash_flow', 'fa-water', []),
+                            ('FBR invoices', 'fbr_invoices', 'fa-file-invoice', []),
+                            ('Sales tax report', 'sales_tax_report', 'fa-percent', []),
+                            ('Tax returns', 'tax_returns', 'fa-file-circle-check', []),
+                        ]),
+                    ]),
+                    ('PEOPLE & INSIGHT', [
+                        ('People & payroll', 'fa-people-group', [
+                            ('Attendance', 'attendance', 'fa-clipboard-check', []),
+                            ('Leave requests', 'leave_requests', 'fa-calendar-minus', []),
+                            ('Timesheets', 'timesheets', 'fa-clock', []),
+                            ('Run payroll', 'payroll_run', 'fa-calculator', []),
+                            ('Salary payments', 'payroll_payments', 'fa-money-check-dollar', []),
+                            ('Employees', 'payroll', 'fa-id-card', ['/employees']),
+                            ('Shift plans', 'shifts', 'fa-business-time', ['/hr']),
+                        ]),
+                        ('Reports', 'fa-chart-column', [
+                            ('Performance analytics', 'analytics_dashboard', 'fa-chart-pie', ['/analytics']),
+                            ('Sales analysis', 'sales_analysis_report', 'fa-chart-column', []),
+                            ('Production performance', 'production_reports', 'fa-industry', []),
+                            ('Production efficiency', 'production_efficiency_report', 'fa-gauge-high', []),
+                            ('Material consumption', 'material_consumption_report', 'fa-chart-area', []),
+                            ('Inventory valuation', 'inventory_valuation_report', 'fa-boxes-stacked', []),
+                            ('Reports & exports', 'reports_dashboard', 'fa-file-export', []),
+                        ]),
+                    ]),
+                    ('ADMINISTRATION', [
+                        ('System control', 'fa-sliders', [
+                            ('Business settings', 'settings', 'fa-gear', []),
+                            ('User access', 'admin_users', 'fa-users-gear', ['/admin']),
+                        ]),
+                    ]),
+                ] -%}
+                {%- set path = request.path.rstrip('/') or '/' -%}
+                {%- set pick = namespace(ep=None, length=0) -%}
+                {%- for section, entries in nav -%}{%- for entry in entries -%}
+                    {%- set leaves = [(entry[0], entry[1], entry[2], entry[3])] if entry|length == 5 else entry[2] -%}
+                    {%- for label, ep, icon, extra in leaves -%}
+                        {%- for prefix in [url_for('main.' ~ ep)] + extra -%}
+                            {%- set prefix = prefix.rstrip('/') or '/' -%}
+                            {%- if (path == prefix or path.startswith(prefix ~ '/')) and prefix|length > pick.length -%}
+                                {%- set pick.ep = ep -%}{%- set pick.length = prefix|length -%}
+                            {%- endif -%}
+                        {%- endfor -%}
+                    {%- endfor -%}
+                {%- endfor -%}{%- endfor %}
                 <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent">
-                    <li class="nav-header">COMMAND</li>
-                    <li class="nav-item"><a href="{{ url_for('main.dashboard') }}" class="nav-link {% if endpoint == 'main.dashboard' %}active{% endif %}"><i class="nav-icon fas fa-crosshairs"></i><p>Operations overview</p></a></li>
-
-                    <li class="nav-header">CORE WORK</li>
-                    <li class="nav-item has-treeview {% if 'inquiry' in endpoint or 'order' in endpoint or 'customer' in endpoint %}menu-open{% endif %}">
-                        <a href="#" class="nav-link {% if 'inquiry' in endpoint or 'order' in endpoint or 'customer' in endpoint %}active{% endif %}" aria-expanded="{{ 'true' if 'inquiry' in endpoint or 'order' in endpoint or 'customer' in endpoint else 'false' }}"><i class="nav-icon fas fa-handshake"></i><p>Customer work<i class="right fas fa-angle-left"></i></p></a>
+                    {%- for section, entries in nav %}
+                    <li class="nav-header">{{ section }}</li>
+                    {%- for entry in entries %}
+                    {%- if entry|length == 5 %}
+                    <li class="nav-item"><a href="{{ url_for('main.' ~ entry[1]) }}" class="nav-link {% if pick.ep == entry[1] %}active{% endif %}"{% if pick.ep == entry[1] %} aria-current="page"{% endif %}><i class="nav-icon fas {{ entry[2] }}"></i><p>{{ entry[0] }}</p></a></li>
+                    {%- else %}
+                    {%- set leaves = entry[2] if current_user.role == 'admin' else entry[2]|rejectattr(1, 'equalto', 'admin_users')|list %}
+                    {%- set open = pick.ep in leaves|map(attribute=1)|list %}
+                    <li class="nav-item has-treeview {% if open %}menu-open{% endif %}">
+                        <a href="#" class="nav-link {% if open %}active{% endif %}" aria-expanded="{{ 'true' if open else 'false' }}"><i class="nav-icon fas {{ entry[1] }}"></i><p>{{ entry[0] }}<i class="right fas fa-angle-left"></i></p></a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item"><a href="{{ url_for('main.inquiries') }}" class="nav-link {% if 'inquiry' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-inbox"></i><p>Inquiry queue</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.customers') }}" class="nav-link {% if 'customer' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-users"></i><p>Customers</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.orders') }}" class="nav-link {% if 'order' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-file-invoice"></i><p>Sales orders</p></a></li>
+                            {%- for label, ep, icon, extra in leaves %}
+                            <li class="nav-item"><a href="{{ url_for('main.' ~ ep) }}" class="nav-link {% if pick.ep == ep %}active{% endif %}"{% if pick.ep == ep %} aria-current="page"{% endif %}><i class="nav-icon fas {{ icon }}"></i><p>{{ label }}{% if ep == 'products' and low_stock_count is defined and low_stock_count > 0 %}<span class="right badge badge-danger">{{ low_stock_count }}</span>{% endif %}</p></a></li>
+                            {%- endfor %}
                         </ul>
                     </li>
-                    <li class="nav-item has-treeview {% if 'painting' in endpoint %}menu-open{% endif %}">
-                        <a href="#" class="nav-link {% if 'painting' in endpoint %}active{% endif %}" aria-expanded="{{ 'true' if 'painting' in endpoint else 'false' }}"><i class="nav-icon fas fa-palette"></i><p>Painting service<i class="right fas fa-angle-left"></i></p></a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item"><a href="{{ url_for('main.painting_dashboard') }}" class="nav-link {% if endpoint == 'main.painting_dashboard' %}active{% endif %}"><i class="nav-icon fas fa-gauge-high"></i><p>Service overview</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.painting_orders') }}" class="nav-link {% if 'painting_order' in endpoint or endpoint == 'main.view_painting_order' %}active{% endif %}"><i class="nav-icon fas fa-list-check"></i><p>Painting orders</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.painting_prices') }}" class="nav-link {% if 'painting_price' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-tags"></i><p>Service pricing</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.add_painting_order') }}" class="nav-link {% if endpoint == 'main.add_painting_order' %}active{% endif %}"><i class="nav-icon fas fa-plus"></i><p>New painting order</p></a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item has-treeview {% if 'product' in endpoint or 'production' in endpoint or 'raw_material' in endpoint or 'material_batch' in endpoint or 'fixed_asset' in endpoint or request.path.startswith('/assets') %}menu-open{% endif %}">
-                        <a href="#" class="nav-link {% if 'product' in endpoint or 'production' in endpoint or 'raw_material' in endpoint or 'material_batch' in endpoint or 'fixed_asset' in endpoint or request.path.startswith('/assets') %}active{% endif %}" aria-expanded="{{ 'true' if 'product' in endpoint or 'production' in endpoint or 'raw_material' in endpoint or 'material_batch' in endpoint or 'fixed_asset' in endpoint or request.path.startswith('/assets') else 'false' }}"><i class="nav-icon fas fa-industry"></i><p>Manufacturing<i class="right fas fa-angle-left"></i></p></a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item"><a href="{{ url_for('main.products') }}" class="nav-link {% if 'product' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-box"></i><p>Product catalogue{% if low_stock_count is defined and low_stock_count > 0 %}<span class="right badge badge-danger">{{ low_stock_count }}</span>{% endif %}</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.production') }}" class="nav-link {% if endpoint == 'main.production' %}active{% endif %}"><i class="nav-icon fas fa-gauge-high"></i><p>Production floor</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.production_batches') }}" class="nav-link {% if 'production_batch' in endpoint or endpoint == 'main.view_production_batch' %}active{% endif %}"><i class="nav-icon fas fa-layer-group"></i><p>Batch travelers</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.raw_materials') }}" class="nav-link {% if 'raw_material' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-cubes"></i><p>Raw materials</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.material_batches') }}" class="nav-link {% if 'material_batch' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-barcode"></i><p>Material lots</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.fixed_assets_list') }}" class="nav-link {% if 'fixed_asset' in endpoint or request.path.startswith('/assets') %}active{% endif %}"><i class="nav-icon fas fa-screwdriver-wrench"></i><p>Factory equipment</p></a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item has-treeview {% if 'qc' in endpoint or 'complaint' in endpoint or 'capa' in endpoint or 'calibration' in endpoint %}menu-open{% endif %}">
-                        <a href="#" class="nav-link {% if 'qc' in endpoint or 'complaint' in endpoint or 'capa' in endpoint or 'calibration' in endpoint %}active{% endif %}" aria-expanded="{{ 'true' if 'qc' in endpoint or 'complaint' in endpoint or 'capa' in endpoint or 'calibration' in endpoint else 'false' }}"><i class="nav-icon fas fa-microscope"></i><p>Quality & compliance<i class="right fas fa-angle-left"></i></p></a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item"><a href="{{ url_for('main.qc_parameters') }}" class="nav-link {% if 'qc_' in endpoint or endpoint == 'main.add_qc_parameter' or endpoint == 'main.add_qc_results' %}active{% endif %}"><i class="nav-icon fas fa-list-check"></i><p>Inspection standards</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.customer_complaints') }}" class="nav-link {% if 'complaint' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-message"></i><p>Customer complaints</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.capa_records') }}" class="nav-link {% if 'capa' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-rotate"></i><p>Corrective actions</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.calibration_records') }}" class="nav-link {% if 'calibration' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-ruler-combined"></i><p>Calibration schedule</p></a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item has-treeview {% if 'warehouse' in endpoint or 'stock_transfer' in endpoint or 'supplier' in endpoint or 'purchase_order' in endpoint or 'goods_receipt' in endpoint %}menu-open{% endif %}">
-                        <a href="#" class="nav-link {% if 'warehouse' in endpoint or 'stock_transfer' in endpoint or 'supplier' in endpoint or 'purchase_order' in endpoint or 'goods_receipt' in endpoint %}active{% endif %}" aria-expanded="{{ 'true' if 'warehouse' in endpoint or 'stock_transfer' in endpoint or 'supplier' in endpoint or 'purchase_order' in endpoint or 'goods_receipt' in endpoint else 'false' }}"><i class="nav-icon fas fa-warehouse"></i><p>Inventory & supply<i class="right fas fa-angle-left"></i></p></a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item"><a href="{{ url_for('main.warehouses') }}" class="nav-link {% if 'warehouse' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-warehouse"></i><p>Warehouses & stock</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.stock_transfers') }}" class="nav-link {% if 'stock_transfer' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-right-left"></i><p>Stock transfers</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.suppliers') }}" class="nav-link {% if 'supplier' in endpoint and 'invoice' not in endpoint %}active{% endif %}"><i class="nav-icon fas fa-truck-field"></i><p>Suppliers</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.purchase_orders') }}" class="nav-link {% if 'purchase_order' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-cart-flatbed"></i><p>Purchase orders</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.goods_receipts') }}" class="nav-link {% if 'goods_receipt' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-dolly"></i><p>Goods receipts</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.supplier_invoices') }}" class="nav-link {% if 'supplier_invoice' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-file-invoice-dollar"></i><p>Supplier invoices</p></a></li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-header">BUSINESS CONTROL</li>
-                    <li class="nav-item has-treeview {% if finance_path or 'accounting' in endpoint or 'accounting_period' in endpoint or 'audit_log' in endpoint or 'expense' in endpoint or 'payment_voucher' in endpoint or 'receipt_voucher' in endpoint or 'bank' in endpoint or 'profit_loss' in endpoint or 'balance_sheet' in endpoint or 'cash_flow' in endpoint or 'tax' in endpoint or 'fbr' in endpoint %}menu-open{% endif %}">
-                        <a href="#" class="nav-link {% if finance_path or 'accounting' in endpoint or 'accounting_period' in endpoint or 'audit_log' in endpoint or 'expense' in endpoint or 'payment_voucher' in endpoint or 'receipt_voucher' in endpoint or 'bank' in endpoint or 'profit_loss' in endpoint or 'balance_sheet' in endpoint or 'cash_flow' in endpoint or 'tax' in endpoint or 'fbr' in endpoint %}active{% endif %}" aria-expanded="{{ 'true' if finance_path or 'accounting' in endpoint or 'accounting_period' in endpoint or 'audit_log' in endpoint or 'expense' in endpoint or 'payment_voucher' in endpoint or 'receipt_voucher' in endpoint or 'bank' in endpoint or 'profit_loss' in endpoint or 'balance_sheet' in endpoint or 'cash_flow' in endpoint or 'tax' in endpoint or 'fbr' in endpoint else 'false' }}"><i class="nav-icon fas fa-scale-balanced"></i><p>Finance<i class="right fas fa-angle-left"></i></p></a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item has-treeview {% if 'accounting' in endpoint or 'accounting_period' in endpoint or 'audit_log' in endpoint or accounting_accounts_path %}menu-open{% endif %}">
-                                <a href="#" class="nav-link {% if 'accounting' in endpoint or 'accounting_period' in endpoint or 'audit_log' in endpoint or accounting_accounts_path %}active{% endif %}" aria-expanded="{{ 'true' if 'accounting' in endpoint or 'accounting_period' in endpoint or 'audit_log' in endpoint or accounting_accounts_path else 'false' }}"><i class="nav-icon fas fa-book-open"></i><p>Accounting & controls<i class="right fas fa-angle-left"></i></p></a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item"><a href="{{ url_for('main.accounting_dashboard') }}" class="nav-link {% if endpoint == 'main.accounting_dashboard' or endpoint == 'main.accounting' %}active{% endif %}"><i class="nav-icon fas fa-chart-pie"></i><p>Finance overview</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.chart_of_accounts') }}" class="nav-link {% if 'chart_of_accounts' in endpoint or accounting_accounts_path %}active{% endif %}"><i class="nav-icon fas fa-list-ol"></i><p>Chart of accounts</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.journal_entries') }}" class="nav-link {% if 'journal_entr' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-book"></i><p>Journal entries</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.general_ledger') }}" class="nav-link {% if 'general_ledger' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-book-open"></i><p>General ledger</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.trial_balance') }}" class="nav-link {% if 'trial_balance' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-scale-balanced"></i><p>Trial balance</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.accounting_periods') }}" class="nav-link {% if 'accounting_period' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-calendar-days"></i><p>Accounting periods</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.audit_log') }}" class="nav-link {% if 'audit_log' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-clock-rotate-left"></i><p>Audit trail</p></a></li>
-                                </ul>
-                            </li>
-                            <li class="nav-item has-treeview {% if 'expense' in endpoint or 'payment_voucher' in endpoint or 'receipt_voucher' in endpoint or 'bank' in endpoint %}menu-open{% endif %}">
-                                <a href="#" class="nav-link {% if 'expense' in endpoint or 'payment_voucher' in endpoint or 'receipt_voucher' in endpoint or 'bank' in endpoint %}active{% endif %}" aria-expanded="{{ 'true' if 'expense' in endpoint or 'payment_voucher' in endpoint or 'receipt_voucher' in endpoint or 'bank' in endpoint else 'false' }}"><i class="nav-icon fas fa-money-bill-transfer"></i><p>Cash & banking<i class="right fas fa-angle-left"></i></p></a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item"><a href="{{ url_for('main.expenses') }}" class="nav-link {% if 'expense' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-receipt"></i><p>Expenses</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.payment_vouchers') }}" class="nav-link {% if 'payment_voucher' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-arrow-up-from-bracket"></i><p>Payment vouchers</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.receipt_vouchers') }}" class="nav-link {% if 'receipt_voucher' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-arrow-down-to-bracket"></i><p>Receipt vouchers</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.bank_accounts') }}" class="nav-link {% if endpoint == 'main.bank_accounts' %}active{% endif %}"><i class="nav-icon fas fa-building-columns"></i><p>Bank accounts</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.bank_reconciliation') }}" class="nav-link {% if 'bank_reconciliation' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-arrows-rotate"></i><p>Reconciliation</p></a></li>
-                                </ul>
-                            </li>
-                            <li class="nav-item has-treeview {% if 'profit_loss' in endpoint or 'balance_sheet' in endpoint or 'cash_flow' in endpoint or 'tax' in endpoint or 'fbr' in endpoint %}menu-open{% endif %}">
-                                <a href="#" class="nav-link {% if 'profit_loss' in endpoint or 'balance_sheet' in endpoint or 'cash_flow' in endpoint or 'tax' in endpoint or 'fbr' in endpoint %}active{% endif %}" aria-expanded="{{ 'true' if 'profit_loss' in endpoint or 'balance_sheet' in endpoint or 'cash_flow' in endpoint or 'tax' in endpoint or 'fbr' in endpoint else 'false' }}"><i class="nav-icon fas fa-chart-line"></i><p>Statements & tax<i class="right fas fa-angle-left"></i></p></a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item"><a href="{{ url_for('main.profit_loss') }}" class="nav-link {% if 'profit_loss' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-chart-line"></i><p>Profit & loss</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.balance_sheet') }}" class="nav-link {% if 'balance_sheet' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-scale-balanced"></i><p>Balance sheet</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.cash_flow') }}" class="nav-link {% if 'cash_flow' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-water"></i><p>Cash flow</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.fbr_invoices') }}" class="nav-link {% if 'fbr_invoice' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-file-invoice"></i><p>FBR invoices</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.tax_returns') }}" class="nav-link {% if 'tax_return' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-file-circle-check"></i><p>Tax returns</p></a></li>
-                                    <li class="nav-item"><a href="{{ url_for('main.sales_tax_report') }}" class="nav-link {% if 'sales_tax' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-percent"></i><p>Sales tax report</p></a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item has-treeview {% if 'payroll' in endpoint or 'employee' in endpoint or 'attendance' in endpoint or 'timesheet' in endpoint or 'leave' in endpoint or 'shift' in endpoint %}menu-open{% endif %}">
-                        <a href="#" class="nav-link {% if 'payroll' in endpoint or 'employee' in endpoint or 'attendance' in endpoint or 'timesheet' in endpoint or 'leave' in endpoint or 'shift' in endpoint %}active{% endif %}" aria-expanded="{{ 'true' if 'payroll' in endpoint or 'employee' in endpoint or 'attendance' in endpoint or 'timesheet' in endpoint or 'leave' in endpoint or 'shift' in endpoint else 'false' }}"><i class="nav-icon fas fa-people-group"></i><p>People & payroll<i class="right fas fa-angle-left"></i></p></a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item"><a href="{{ url_for('main.payroll') }}" class="nav-link {% if endpoint == 'main.payroll' %}active{% endif %}"><i class="nav-icon fas fa-id-card"></i><p>Employees</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.shifts') }}" class="nav-link {% if 'shift' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-business-time"></i><p>Shift plans</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.attendance') }}" class="nav-link {% if 'attendance' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-clipboard-check"></i><p>Attendance</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.timesheets') }}" class="nav-link {% if 'timesheet' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-clock"></i><p>Timesheets</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.leave_requests') }}" class="nav-link {% if 'leave' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-calendar-minus"></i><p>Leave requests</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.payroll_run') }}" class="nav-link {% if endpoint == 'main.payroll_run' %}active{% endif %}"><i class="nav-icon fas fa-calculator"></i><p>Run payroll</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.payroll_payments') }}" class="nav-link {% if endpoint == 'main.payroll_payments' %}active{% endif %}"><i class="nav-icon fas fa-money-check-dollar"></i><p>Salary payments</p></a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item has-treeview {% if 'report' in endpoint or 'analytics' in endpoint %}menu-open{% endif %}">
-                        <a href="#" class="nav-link {% if 'report' in endpoint or 'analytics' in endpoint %}active{% endif %}" aria-expanded="{{ 'true' if 'report' in endpoint or 'analytics' in endpoint else 'false' }}"><i class="nav-icon fas fa-chart-line"></i><p>Reports & insight<i class="right fas fa-angle-left"></i></p></a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item"><a href="{{ url_for('main.analytics_dashboard') }}" class="nav-link {% if 'analytics' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-chart-pie"></i><p>Performance analytics</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.reports_dashboard') }}" class="nav-link {% if endpoint == 'main.reports_dashboard' %}active{% endif %}"><i class="nav-icon fas fa-file-export"></i><p>Reports & exports</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.sales_analysis_report') }}" class="nav-link {% if 'sales_analysis' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-chart-column"></i><p>Sales analysis</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.inventory_valuation_report') }}" class="nav-link {% if 'inventory_valuation' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-boxes-stacked"></i><p>Inventory valuation</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.production_reports') }}" class="nav-link {% if endpoint == 'main.production_reports' %}active{% endif %}"><i class="nav-icon fas fa-industry"></i><p>Production performance</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.production_efficiency_report') }}" class="nav-link {% if 'production_efficiency' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-gauge-high"></i><p>Production efficiency</p></a></li>
-                            <li class="nav-item"><a href="{{ url_for('main.material_consumption_report') }}" class="nav-link {% if 'material_consumption' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-chart-area"></i><p>Material consumption</p></a></li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-header">ADMINISTRATION</li>
-                    <li class="nav-item has-treeview {% if 'settings' in endpoint or 'admin_user' in endpoint %}menu-open{% endif %}">
-                        <a href="#" class="nav-link {% if 'settings' in endpoint or 'admin_user' in endpoint %}active{% endif %}" aria-expanded="{{ 'true' if 'settings' in endpoint or 'admin_user' in endpoint else 'false' }}"><i class="nav-icon fas fa-sliders"></i><p>System control<i class="right fas fa-angle-left"></i></p></a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item"><a href="{{ url_for('main.settings') }}" class="nav-link {% if 'settings' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-gear"></i><p>Business settings</p></a></li>
-                            {% if current_user.role == 'admin' %}<li class="nav-item"><a href="{{ url_for('main.admin_users') }}" class="nav-link {% if 'admin_user' in endpoint %}active{% endif %}"><i class="nav-icon fas fa-users-gear"></i><p>User access</p></a></li>{% endif %}
-                        </ul>
-                    </li>
+                    {%- endif %}
+                    {%- endfor %}
+                    {%- endfor %}
                 </ul>
             </nav>
         </div>

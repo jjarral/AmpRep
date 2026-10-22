@@ -193,6 +193,37 @@
     </div>
 </div>
 
+{% from "receivables/_payment_form.html" import payment_form %}
+{% set owed = (order.total_amount or 0) - (order.paid_amount or 0) %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}?v=20261022-rc">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-receivables.css') }}?v=20261022-rc">
+<div class="ax-command ord-payments" id="payments" style="margin-top:16px">
+    <section class="cmd-panel" aria-labelledby="ord-pay-heading">
+        <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="ord-pay-heading"><i class="fas fa-hand-holding-dollar" aria-hidden="true"></i> Payments</h3>
+            <span class="cmd-panel-meta">Paid PKR {{ '{:,.0f}'.format(order.paid_amount or 0) }} of {{ '{:,.0f}'.format(order.total_amount or 0) }}{% if owed > 0.009 %} · <strong style="color:#f0a58f">PKR {{ '{:,.0f}'.format(owed) }} owed</strong>{% endif %}</span></header>
+        {% if order.payments %}
+        <div class="cmd-table-wrap"><table class="cmd-table rc-table">
+            <caption class="sr-only">Payments recorded for this order</caption>
+            <thead><tr><th scope="col">Date</th><th scope="col">Method</th><th scope="col">Reference</th><th scope="col">Note</th><th scope="col">By</th><th scope="col" class="is-num">Amount</th><th scope="col"><span class="sr-only">Remove</span></th></tr></thead>
+            <tbody>{% for p in order.payments %}
+                <tr><td>{{ p.paid_on.strftime('%d %b %Y') }}</td><td>{{ {'bank':'Bank transfer','cash':'Cash','cheque':'Cheque','online':'Online / card'}.get(p.method, p.method) }}</td><td>{{ p.reference or '—' }}</td><td>{{ p.notes or '' }}</td><td>{{ p.recorded_by or '' }}</td><td class="is-num rc-total">{{ '{:,.0f}'.format(p.amount) }}</td>
+                    <td><form method="post" action="{{ url_for('main.delete_customer_payment', payment_id=p.id) }}" onsubmit="return this.querySelector('[name=confirm]').checked || (this.querySelector('.rc-confirm').hidden = false, false)">
+                        <input type="hidden" name="next" value="{{ request.path }}#payments">
+                        <label class="rc-confirm" hidden><input type="checkbox" name="confirm" onchange="this.form.requestSubmit()"> Confirm remove</label>
+                        <button type="submit" class="rc-btn" title="Remove this payment if it was entered by mistake">Remove</button></form></td></tr>
+            {% endfor %}</tbody>
+        </table></div>
+        {% elif (order.paid_amount or 0) > 0 %}
+        <div class="cmd-empty is-compact">PKR {{ '{:,.0f}'.format(order.paid_amount) }} was marked paid before payment records were kept.</div>
+        {% endif %}
+        {% if owed > 0.009 and (order.status or '')|lower not in ['cancelled', 'canceled'] %}
+        <div class="cmd-panel-body">{{ payment_form(order, owed, request.path ~ '#payments', [('bank','Bank transfer'),('cash','Cash'),('cheque','Cheque'),('online','Online / card')], now_date or order.created_at.date(), open=not order.payments) }}</div>
+        {% elif owed <= 0.009 %}
+        <div class="cmd-empty is-compact"><i class="fas fa-circle-check" aria-hidden="true"></i>Fully paid.</div>
+        {% endif %}
+    </section>
+</div>
+
 <style>
 .timeline {
     position: relative;

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% from "receivables/_payment_form.html" import payment_form %}
+{% block title %}Statement · {{ customer.business_name or customer.name }}{% endblock %}
+{% block page_title %}Customer statement{% endblock %}
+{% block breadcrumb_active %}Statement{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}?v=20261022-rc">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-receivables.css') }}?v=20261022-rc">
+{% endblock %}
+
+{% block content %}
+<div class="ax-command rc-statement">
+    <header class="cmd-topline">
+        <div class="cmd-brandline"><span class="cmd-brand-mark"><i class="fas fa-file-lines" aria-hidden="true"></i></span><strong>Statement of account</strong><span class="cmd-hide-sm">/</span><span class="cmd-hide-sm">as of {{ today.strftime('%d %b %Y') }}</span></div>
+        <div class="cmd-top-tools rc-no-print">
+            <a class="cmd-refresh" href="{{ url_for('main.receivables') }}"><i class="fas fa-arrow-left" aria-hidden="true"></i><span>Receivables</span></a>
+            <button class="cmd-refresh" type="button" onclick="window.print()"><i class="fas fa-print" aria-hidden="true"></i><span>Print or save PDF</span></button>
+        </div>
+    </header>
+
+    <section class="rc-st-head">
+        <div>
+            <span class="rc-label">Customer</span>
+            <h2>{{ customer.business_name or customer.name }}</h2>
+            <p>{% if customer.business_name %}{{ customer.name }}<br>{% endif %}{% if customer.phone %}{{ customer.phone }}<br>{% endif %}{% if customer.email %}{{ customer.email }}<br>{% endif %}{% if customer.address %}{{ customer.address }}{% endif %}</p>
+        </div>
+        <div class="rc-st-from">
+            <span class="rc-label">From</span>
+            <h2>Ampoulex</h2>
+            <p>Glass ampoules · Wah Cantt<br>0340-5336238 · 0331-9980908<br>info@ampoulex.com</p>
+        </div>
+        <div class="rc-st-balance">
+            <span class="rc-label">Balance due</span>
+            <strong>PKR {{ '{:,.0f}'.format(balance if balance > 0 else 0) }}</strong>
+            <span>Payment terms: {{ customer.payment_terms or 'cash' }}{% if balance < -0.009 %} · in credit PKR {{ '{:,.0f}'.format(-balance) }}{% endif %}</span>
+        </div>
+    </section>
+
+    {% if open_rows %}
+    <section class="cmd-panel rc-no-print" aria-labelledby="st-open">
+        <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="st-open"><i class="fas fa-list-check" aria-hidden="true"></i> Open orders</h3><span class="cmd-panel-meta">Record a payment against the order it pays for</span></header>
+        <ul class="rc-orders">
+            {% for r in open_rows %}{% set o = r.order %}
+            <li class="rc-order">
+                <div class="rc-order-main"><a class="rc-ref" href="{{ url_for('main.view_order', id=o.id) }}">{{ o.order_number }}</a><span class="rc-meta">Ordered {{ o.created_at.strftime('%d %b %Y') if o.created_at else '—' }} · due {{ r.due.strftime('%d %b') }}</span></div>
+                <div class="rc-order-figs"><span class="rc-late-pill {{ 'is-ok' if r.bucket == 'current' else ('is-bad' if r.late > 60 else 'is-warn') }}">{{ 'Not yet due' if r.bucket == 'current' else r.late ~ ' days late' }}</span><strong class="rc-owed">PKR {{ '{:,.0f}'.format(r.outstanding) }}</strong></div>
+                <div class="rc-order-pay">{{ payment_form(o, r.outstanding, request.full_path, payment_methods, today) }}</div>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    <section class="cmd-panel" aria-labelledby="st-ledger">
+        <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="st-ledger"><i class="fas fa-book" aria-hidden="true"></i> Transactions</h3><span class="cmd-panel-meta">Orders add to the balance, payments reduce it</span></header>
+        {% if lines %}
+        <div class="cmd-table-wrap"><table class="cmd-table rc-table rc-ledger">
+            <caption class="sr-only">All orders and payments for this customer with running balance</caption>
+            <thead><tr><th scope="col">Date</th><th scope="col">Details</th><th scope="col">Reference</th><th scope="col" class="is-num">Charged</th><th scope="col" class="is-num">Paid</th><th scope="col" class="is-num">Balance</th></tr></thead>
+            <tbody>{% for l in lines %}
+                <tr class="{{ l.kind }}"><td>{{ l.date.strftime('%d %b %Y') }}</td><td class="is-primary">{{ l.detail }}</td><td>{{ l.ref or '—' }}</td>
+                    <td class="is-num">{{ '{:,.0f}'.format(l.debit) if l.debit else '' }}</td>
+                    <td class="is-num rc-paid">{{ '{:,.0f}'.format(l.credit) if l.credit else '' }}</td>
+                    <td class="is-num rc-total">{{ '{:,.0f}'.format(l.balance) }}</td></tr>
+            {% endfor %}</tbody>
+            <tfoot><tr><th colspan="3">Balance due</th><th class="is-num">{{ '{:,.0f}'.format(lines|sum(attribute='debit')) }}</th><th class="is-num">{{ '{:,.0f}'.format(lines|sum(attribute='credit')) }}</th><th class="is-num">PKR {{ '{:,.0f}'.format(balance) }}</th></tr></tfoot>
+        </table></div>
+        {% else %}<div class="cmd-empty is-compact"><i class="fas fa-book" aria-hidden="true"></i>No orders for this customer yet.</div>{% endif %}
+    </section>
+    <p class="rc-print-note">Cancelled orders are not included. Please quote the order number with your payment.</p>
+</div>
+{% endblock %}

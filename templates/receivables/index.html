@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% from "receivables/_payment_form.html" import payment_form %}
+{% block title %}Receivables · Ampoulex{% endblock %}
+{% block page_title %}Receivables{% endblock %}
+{% block breadcrumb_active %}Receivables{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-dashboard.css') }}?v=20261022-rc">
+<link rel="stylesheet" href="{{ url_for('static', filename='admin-receivables.css') }}?v=20261022-rc">
+{% endblock %}
+
+{% block content %}
+{% set label_for = dict(buckets) %}
+<div class="ax-command">
+    <header class="cmd-topline">
+        <div class="cmd-brandline"><span class="cmd-brand-mark"><i class="fas fa-hand-holding-dollar" aria-hidden="true"></i></span><strong>Receivables</strong><span class="cmd-hide-sm">/</span><span class="cmd-hide-sm">Money owed by customers · {{ today.strftime('%d %b %Y') }}</span></div>
+        <div class="cmd-top-tools"><a class="cmd-refresh" href="{{ url_for('main.orders') }}"><i class="fas fa-file-invoice" aria-hidden="true"></i><span>Sales orders</span></a></div>
+    </header>
+
+    <section class="cmd-metrics rc-metrics" aria-label="Receivables summary">
+        <div class="cmd-metric gold"><span class="cmd-metric-head">Owed in total</span><strong class="cmd-metric-value"><small>PKR</small> {{ '{:,.0f}'.format(total_outstanding) }}</strong><span class="cmd-metric-foot">{{ customer_rows|length }} customer{{ '' if customer_rows|length == 1 else 's' }} · {{ customer_rows|sum(attribute='orders') }} open order{{ '' if customer_rows|sum(attribute='orders') == 1 else 's' }}</span></div>
+        <div class="cmd-metric {% if overdue_total > 0 %}red{% endif %}"><span class="cmd-metric-head">Overdue</span><strong class="cmd-metric-value"><small>PKR</small> {{ '{:,.0f}'.format(overdue_total) }}</strong><span class="cmd-metric-foot">past the customer's payment terms</span></div>
+        <div class="cmd-metric"><span class="cmd-metric-head">Over 90 days</span><strong class="cmd-metric-value"><small>PKR</small> {{ '{:,.0f}'.format(bucket_totals['90+']) }}</strong><span class="cmd-metric-foot">hardest to collect</span></div>
+        <div class="cmd-metric"><span class="cmd-metric-head">Paid this month</span><strong class="cmd-metric-value"><small>PKR</small> {{ '{:,.0f}'.format(collected_month) }}</strong><span class="cmd-metric-foot">payments recorded since {{ today.replace(day=1).strftime('%d %b') }}</span></div>
+    </section>
+
+    <section class="cmd-panel" aria-labelledby="aging-heading">
+        <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="aging-heading"><i class="fas fa-hourglass-half" aria-hidden="true"></i> How late</h3><span class="cmd-panel-meta">Due date = order date + customer's payment terms</span></header>
+        <div class="cmd-panel-body">
+            {% if total_outstanding > 0 %}
+            <div class="rc-agebar" role="img" aria-label="{% for key, label in buckets %}{{ label }}: PKR {{ '{:,.0f}'.format(bucket_totals[key]) }}. {% endfor %}">
+                {% for key, label in buckets %}{% if bucket_totals[key] > 0 %}<span class="rc-seg b{{ loop.index }}" style="flex-grow:{{ bucket_totals[key] }}"></span>{% endif %}{% endfor %}
+            </div>
+            {% endif %}
+            <nav class="rc-buckets" aria-label="Filter open orders by lateness">
+                <a href="{{ url_for('main.receivables') }}" class="rc-bucket {% if not active_bucket %}is-on{% endif %}"><span>All open</span><strong>PKR {{ '{:,.0f}'.format(total_outstanding) }}</strong></a>
+                {% for key, label in buckets %}<a href="{{ url_for('main.receivables', bucket=key) }}#open-orders" class="rc-bucket {% if active_bucket == key %}is-on{% endif %}"><span><i class="rc-dot b{{ loop.index }}"></i>{{ label }}</span><strong>PKR {{ '{:,.0f}'.format(bucket_totals[key]) }}</strong></a>{% endfor %}
+            </nav>
+        </div>
+    </section>
+
+    <section class="cmd-panel" aria-labelledby="cust-heading">
+        <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="cust-heading"><i class="fas fa-users" aria-hidden="true"></i> By customer</h3><span class="cmd-panel-meta">Most overdue first</span></header>
+        {% if customer_rows %}
+        <div class="cmd-table-wrap"><table class="cmd-table rc-table">
+            <caption class="sr-only">Amount owed by each customer, split by how late it is</caption>
+            <thead><tr><th scope="col">Customer</th>{% for key, label in buckets %}<th scope="col" class="is-num">{{ 'Not due' if key == 'current' else key }}</th>{% endfor %}<th scope="col" class="is-num">Total</th><th scope="col"><span class="sr-only">Statement</span></th></tr></thead>
+            <tbody>
+            {% for c in customer_rows %}
+            <tr>
+                <td class="is-primary">{{ c.name }}<small>{{ c.contact or '' }}{% if c.phone %} · {{ c.phone }}{% endif %}{% if c.credit_limit and c.total > c.credit_limit %} · <span class="rc-flag">over credit limit</span>{% endif %}</small></td>
+                {% for key, label in buckets %}<td class="is-num {% if c.buckets[key] > 0 and key != 'current' %}rc-late{% endif %}">{{ '{:,.0f}'.format(c.buckets[key]) if c.buckets[key] > 0 else '—' }}</td>{% endfor %}
+                <td class="is-num rc-total">{{ '{:,.0f}'.format(c.total) }}</td>
+                <td>{% if c.id %}<a href="{{ url_for('main.customer_statement', customer_id=c.id) }}">Statement</a>{% else %}<span class="rc-muted" title="This order isn't linked to a customer record">—</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+        {% else %}<div class="cmd-empty"><i class="fas fa-circle-check" aria-hidden="true"></i>Nobody owes anything. Every order is paid.</div>{% endif %}
+    </section>
+
+    <section class="cmd-panel" id="open-orders" aria-labelledby="open-heading">
+        <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="open-heading"><i class="fas fa-list-check" aria-hidden="true"></i> Open orders{% if active_bucket %} · {{ label_for[active_bucket] }}{% endif %}</h3><span class="cmd-panel-meta">{{ rows|length }} order{{ '' if rows|length == 1 else 's' }}</span></header>
+        {% if rows %}
+        <ul class="rc-orders">
+            {% for r in rows %}{% set o = r.order %}
+            <li class="rc-order">
+                <div class="rc-order-main">
+                    <a class="rc-ref" href="{{ url_for('main.view_order', id=o.id) }}">{{ o.order_number or ('#' ~ o.id) }}</a>
+                    <span class="is-primary">{{ (o.customer.business_name or o.customer.name) if o.customer else (o.customer_business_snapshot or o.customer_name_snapshot or 'Unknown') }}</span>
+                    <span class="rc-meta">Ordered {{ o.created_at.strftime('%d %b %Y') if o.created_at else '—' }} · terms {{ r.terms }} · due {{ r.due.strftime('%d %b') }}</span>
+                </div>
+                <div class="rc-order-figs">
+                    <span class="rc-late-pill {{ 'is-ok' if r.bucket == 'current' else ('is-bad' if r.late > 60 else 'is-warn') }}">{{ 'Not yet due' if r.bucket == 'current' else r.late ~ ' day' ~ ('' if r.late == 1 else 's') ~ ' late' }}</span>
+                    <strong class="rc-owed">PKR {{ '{:,.0f}'.format(r.outstanding) }}</strong>
+                    <span class="rc-meta">of {{ '{:,.0f}'.format(o.total_amount or 0) }}{% if (o.paid_amount or 0) > 0 %} · {{ '{:,.0f}'.format(o.paid_amount) }} paid{% endif %}</span>
+                </div>
+                <div class="rc-order-pay">{{ payment_form(o, r.outstanding, request.full_path, payment_methods, today) }}</div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}<div class="cmd-empty"><i class="fas fa-circle-check" aria-hidden="true"></i>{{ 'No open orders in this group.' if active_bucket else 'No open orders.' }}</div>{% endif %}
+    </section>
+
+    <section class="cmd-panel" aria-labelledby="recent-heading">
+        <header class="cmd-panel-head"><h3 class="cmd-panel-title" id="recent-heading"><i class="fas fa-receipt" aria-hidden="true"></i> Latest payments</h3></header>
+        {% if recent_payments %}
+        <div class="cmd-table-wrap"><table class="cmd-table rc-table">
+            <caption class="sr-only">Most recently recorded payments</caption>
+            <thead><tr><th scope="col">Date</th><th scope="col">Order</th><th scope="col">Customer</th><th scope="col">Method</th><th scope="col">Reference</th><th scope="col" class="is-num">Amount</th></tr></thead>
+            <tbody>{% for p in recent_payments %}
+                <tr><td>{{ p.paid_on.strftime('%d %b %Y') }}</td><td><a href="{{ url_for('main.view_order', id=p.order_id) }}">{{ p.order.order_number }}</a></td><td class="is-primary">{{ p.order.customer_business_snapshot or p.order.customer_name_snapshot or '—' }}</td><td>{{ dict(payment_methods).get(p.method, p.method) }}</td><td>{{ p.reference or '—' }}</td><td class="is-num rc-total">{{ '{:,.0f}'.format(p.amount) }}</td></tr>
+            {% endfor %}</tbody>
+        </table></div>
+        {% else %}<div class="cmd-empty is-compact"><i class="fas fa-receipt" aria-hidden="true"></i>No payments recorded here yet. Use <strong>Record payment</strong> on any open order.</div>{% endif %}
+    </section>
+</div>
+{% endblock %}

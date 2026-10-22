@@ -54,6 +54,7 @@ TEMPLATES = {
     'financials': ['financials/profit_loss.html', 'financials/balance_sheet.html', 'financials/cash_flow.html'],
     'painting': ['painting/dashboard.html', 'painting/prices.html', 'painting/price_form.html', 'painting/orders.html', 'painting/order_form.html', 'painting/order_view.html', 'painting/invoice.html'],
     'tax': ['tax/fbr_invoices.html', 'tax/returns.html', 'tax/return_form.html', 'tax/reports/sales_tax.html'],
+    'receivables': ['receivables/index.html', 'receivables/statement.html', 'receivables/_payment_form.html'],
 }
 
 TOTAL_TEMPLATES = sum(len(templates) for templates in TEMPLATES.values())
@@ -208,23 +209,25 @@ def create_app():
     # ────────────────────────────────────────────────────────────────
     # 🔧 Dev Proxy Route
     # ────────────────────────────────────────────────────────────────
-    @app.route('/__mockup/', defaults={'path': ''})
-    @app.route('/__mockup/<path:path>')
-    def mockup_proxy(path):
-        target = f"http://127.0.0.1:3001/__mockup/{path}"
-        if request.query_string:
-            target += '?' + request.query_string.decode()
-        try:
-            req = urllib.request.Request(target, headers={
-                k: v for k, v in request.headers if k.lower() not in ('host', 'content-length')
-            })
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                content = resp.read()
-                excluded = {'transfer-encoding', 'connection', 'keep-alive'}
-                headers = {k: v for k, v in resp.headers.items() if k.lower() not in excluded}
-                return Response(content, status=resp.status, headers=headers)
-        except urllib.error.URLError:
-            return Response("Mockup sandbox not running", status=503)
+    # Development-only proxy to a local mockup server; never registered on deployed sites.
+    if _is_local_environment():
+        @app.route('/__mockup/', defaults={'path': ''})
+        @app.route('/__mockup/<path:path>')
+        def mockup_proxy(path):
+            target = f"http://127.0.0.1:3001/__mockup/{path}"
+            if request.query_string:
+                target += '?' + request.query_string.decode()
+            try:
+                req = urllib.request.Request(target, headers={
+                    k: v for k, v in request.headers if k.lower() not in ('host', 'content-length')
+                })
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    content = resp.read()
+                    excluded = {'transfer-encoding', 'connection', 'keep-alive'}
+                    headers = {k: v for k, v in resp.headers.items() if k.lower() not in excluded}
+                    return Response(content, status=resp.status, headers=headers)
+            except urllib.error.URLError:
+                return Response("Mockup sandbox not running", status=503)
 
     # ────────────────────────────────────────────────────────────────
     # 🗺️ Register Blueprints

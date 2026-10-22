@@ -200,6 +200,23 @@ class Order(db.Model):
     # customer = db.relationship(...)  # Removed - created by Customer.custom_prices backref
     # inquiry = db.relationship(...)  # Removed - created by Inquiry.inquiry_items backref
 
+class CustomerPayment(db.Model):
+    """A payment received from a customer against one sales order."""
+    __tablename__ = 'customer_payment'
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False, index=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=True, index=True)
+    amount = db.Column(db.Float, nullable=False)
+    paid_on = db.Column(db.Date, nullable=False)
+    method = db.Column(db.String(30), default='bank')  # cash, bank, cheque, online
+    reference = db.Column(db.String(100))  # cheque number or bank transaction ID
+    notes = db.Column(db.String(255))
+    recorded_by = db.Column(db.String(64))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    order = db.relationship('Order', backref=db.backref('payments', lazy=True, order_by='CustomerPayment.paid_on'))
+
+
 class OrderItem(db.Model):
     __tablename__ = 'order_item'
     id = db.Column(db.Integer, primary_key=True)

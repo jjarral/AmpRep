@@ -32,12 +32,51 @@ from app.models import (
     PaymentVoucher, PaymentVoucherLine,
     ReceiptVoucher, ReceiptVoucherLine,
     AuditLog,
-    FixedAsset, Shift, ShiftAssignment
+    FixedAsset, Shift, ShiftAssignment,
+    CustomerPayment
 )
 from app.utils.tax_calculator import calculate_monthly_tax_deduction
 
 
 main_bp = Blueprint('main', __name__) 
+
+def form_num(name, default=0, cast=float):
+    """Read a number from the submitted form. Blank or unreadable values fall back to the default
+    instead of crashing the save (form fields arrive as '' when left empty)."""
+    raw = request.form.get(name)
+    if raw is None or str(raw).strip() == '':
+        return default
+    try:
+        return cast(float(str(raw).replace(',', '').strip())) if cast is int else cast(str(raw).replace(',', '').strip())
+    except (TypeError, ValueError):
+        return default
+
+
+def db_error_message(error):
+    """Plain-language text for a failed save; the technical detail goes to the server log."""
+    from sqlalchemy.exc import IntegrityError
+    try:
+        current_app.logger.error(f"Save failed: {error}")
+    except Exception:
+        pass
+    text_ = str(getattr(error, 'orig', error))
+    if isinstance(error, IntegrityError):
+        field = None
+        m = re.search(r'UNIQUE constraint failed: \w+\.(\w+)', text_) or re.search(r'Key \((\w+)\)=', text_)
+        if m:
+            field = m.group(1).replace('_', ' ')
+            field = {'cnic': 'CNIC', 'sku': 'SKU', 'ntn': 'NTN', 'strn': 'STRN', 'po number': 'PO number'}.get(field, field)
+            return f"Another record already uses that {field}. Use a different {field}, or edit the existing record. Nothing was saved."
+        if 'NOT NULL' in text_ or 'null value' in text_:
+            m = re.search(r'NOT NULL constraint failed: \w+\.(\w+)', text_) or re.search(r'column "(\w+)"', text_)
+            field = m.group(1).replace('_', ' ') if m else 'a required field'
+            return f"{field.capitalize()} is required. Nothing was saved."
+        return "This conflicts with an existing record. Nothing was saved."
+    if isinstance(error, ValueError):
+        return "One of the values isn't in the right format (check numbers and dates). Nothing was saved."
+    return "Something went wrong while saving. Nothing was saved; please try again."
+
+
 
 _INQUIRY_EMAIL = re.compile(
     r"(?=.{3,120}\Z)(?=[^@]{1,64}@)"
@@ -908,7 +947,7 @@ def products():
 def add_product():
     if request.method == 'POST':
         try:
-            base_price = float(request.form.get('base_price', 0))
+            base_price = form_num('base_price', 0, float)
             
             product = Product(
                 name=request.form.get('name', ''),
@@ -973,7 +1012,7 @@ def add_product():
             flash('Product added successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.products'))
     
@@ -1028,7 +1067,7 @@ def edit_product(id):
             flash('Product updated successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.products'))
     
@@ -1044,7 +1083,7 @@ def delete_product(id):
         flash('Product archived successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.products'))
 
@@ -1083,7 +1122,7 @@ def adjust_stock(id):
         flash('Stock adjusted successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.products'))
 
@@ -1176,7 +1215,7 @@ def add_inquiry():
             flash('Inquiry created successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.inquiries'))
     
@@ -1209,7 +1248,7 @@ def edit_inquiry(id):
             flash('Inquiry updated successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.edit_inquiry', id=id))
     
@@ -1228,7 +1267,7 @@ def delete_inquiry(id):
         flash('Inquiry archived successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.inquiries'))
 
@@ -1316,7 +1355,7 @@ def process_invoice(id):
         except Exception as e:
             db.session.rollback()
             print(f"ERROR: {str(e)}")
-            flash(f'Error processing invoice: {str(e)}', 'error')
+            flash(f'Error processing invoice: {db_error_message(e)}', 'error')
             return redirect(url_for('main.edit_inquiry', id=id))
 
     stock_issues = []
@@ -1466,7 +1505,7 @@ def add_order():
     if request.method == 'POST':
         try:
             order_number = f"ORD-{datetime.utcnow().strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
-            unit_price = float(request.form.get('unit_price', 0))
+            unit_price = form_num('unit_price', 0, float)
             quantity = int(request.form.get('quantity', '0') or 0)
             subtotal = unit_price * quantity
             tax_amount = subtotal * 0.17
@@ -1525,7 +1564,7 @@ def add_order():
             flash('Order created successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.orders'))
     
@@ -1539,7 +1578,8 @@ def add_order():
 def view_order(id):
     order = Order.query.get_or_404(id)
     approval_request = OrderApproval.query.filter_by(order_id=id, status='pending').first()
-    return render_template('orders/view.html', order=order, approval_request=approval_request)
+    return render_template('orders/view.html', order=order, approval_request=approval_request,
+                           now_date=datetime.utcnow().date())
 
 
 @main_bp.route('/orders/edit/<int:id>', methods=['GET', 'POST'])
@@ -1577,7 +1617,7 @@ def edit_order(id):
             return redirect(url_for('main.view_order', id=order.id))
         except Exception as e:
             db.session.rollback()
-            flash(f'Error updating order: {str(e)}', 'error')
+            flash(f'Error updating order: {db_error_message(e)}', 'error')
     return render_template('orders/edit.html', order=order)
 
 @main_bp.route('/orders/invoice/<int:id>')
@@ -1589,17 +1629,266 @@ def order_invoice(id):
     return render_template('orders/invoice.html', order=order, logo_path=logo_path)
 
 
+# ============================================================================
+# RECEIVABLES: who owes what, for how long, and recording payments
+# ============================================================================
+
+PAYMENT_METHODS = [('bank', 'Bank transfer'), ('cash', 'Cash'), ('cheque', 'Cheque'), ('online', 'Online / card')]
+AGING_BUCKETS = [('current', 'Not yet due'), ('1-30', '1–30 days late'), ('31-60', '31–60 days late'),
+                 ('61-90', '61–90 days late'), ('90+', 'Over 90 days late')]
+
+
+def _terms_days(terms):
+    """'30 days' -> 30, 'cash' or unknown -> 0."""
+    match = re.search(r'\d+', terms or '')
+    return int(match.group()) if match else 0
+
+
+def _open_order_filter():
+    return (
+        Order.payment_status.in_(['unpaid', 'partial']),
+        or_(Order.status.is_(None), ~Order.status.in_(['cancelled', 'canceled'])),
+    )
+
+
+def _aging_row(order, today):
+    outstanding = round((order.total_amount or 0) - (order.paid_amount or 0), 2)
+    terms = order.customer.payment_terms if order.customer else None
+    opened = (order.created_at or datetime.utcnow()).date()
+    due = opened + timedelta(days=_terms_days(terms))
+    late = (today - due).days
+    if late <= 0:
+        bucket = 'current'
+    elif late <= 30:
+        bucket = '1-30'
+    elif late <= 60:
+        bucket = '31-60'
+    elif late <= 90:
+        bucket = '61-90'
+    else:
+        bucket = '90+'
+    return {'order': order, 'outstanding': outstanding, 'due': due, 'late': max(late, 0),
+            'bucket': bucket, 'terms': terms or 'cash'}
+
+
+def create_journal_entry_for_customer_payment(payment):
+    """Dr Cash/Bank, Cr Accounts Receivable. Skipped quietly if accounts are not set up."""
+    try:
+        if JournalEntry.query.filter_by(reference_type='customer_payment', reference_id=payment.id).first():
+            return
+        ar_account = Account.query.filter(Account.account_name.like('%Receivable%')).first()
+        if payment.method == 'cash':
+            money_account = Account.query.filter(Account.account_name.like('%Cash%')).first()
+        else:
+            money_account = (Account.query.filter(Account.account_name.like('%Bank%')).first()
+                             or Account.query.filter(Account.account_name.like('%Cash%')).first())
+        if not ar_account or not money_account:
+            return
+        order = payment.order
+        entry = JournalEntry(
+            entry_number=f"JE-RCPT-{payment.id}",
+            entry_date=payment.paid_on,
+            description=f"Payment received for {order.order_number}",
+            reference=payment.reference or order.order_number,
+            reference_type='customer_payment',
+            reference_id=payment.id,
+            status='posted',
+            created_by='system',
+        )
+        db.session.add(entry)
+        db.session.flush()
+        db.session.add(JournalEntryLine(entry_id=entry.id, account_id=money_account.id,
+                                        description=f'Received for {order.order_number}', debit=payment.amount, credit=0))
+        db.session.add(JournalEntryLine(entry_id=entry.id, account_id=ar_account.id,
+                                        description=f'AR reduction {order.order_number}', debit=0, credit=payment.amount))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.warning(f"Journal for customer payment {payment.id} not created: {e}")
+
+
+@main_bp.route('/receivables')
+@login_required
+def receivables():
+    today = datetime.utcnow().date()
+    rows = [_aging_row(o, today) for o in Order.query.filter(*_open_order_filter()).order_by(Order.created_at).all()]
+    rows = [r for r in rows if r['outstanding'] > 0.009]
+
+    bucket_totals = {key: 0.0 for key, _ in AGING_BUCKETS}
+    customers = {}
+    for r in rows:
+        bucket_totals[r['bucket']] += r['outstanding']
+        o = r['order']
+        key = o.customer_id or ('name:' + (o.customer_business_snapshot or o.customer_name_snapshot or 'Unknown'))
+        c = customers.setdefault(key, {
+            'id': o.customer_id,
+            'name': (o.customer.business_name or o.customer.name) if o.customer else (o.customer_business_snapshot or o.customer_name_snapshot or 'Unknown'),
+            'contact': o.customer.name if o.customer else o.customer_name_snapshot,
+            'phone': (o.customer.phone if o.customer else None) or o.customer_phone_snapshot,
+            'credit_limit': o.customer.credit_limit if o.customer else 0,
+            'total': 0.0, 'oldest_late': 0, 'orders': 0,
+            'buckets': {key2: 0.0 for key2, _ in AGING_BUCKETS},
+        })
+        c['total'] += r['outstanding']
+        c['buckets'][r['bucket']] += r['outstanding']
+        c['oldest_late'] = max(c['oldest_late'], r['late'])
+        c['orders'] += 1
+    customer_rows = sorted(customers.values(), key=lambda c: (-c['oldest_late'], -c['total']))
+
+    bucket = request.args.get('bucket')
+    if bucket in bucket_totals:
+        rows = [r for r in rows if r['bucket'] == bucket]
+    rows.sort(key=lambda r: (-r['late'], -r['outstanding']))
+
+    month_start = today.replace(day=1)
+    collected_month = db.session.query(db.func.sum(CustomerPayment.amount)).filter(
+        CustomerPayment.paid_on >= month_start).scalar() or 0
+    recent_payments = CustomerPayment.query.order_by(CustomerPayment.paid_on.desc(), CustomerPayment.id.desc()).limit(8).all()
+
+    return render_template('receivables/index.html',
+        rows=rows, customer_rows=customer_rows, bucket_totals=bucket_totals,
+        total_outstanding=sum(bucket_totals.values()),
+        overdue_total=sum(v for k, v in bucket_totals.items() if k != 'current'),
+        buckets=AGING_BUCKETS, active_bucket=bucket if bucket in bucket_totals else None,
+        collected_month=collected_month, recent_payments=recent_payments,
+        payment_methods=PAYMENT_METHODS, today=today)
+
+
+@main_bp.route('/receivables/customer/<int:customer_id>')
+@login_required
+def customer_statement(customer_id):
+    customer = Customer.query.get_or_404(customer_id)
+    today = datetime.utcnow().date()
+    orders = Order.query.filter(
+        Order.customer_id == customer.id,
+        or_(Order.status.is_(None), ~Order.status.in_(['cancelled', 'canceled']))
+    ).order_by(Order.created_at).all()
+    payments = CustomerPayment.query.filter(CustomerPayment.order_id.in_([o.id for o in orders] or [0])).all()
+
+    lines = []
+    for o in orders:
+        lines.append({'date': (o.created_at or datetime.utcnow()).date(), 'kind': 'invoice', 'ref': o.order_number,
+                      'detail': 'Order ' + (o.order_number or str(o.id)), 'debit': o.total_amount or 0, 'credit': 0, 'order': o})
+        recorded = sum(p.amount for p in payments if p.order_id == o.id)
+        legacy = round((o.paid_amount or 0) - recorded, 2)
+        if legacy > 0.009:  # paid before payment records existed
+            lines.append({'date': (o.payment_date or o.created_at or datetime.utcnow()).date(), 'kind': 'payment',
+                          'ref': o.order_number, 'detail': 'Payment recorded on order', 'debit': 0, 'credit': legacy, 'order': o})
+    for p in payments:
+        method = dict(PAYMENT_METHODS).get(p.method, p.method or '')
+        lines.append({'date': p.paid_on, 'kind': 'payment', 'ref': p.reference or p.order.order_number,
+                      'detail': f"{method} · {p.order.order_number}", 'debit': 0, 'credit': p.amount, 'order': p.order})
+    lines.sort(key=lambda l: (l['date'], 0 if l['kind'] == 'invoice' else 1))
+    balance = 0.0
+    for l in lines:
+        balance += l['debit'] - l['credit']
+        l['balance'] = balance
+
+    open_rows = [r for r in (_aging_row(o, today) for o in orders
+                             if (o.payment_status or 'unpaid') in ('unpaid', 'partial')) if r['outstanding'] > 0.009]
+    return render_template('receivables/statement.html', customer=customer, lines=lines, balance=balance,
+                           open_rows=open_rows, today=today, payment_methods=PAYMENT_METHODS)
+
+
+@main_bp.route('/orders/<int:id>/payments', methods=['POST'])
+@login_required
+def record_order_payment(id):
+    order = Order.query.get_or_404(id)
+    back = request.form.get('next') or ''
+    if not back.startswith('/') or back.startswith('//'):
+        back = url_for('main.view_order', id=order.id)
+    outstanding = round((order.total_amount or 0) - (order.paid_amount or 0), 2)
+    try:
+        amount = round(float(request.form.get('amount') or 0), 2)
+    except ValueError:
+        amount = 0
+    try:
+        paid_on = datetime.strptime(request.form.get('paid_on') or '', '%Y-%m-%d').date()
+    except ValueError:
+        paid_on = datetime.utcnow().date()
+    method = request.form.get('method') or 'bank'
+    if method not in dict(PAYMENT_METHODS):
+        method = 'bank'
+
+    if (order.status or '').lower() in ('cancelled', 'canceled'):
+        flash('This order is cancelled, so it cannot take a payment.', 'error')
+        return redirect(back)
+    if amount <= 0:
+        flash('Enter a payment amount above zero.', 'error')
+        return redirect(back)
+    if amount > outstanding + 0.009:
+        flash(f'That is more than the PKR {outstanding:,.0f} still owed on {order.order_number}. Check the amount.', 'error')
+        return redirect(back)
+    if paid_on > datetime.utcnow().date() + timedelta(days=1):
+        flash('The payment date is in the future. Check the date.', 'error')
+        return redirect(back)
+
+    payment = CustomerPayment(
+        order_id=order.id, customer_id=order.customer_id, amount=amount, paid_on=paid_on, method=method,
+        reference=(request.form.get('reference') or '').strip()[:100] or None,
+        notes=(request.form.get('notes') or '').strip()[:255] or None,
+        recorded_by=getattr(current_user, 'username', None),
+    )
+    try:
+        db.session.add(payment)
+        order.paid_amount = round((order.paid_amount or 0) + amount, 2)
+        order.payment_status = 'paid' if order.paid_amount >= (order.total_amount or 0) - 0.009 else 'partial'
+        order.payment_method = method
+        order.payment_date = datetime.combine(paid_on, datetime.min.time())
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Payment for order {order.id} failed: {e}")
+        flash('The payment could not be saved. Nothing was recorded; please try again.', 'error')
+        return redirect(back)
+
+    create_journal_entry_for_customer_payment(payment)
+    left = max(0, (order.total_amount or 0) - order.paid_amount)
+    flash(f'Recorded PKR {amount:,.0f} on {order.order_number}. ' +
+          ('The order is now fully paid.' if left < 0.01 else f'PKR {left:,.0f} still owed.'), 'success')
+    return redirect(back)
+
+
+@main_bp.route('/payments/<int:payment_id>/delete', methods=['POST'])
+@login_required
+def delete_customer_payment(payment_id):
+    """Undo a payment entered by mistake, including its journal entry."""
+    payment = CustomerPayment.query.get_or_404(payment_id)
+    order = payment.order
+    back = request.form.get('next') or ''
+    if not back.startswith('/') or back.startswith('//'):
+        back = url_for('main.view_order', id=order.id)
+    try:
+        entry = JournalEntry.query.filter_by(reference_type='customer_payment', reference_id=payment.id).first()
+        if entry:
+            JournalEntryLine.query.filter_by(entry_id=entry.id).delete()
+            db.session.delete(entry)
+        order.paid_amount = max(0, round((order.paid_amount or 0) - payment.amount, 2))
+        order.payment_status = 'unpaid' if order.paid_amount < 0.01 else 'partial'
+        db.session.delete(payment)
+        db.session.commit()
+        flash(f'Removed the PKR {payment.amount:,.0f} payment from {order.order_number}.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Removing payment {payment_id} failed: {e}")
+        flash('The payment could not be removed. Nothing was changed.', 'error')
+    return redirect(back)
+
+
 @main_bp.route('/orders/delete/<int:id>')
 @login_required
 def delete_order(id):
     try:
         order = Order.query.get_or_404(id)
+        if CustomerPayment.query.filter_by(order_id=order.id).first():
+            flash(f'{order.order_number} has payments recorded against it. Remove those payments first, or mark the order cancelled instead.', 'error')
+            return redirect(url_for('main.view_order', id=order.id))
         db.session.delete(order)
         db.session.commit()
         flash('Order deleted successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.orders'))
 
@@ -1635,14 +1924,14 @@ def add_customer():
                 phone=request.form.get('phone', ''),
                 address=request.form.get('address', ''),
                 payment_terms=request.form.get('payment_terms', 'cash'),
-                credit_limit=float(request.form.get('credit_limit', 0))
+                credit_limit=form_num('credit_limit', 0, float)
             )
             db.session.add(customer)
             db.session.commit()
             flash('Customer added successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.customers'))
     
@@ -1664,13 +1953,13 @@ def edit_customer(id):
             customer.address = request.form.get('address', '')
             customer.payment_terms = request.form.get('payment_terms', 'cash')
             customer.is_active = request.form.get('is_active') == 'on'
-            customer.credit_limit = float(request.form.get('credit_limit', 0))
+            customer.credit_limit = form_num('credit_limit', 0, float)
             
             db.session.commit()
             flash('Customer updated successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.customers'))
     
@@ -1688,7 +1977,7 @@ def delete_customer(id):
         flash('Customer archived successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.customers'))
 
@@ -1733,7 +2022,7 @@ def customer_painting_pricing(id):
             flash('Customer painting prices updated successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.edit_customer', id=id))
     
@@ -1772,7 +2061,7 @@ def merge_customers():
             flash(f'Merged {len(merge_ids)} customer(s) into {primary_customer.name}', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error merging customers: {str(e)}', 'error')
+            flash(f'Error merging customers: {db_error_message(e)}', 'error')
         
         return redirect(url_for('main.customers'))
     
@@ -1818,14 +2107,14 @@ def add_supplier():
                 cnic=request.form.get('cnic', ''),
                 ntn=request.form.get('ntn', ''),
                 payment_terms=request.form.get('payment_terms', '30 days'),
-                credit_limit=float(request.form.get('credit_limit', 0))
+                credit_limit=form_num('credit_limit', 0, float)
             )
             db.session.add(supplier)
             db.session.commit()
             flash('Supplier added successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.suppliers'))
     
@@ -1849,14 +2138,14 @@ def edit_supplier(id):
             supplier.cnic = request.form.get('cnic', '')
             supplier.ntn = request.form.get('ntn', '')
             supplier.payment_terms = request.form.get('payment_terms', '30 days')
-            supplier.credit_limit = float(request.form.get('credit_limit', 0))
+            supplier.credit_limit = form_num('credit_limit', 0, float)
             supplier.is_active = request.form.get('is_active') == 'on'
             
             db.session.commit()
             flash('Supplier updated successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.suppliers'))
     
@@ -1873,7 +2162,7 @@ def delete_supplier(id):
         flash('Supplier archived successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.suppliers'))
 
@@ -1949,7 +2238,7 @@ def add_purchase_order():
             return redirect(url_for('main.purchase_orders'))
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
     
     suppliers = Supplier.query.filter_by(is_active=True).all()
     materials = RawMaterial.query.filter_by(is_active=True).all()
@@ -2038,7 +2327,7 @@ def receive_purchase_order(id):
             return redirect(url_for('main.view_goods_receipt', id=gr.id))
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
     
     return render_template('purchase_orders/receive.html', po=po)
 
@@ -2086,7 +2375,7 @@ def add_warehouse():
             flash('Warehouse added successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.warehouses'))
     
@@ -2149,7 +2438,7 @@ def add_stock_transfer():
             return redirect(url_for('main.view_stock_transfer', id=transfer.id))
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
     
     warehouses = Warehouse.query.filter_by(is_active=True).all()
     materials = RawMaterial.query.filter_by(is_active=True).all()
@@ -2204,7 +2493,7 @@ def complete_stock_transfer(id):
         flash('Stock transfer completed successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.view_stock_transfer', id=transfer.id))
 
@@ -2242,14 +2531,14 @@ def add_supplier_invoice():
                 supplier_id=int(request.form.get('supplier_id', '0') or 0),
                 po_id=int(request.form.get('po_id', '0') or 0) if request.form.get('po_id') else None,
                 invoice_date=datetime.strptime(request.form.get('invoice_date'), '%Y-%m-%d').date(),
-                total_amount=float(request.form.get('total_amount', 0))
+                total_amount=form_num('total_amount', 0, float)
             )
             db.session.add(invoice)
             db.session.commit()
             flash('Supplier invoice added', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.supplier_invoices'))
     
@@ -2314,7 +2603,7 @@ def add_production_batch():
             return redirect(url_for('main.production_batches'))
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
     
     products = Product.query.filter_by(is_deleted=False).all()
     return render_template('production/batch_form.html', batch=None, products=products)
@@ -2365,7 +2654,7 @@ def complete_production_batch(id):
             return redirect(url_for('main.production_batches'))
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
     return render_template('production/batch_complete.html', batch=batch)
 
 @main_bp.route('/production/raw-materials')
@@ -2382,7 +2671,7 @@ def record_material_usage(id):
     """Record a validated raw-material withdrawal and keep stock movements traceable."""
     material = RawMaterial.query.get_or_404(id)
     try:
-        quantity = float(request.form.get('quantity', 0))
+        quantity = form_num('quantity', 0, float)
         if quantity <= 0:
             raise ValueError('Enter a quantity greater than zero.')
         if quantity > material.current_stock:
@@ -2419,7 +2708,7 @@ def record_material_usage(id):
 def add_batch_material(id):
     batch = ProductionBatch.query.get_or_404(id)
     try:
-        quantity = float(request.form.get('quantity_used', 0))
+        quantity = form_num('quantity_used', 0, float)
         cost = float(request.form.get('cost_per_unit', 0) or 0)
         name = request.form.get('material_name', '').strip()
         unit = request.form.get('unit', '').strip()
@@ -2457,10 +2746,10 @@ def add_raw_material():
                 name=request.form.get('name', ''),
                 material_type=request.form.get('material_type', ''),
                 specification=request.form.get('specification', ''),
-                current_stock=float(request.form.get('current_stock', 0)),
+                current_stock=form_num('current_stock', 0, float),
                 unit=request.form.get('unit', ''),
-                reorder_level=float(request.form.get('reorder_level', 0)),
-                cost_per_unit=float(request.form.get('cost_per_unit', 0)),
+                reorder_level=form_num('reorder_level', 0, float),
+                cost_per_unit=form_num('cost_per_unit', 0, float),
                 supplier=request.form.get('supplier', '')
             )
             db.session.add(material)
@@ -2468,7 +2757,7 @@ def add_raw_material():
             flash('Raw material added successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.raw_materials'))
     
@@ -2502,7 +2791,7 @@ def manage_product_bom(id):
             flash('BOM updated successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.manage_product_bom', id=product.id))
     
@@ -2558,7 +2847,7 @@ def add_qc_parameter():
     if request.method == 'POST':
         try:
             param = QCParameter(
-                product_id=int(request.form.get('product_id', 0)),
+                product_id=form_num('product_id', 0, int),
                 parameter_name=request.form.get('parameter_name', ''),
                 min_value=float(request.form.get('min_value', '0') or 0),
                 max_value=float(request.form.get('max_value', '0') or 0),
@@ -2572,7 +2861,7 @@ def add_qc_parameter():
             flash('QC parameter added successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.qc_parameters'))
     
@@ -2605,7 +2894,7 @@ def add_qc_results(batch_id):
             flash('QC results recorded!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.view_production_batch', id=batch.id))
     
@@ -2634,7 +2923,7 @@ def add_customer_complaint():
             
             complaint = CustomerComplaint(
                 complaint_number=complaint_number,
-                customer_id=int(request.form.get('customer_id', 0)) if request.form.get('customer_id') else None,
+                customer_id=form_num('customer_id', 0, int) if request.form.get('customer_id') else None,
                 description=request.form.get('description', '')
             )
             db.session.add(complaint)
@@ -2642,7 +2931,7 @@ def add_customer_complaint():
             flash('Complaint recorded', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.customer_complaints'))
     
@@ -2666,7 +2955,7 @@ def resolve_complaint(id):
         flash('Complaint resolved successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.customer_complaints'))
 
@@ -2867,7 +3156,7 @@ def generate_excel_report(module):
         )
         
     except Exception as e:
-        flash(f'Error generating report: {str(e)}', 'error')
+        flash(f'Error generating report: {db_error_message(e)}', 'error')
         return redirect(url_for(f'main.{module}'))
 
 
@@ -2984,7 +3273,7 @@ def generate_pdf_report(module):
         )
         
     except Exception as e:
-        flash(f'Error generating PDF report: {str(e)}', 'error')
+        flash(f'Error generating PDF report: {db_error_message(e)}', 'error')
         return redirect(url_for(f'main.{module}'))
 
 
@@ -3317,7 +3606,7 @@ def generate_product_barcode(id):
         flash('Barcode library not installed. Run: pip install python-barcode', 'error')
         return redirect(url_for('main.products'))
     except Exception as e:
-        flash(f'Error generating barcode: {str(e)}', 'error')
+        flash(f'Error generating barcode: {db_error_message(e)}', 'error')
         return redirect(url_for('main.products'))
 
 
@@ -3356,7 +3645,7 @@ def generate_product_qrcode(id):
         flash('QR code library not installed. Run: pip install qrcode[pil]', 'error')
         return redirect(url_for('main.products'))
     except Exception as e:
-        flash(f'Error generating QR code: {str(e)}', 'error')
+        flash(f'Error generating QR code: {db_error_message(e)}', 'error')
         return redirect(url_for('main.products'))
 
 
@@ -3602,7 +3891,7 @@ def submit_inquiry():
     except Exception as e:
         db.session.rollback()
         print(f"Error: {str(e)}")
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.customer_site') + '#contact')
 
@@ -3660,18 +3949,17 @@ def inquiry_count():
 @login_required
 def revenue_data():
     six_months_ago = datetime.utcnow() - timedelta(days=180)
-    monthly_revenue = db.session.query(
-        db.func.to_char(Order.created_at, 'YYYY-MM'),
-        db.func.sum(Order.total_amount)
-    ).filter(
+    # Grouped in Python so it works on both PostgreSQL and the local SQLite database.
+    rows = db.session.query(Order.created_at, Order.total_amount).filter(
         Order.created_at >= six_months_ago,
         Order.status.in_(['completed', 'processing'])
-    ).group_by(db.func.to_char(Order.created_at, 'YYYY-MM')).all()
-    
-    return jsonify({
-        'labels': [r[0] for r in monthly_revenue],
-        'data': [float(r[1]) for r in monthly_revenue]
-    })
+    ).all()
+    totals = {}
+    for created_at, amount in rows:
+        key = created_at.strftime('%Y-%m')
+        totals[key] = totals.get(key, 0.0) + float(amount or 0)
+    labels = sorted(totals)
+    return jsonify({'labels': labels, 'data': [totals[k] for k in labels]})
 
 
 @main_bp.route('/api/low-stock-count')
@@ -3734,7 +4022,7 @@ def payroll():
 def add_employee():
     if request.method == 'POST':
         try:
-            annual_salary = float(request.form.get('base_salary', 0)) * 12
+            annual_salary = form_num('base_salary', 0, float) * 12
             monthly_tax, _ = calculate_monthly_tax_deduction(annual_salary)
             
             employee = Employee(
@@ -3747,18 +4035,18 @@ def add_employee():
                 address=request.form.get('address', ''),
                 emergency_contact=request.form.get('emergency_contact', ''),
                 emergency_phone=request.form.get('emergency_phone', ''),
-                base_salary=float(request.form.get('base_salary', 0)),
+                base_salary=form_num('base_salary', 0, float),
                 payment_frequency=request.form.get('payment_frequency', 'monthly'),
                 bank_account=request.form.get('bank_account', ''),
                 bank_name=request.form.get('bank_name', ''),
-                outstanding_loan=float(request.form.get('outstanding_loan', 0))
+                outstanding_loan=form_num('outstanding_loan', 0, float)
             )
             db.session.add(employee)
             db.session.commit()
             flash('Employee added successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.payroll'))
     
@@ -3781,18 +4069,18 @@ def edit_employee(id):
             employee.address = request.form.get('address', '')
             employee.emergency_contact = request.form.get('emergency_contact', '')
             employee.emergency_phone = request.form.get('emergency_phone', '')
-            employee.base_salary = float(request.form.get('base_salary', 0))
+            employee.base_salary = form_num('base_salary', 0, float)
             employee.payment_frequency = request.form.get('payment_frequency', 'monthly')
             employee.bank_account = request.form.get('bank_account', '')
             employee.bank_name = request.form.get('bank_name', '')
-            employee.outstanding_loan = float(request.form.get('outstanding_loan', 0))
+            employee.outstanding_loan = form_num('outstanding_loan', 0, float)
             employee.is_active = request.form.get('is_active') == 'on'
             
             db.session.commit()
             flash('Employee updated successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.payroll'))
     
@@ -3809,7 +4097,7 @@ def delete_employee(id):
         flash('Employee deactivated successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.payroll'))
 
@@ -3851,7 +4139,7 @@ def add_expense():
             expense = Expense(
                 category=request.form.get('category', ''),
                 description=request.form.get('description', ''),
-                amount=float(request.form.get('amount', 0)),
+                amount=form_num('amount', 0, float),
                 date=expense_date,
                 status=request.form.get('status', 'pending'),
                 paid_by=request.form.get('paid_by', ''),
@@ -3864,7 +4152,7 @@ def add_expense():
             flash('Expense added successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.expenses'))
     
@@ -3880,7 +4168,7 @@ def edit_expense(id):
             old_status = expense.status
             expense.category = request.form.get('category', '')
             expense.description = request.form.get('description', '')
-            expense.amount = float(request.form.get('amount', 0))
+            expense.amount = form_num('amount', 0, float)
             date_str = request.form.get('date')
             if date_str:
                 expense.date = datetime.strptime(date_str, '%Y-%m-%d').date()
@@ -3898,7 +4186,7 @@ def edit_expense(id):
             flash('Expense updated successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         return redirect(url_for('main.expenses'))
     return render_template('expenses/form.html', expense=expense)
 
@@ -3912,7 +4200,7 @@ def delete_expense(id):
         flash('Expense deleted successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     return redirect(url_for('main.expenses'))
 
 
@@ -4426,7 +4714,7 @@ def mark_attendance():
         
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.attendance', date=date_str))
 
@@ -4511,7 +4799,7 @@ def generate_timesheet():
             return redirect(url_for('main.edit_timesheet', id=timesheet.id))
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
     
     employees = Employee.query.filter_by(is_active=True).all()
     return render_template('payroll/timesheet_form.html', employees=employees, timesheet=None)
@@ -4524,11 +4812,11 @@ def edit_timesheet(id):
     
     if request.method == 'POST':
         try:
-            timesheet.regular_hours = float(request.form.get('regular_hours', 0))
-            timesheet.overtime_hours = float(request.form.get('overtime_hours', 0))
+            timesheet.regular_hours = form_num('regular_hours', 0, float)
+            timesheet.overtime_hours = form_num('overtime_hours', 0, float)
             timesheet.total_hours = timesheet.regular_hours + timesheet.overtime_hours
-            timesheet.leave_days = float(request.form.get('leave_days', 0))
-            timesheet.sick_days = float(request.form.get('sick_days', 0))
+            timesheet.leave_days = form_num('leave_days', 0, float)
+            timesheet.sick_days = form_num('sick_days', 0, float)
             timesheet.notes = request.form.get('notes', '')
             
             employee = Employee.query.get(timesheet.employee_id)
@@ -4537,7 +4825,7 @@ def edit_timesheet(id):
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.timesheets'))
     
@@ -4612,7 +4900,7 @@ def add_leave_request():
             flash('Leave request submitted', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.leave_requests'))
     
@@ -4862,13 +5150,13 @@ def process_payment():
                 base_salary=employee.base_salary,
                 hourly_wages=timesheet.regular_pay,
                 overtime_pay=timesheet.overtime_pay,
-                bonuses=float(request.form.get('bonuses', 0)),
-                allowances=float(request.form.get('allowances', 0)),
-                total_earnings=timesheet.net_pay + float(request.form.get('bonuses', 0)) + float(request.form.get('allowances', 0)),
+                bonuses=form_num('bonuses', 0, float),
+                allowances=form_num('allowances', 0, float),
+                total_earnings=timesheet.net_pay + form_num('bonuses', 0, float) + form_num('allowances', 0, float),
                 income_tax=monthly_tax,
                 loan_deduction=loan_deduction,
-                other_deductions=float(request.form.get('other_deductions', 0)),
-                total_deductions=total_deductions + float(request.form.get('other_deductions', 0)),
+                other_deductions=form_num('other_deductions', 0, float),
+                total_deductions=total_deductions + form_num('other_deductions', 0, float),
                 net_pay=net_pay,
                 payment_method=request.form.get('payment_method', 'bank_transfer'),
                 payment_date=datetime.utcnow().date(),
@@ -4890,7 +5178,7 @@ def process_payment():
             flash('Payment processed successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.payroll_payments'))
     
@@ -4936,7 +5224,7 @@ def generate_fbr_invoice(order_id):
         flash(f'FBR Invoice {invoice_number} generated!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.view_order', id=order.id))
 
@@ -4973,7 +5261,7 @@ def generate_tax_return():
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.tax_returns'))
     
@@ -5039,7 +5327,7 @@ def add_painting_price():
     """Add or update painting price for a product"""
     if request.method == 'POST':
         try:
-            product_id = int(request.form.get('product_id', 0))
+            product_id = form_num('product_id', 0, int)
             if not product_id:
                 flash('Product is required.', 'error')
                 return redirect(url_for('main.painting_prices'))
@@ -5047,18 +5335,18 @@ def add_painting_price():
             existing = PaintingServicePrice.query.filter_by(product_id=product_id).first()
             
             if existing:
-                existing.price_per_unit = float(request.form.get('price_per_unit', 0))
-                existing.minimum_quantity = int(request.form.get('minimum_quantity', 1000))
-                existing.setup_charge = float(request.form.get('setup_charge', 0))
+                existing.price_per_unit = form_num('price_per_unit', 0, float)
+                existing.minimum_quantity = form_num('minimum_quantity', 1000, int)
+                existing.setup_charge = form_num('setup_charge', 0, float)
                 existing.is_active = request.form.get('is_active') == 'on'
                 flash('Painting price updated!', 'success')
             else:
                 # Create new
                 price = PaintingServicePrice(
                     product_id=product_id,
-                    price_per_unit=float(request.form.get('price_per_unit', 0)),
-                    minimum_quantity=int(request.form.get('minimum_quantity', 1000)),
-                    setup_charge=float(request.form.get('setup_charge', 0)),
+                    price_per_unit=form_num('price_per_unit', 0, float),
+                    minimum_quantity=form_num('minimum_quantity', 1000, int),
+                    setup_charge=form_num('setup_charge', 0, float),
                     is_active=True
                 )
                 db.session.add(price)
@@ -5067,7 +5355,7 @@ def add_painting_price():
             db.session.commit()
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.painting_prices'))
     
@@ -5083,16 +5371,16 @@ def edit_painting_price(id):
     
     if request.method == 'POST':
         try:
-            price.price_per_unit = float(request.form.get('price_per_unit', 0))
-            price.minimum_quantity = int(request.form.get('minimum_quantity', 1000))
-            price.setup_charge = float(request.form.get('setup_charge', 0))
+            price.price_per_unit = form_num('price_per_unit', 0, float)
+            price.minimum_quantity = form_num('minimum_quantity', 1000, int)
+            price.setup_charge = form_num('setup_charge', 0, float)
             price.is_active = request.form.get('is_active') == 'on'
             
             db.session.commit()
             flash('Painting price updated successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         
         return redirect(url_for('main.painting_prices'))
     
@@ -5111,7 +5399,7 @@ def delete_painting_price(id):
         flash('Painting price archived successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.painting_prices'))
 
@@ -5210,7 +5498,7 @@ def add_painting_order():
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
     
     # GET request handling
     customers = Customer.query.filter_by(is_active=True).all()
@@ -5331,7 +5619,7 @@ def add_account():
                 account_code=request.form.get('account_code', ''),
                 account_name=request.form.get('account_name', ''),
                 account_type=request.form.get('account_type', ''),
-                parent_account_id=int(request.form.get('parent_account_id', 0)) or None,
+                parent_account_id=form_num('parent_account_id', 0, int) or None,
                 is_active=request.form.get('is_active') == 'on'
             )
             db.session.add(account)
@@ -5354,7 +5642,7 @@ def add_account():
             flash('Account added successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         return redirect(url_for('main.chart_of_accounts'))
     
     parent_accounts = Account.query.filter_by(is_active=True).all()
@@ -5372,13 +5660,13 @@ def edit_account(id):
             account.account_code = request.form.get('account_code', '')
             account.account_name = request.form.get('account_name', '')
             account.account_type = request.form.get('account_type', '')
-            account.parent_account_id = int(request.form.get('parent_account_id', 0)) or None
+            account.parent_account_id = form_num('parent_account_id', 0, int) or None
             account.is_active = request.form.get('is_active') == 'on'
             db.session.commit()
             flash('Account updated successfully!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
         return redirect(url_for('main.chart_of_accounts'))
     
     parent_accounts = Account.query.filter_by(is_active=True).all()
@@ -5397,7 +5685,7 @@ def delete_account(id):
         flash('Account deactivated successfully!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.chart_of_accounts'))
 
@@ -5500,7 +5788,7 @@ def add_journal_entry():
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
     
     accounts = Account.query.filter_by(is_active=True).all()
     
@@ -5555,7 +5843,7 @@ def post_journal_entry(id):
         flash('Journal entry posted!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.journal_entries'))
 
@@ -5696,7 +5984,7 @@ def add_payment_voucher():
                 payee_name=request.form.get('payee_name', ''),
                 payee_type=request.form.get('payee_type', ''),
                 payment_method=request.form.get('payment_method', 'cash'),
-                bank_account_id=int(request.form.get('bank_account_id', 0)) or None,
+                bank_account_id=form_num('bank_account_id', 0, int) or None,
                 cheque_number=request.form.get('cheque_number', ''),
                 total_amount=0,
                 description=request.form.get('description', ''),
@@ -5734,7 +6022,7 @@ def add_payment_voucher():
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
     
     accounts = Account.query.filter_by(is_active=True).all()
     bank_accounts = BankAccount.query.filter_by(is_active=True).all()
@@ -6055,7 +6343,7 @@ def add_accounting_period():
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
     
     return render_template('accounting/period_form.html', period=None)
 
@@ -6087,7 +6375,7 @@ def close_accounting_period(id):
         flash(f'Period {period.period_name} closed!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.accounting_periods'))
 
@@ -6107,7 +6395,7 @@ def reopen_accounting_period(id):
         flash(f'Period {period.period_name} reopened!', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     
     return redirect(url_for('main.accounting_periods'))
 
@@ -6185,7 +6473,7 @@ def expenses_bulk_upload():
                 return redirect(url_for('main.expenses'))
             except Exception as e:
                 db.session.rollback()
-                flash(f'Error processing file: {str(e)}', 'error')
+                flash(f'Error processing file: {db_error_message(e)}', 'error')
                 return redirect(request.url)
         else:
             flash('Please upload a valid Excel file (.xlsx or .xls)', 'error')
@@ -6263,7 +6551,7 @@ def products_bulk_upload():
                 return redirect(url_for('main.products'))
             except Exception as e:
                 db.session.rollback()
-                flash(f'Error processing file: {str(e)}', 'error')
+                flash(f'Error processing file: {db_error_message(e)}', 'error')
                 return redirect(request.url)
         else:
             flash('Please upload a valid Excel file (.xlsx or .xls)', 'error')
@@ -6303,26 +6591,40 @@ def customers_bulk_upload():
                 uploaded_count = 0
                 errors = []
                 
+                def cell(row, key, default=''):
+                    value = row.get(key, default)
+                    if value is None or (isinstance(value, float) and value != value):  # blank cell (NaN)
+                        return default
+                    return str(value).strip()
+
                 for idx, row in df.iterrows():
                     try:
                         # Check for duplicate email
-                        email = str(row.get('email', '')).strip().lower()
+                        email = cell(row, 'email').lower()
                         if email:
                             existing = Customer.query.filter_by(email=email).first()
                             if existing:
                                 errors.append(f'Row {idx + 2}: Email {email} already exists')
                                 continue
-                        
+                        name = cell(row, 'name')
+                        if not name:
+                            errors.append(f'Row {idx + 2}: name is empty')
+                            continue
+                        try:
+                            credit_limit = float(cell(row, 'credit_limit', '0') or 0)
+                        except ValueError:
+                            credit_limit = 0
+
                         customer = Customer(
-                            name=str(row['name']).strip(),
-                            business_name=str(row.get('business_name', '')).strip(),
-                            role=str(row.get('role', 'customer')).strip(),
+                            name=name,
+                            business_name=cell(row, 'business_name') or None,
+                            role=cell(row, 'role', 'customer') or 'customer',
                             email=email if email else None,
-                            phone=str(row.get('phone', '')).strip(),
-                            address=str(row.get('address', '')).strip(),
-                            payment_terms=str(row.get('payment_terms', 'cash')).strip(),
-                            credit_limit=float(row.get('credit_limit', 0)),
-                            is_active=row.get('is_active', 'true').lower() == 'true'
+                            phone=cell(row, 'phone') or None,
+                            address=cell(row, 'address') or None,
+                            payment_terms=cell(row, 'payment_terms', 'cash') or 'cash',
+                            credit_limit=credit_limit,
+                            is_active=cell(row, 'is_active', 'true').lower() not in ('false', '0', 'no')
                         )
                         db.session.add(customer)
                         uploaded_count += 1
@@ -6343,7 +6645,7 @@ def customers_bulk_upload():
                 return redirect(url_for('main.customers'))
             except Exception as e:
                 db.session.rollback()
-                flash(f'Error processing file: {str(e)}', 'error')
+                flash(f'Error processing file: {db_error_message(e)}', 'error')
                 return redirect(request.url)
         else:
             flash('Please upload a valid Excel file (.xlsx or .xls)', 'error')
@@ -6392,6 +6694,35 @@ def download_expense_template():
     except ImportError:
         flash('pandas or openpyxl not installed', 'error')
         return redirect(url_for('main.expenses'))
+
+@main_bp.route('/customers/download-template')
+@login_required
+def download_customer_template():
+    """Download sample Excel template for customers"""
+    try:
+        import pandas as pd
+        from io import BytesIO
+        df = pd.DataFrame({
+            'name': ['Ali Raza', 'Sara Khan'],
+            'business_name': ['Example Pharma (Pvt) Ltd', 'Sample Labs'],
+            'email': ['ali@example.com', ''],
+            'phone': ['0300-0000000', '0321-0000000'],
+            'address': ['Lahore', 'Karachi'],
+            'payment_terms': ['30 days', 'cash'],
+            'credit_limit': [500000, 0],
+            'role': ['customer', 'customer'],
+            'is_active': ['true', 'true'],
+        })
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Customers')
+        output.seek(0)
+        return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                         as_attachment=True, download_name='customer_upload_template.xlsx')
+    except ImportError:
+        flash('pandas or openpyxl not installed', 'error')
+        return redirect(url_for('main.customers'))
+
 
 @main_bp.route('/products/download-template')
 @login_required
@@ -6472,10 +6803,10 @@ def add_fixed_asset():
                 supplier=request.form.get('supplier', ''),
                 purchase_date=datetime.strptime(request.form['purchase_date'], '%Y-%m-%d').date(),
                 purchase_cost=float(request.form['purchase_cost']),
-                useful_life_years=int(request.form.get('useful_life_years', 5)),
+                useful_life_years=form_num('useful_life_years', 5, int),
                 depreciation_method=request.form.get('depreciation_method', 'straight_line'),
-                salvage_value=float(request.form.get('salvage_value', 0)),
-                accumulated_depreciation=float(request.form.get('accumulated_depreciation', 0)),
+                salvage_value=form_num('salvage_value', 0, float),
+                accumulated_depreciation=form_num('accumulated_depreciation', 0, float),
                 status=request.form.get('status', 'active'),
                 notes=request.form.get('notes', '')
             )
@@ -6485,7 +6816,7 @@ def add_fixed_asset():
             return redirect(url_for('main.fixed_assets_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
     categories = ['Machinery', 'Furnace & Equipment', 'Vehicle', 'Building', 'IT Equipment', 'Furniture', 'Tools', 'Other']
     return render_template('assets/form.html', asset=None, categories=categories)
 
@@ -6504,10 +6835,10 @@ def edit_fixed_asset(id):
             asset.supplier = request.form.get('supplier', '')
             asset.purchase_date = datetime.strptime(request.form['purchase_date'], '%Y-%m-%d').date()
             asset.purchase_cost = float(request.form['purchase_cost'])
-            asset.useful_life_years = int(request.form.get('useful_life_years', 5))
+            asset.useful_life_years = form_num('useful_life_years', 5, int)
             asset.depreciation_method = request.form.get('depreciation_method', 'straight_line')
-            asset.salvage_value = float(request.form.get('salvage_value', 0))
-            asset.accumulated_depreciation = float(request.form.get('accumulated_depreciation', 0))
+            asset.salvage_value = form_num('salvage_value', 0, float)
+            asset.accumulated_depreciation = form_num('accumulated_depreciation', 0, float)
             asset.status = request.form.get('status', 'active')
             asset.notes = request.form.get('notes', '')
             db.session.commit()
@@ -6515,7 +6846,7 @@ def edit_fixed_asset(id):
             return redirect(url_for('main.fixed_assets_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'{db_error_message(e)}', 'error')
     categories = ['Machinery', 'Furnace & Equipment', 'Vehicle', 'Building', 'IT Equipment', 'Furniture', 'Tools', 'Other']
     return render_template('assets/form.html', asset=asset, categories=categories)
 
@@ -6524,7 +6855,7 @@ def edit_fixed_asset(id):
 @login_required
 def run_depreciation(id):
     asset = FixedAsset.query.get_or_404(id)
-    months = int(request.form.get('months', 1))
+    months = form_num('months', 1, int)
     charge = asset.monthly_depreciation * months
     asset.accumulated_depreciation = min(
         asset.purchase_cost - asset.salvage_value,
@@ -6571,7 +6902,7 @@ def add_shift():
             shift_type=request.form.get('shift_type', 'day'),
             start_time=request.form['start_time'],
             end_time=request.form['end_time'],
-            duration_hours=float(request.form.get('duration_hours', 8)),
+            duration_hours=form_num('duration_hours', 8, float),
             description=request.form.get('description', '')
         )
         db.session.add(shift)
@@ -6579,7 +6910,7 @@ def add_shift():
         flash(f'Shift "{shift.name}" created.', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     return redirect(url_for('main.shifts'))
 
 
@@ -6619,7 +6950,7 @@ def assign_shift():
         flash('Shift assigned successfully.', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error: {str(e)}', 'error')
+        flash(f'{db_error_message(e)}', 'error')
     return redirect(url_for('main.shifts'))
 
 

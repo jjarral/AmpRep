@@ -1,0 +1,28 @@
+{# Inline "record payment" form. Usage: {{ payment_form(order, outstanding, next_url, payment_methods, today) }} #}
+{% macro payment_form(order, outstanding, next_url, payment_methods, today, open=False) -%}
+<details class="rc-pay" {% if open %}open{% endif %}>
+    <summary class="rc-btn"><i class="fas fa-hand-holding-dollar" aria-hidden="true"></i> Record payment</summary>
+    <form class="rc-pay-form" method="post" action="{{ url_for('main.record_order_payment', id=order.id) }}">
+        <input type="hidden" name="next" value="{{ next_url }}">
+        <label>Amount (PKR)
+            <input type="number" name="amount" step="0.01" min="0.01" max="{{ '%.2f'|format(outstanding) }}" value="{{ '%.2f'|format(outstanding) }}" required inputmode="decimal" id="pay-amount-{{ order.id }}">
+        </label>
+        <label>Received on
+            <input type="date" name="paid_on" value="{{ today.isoformat() }}" max="{{ today.isoformat() }}" required id="pay-date-{{ order.id }}">
+        </label>
+        <label>Method
+            <select name="method" id="pay-method-{{ order.id }}">{% for value, label in payment_methods %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+        </label>
+        <label>Reference <span>optional</span>
+            <input type="text" name="reference" maxlength="100" placeholder="Cheque or transaction no." id="pay-ref-{{ order.id }}">
+        </label>
+        <label class="rc-wide">Note <span>optional</span>
+            <input type="text" name="notes" maxlength="255" id="pay-note-{{ order.id }}">
+        </label>
+        <div class="rc-pay-actions">
+            <span>Owed on {{ order.order_number }}: <strong>PKR {{ '{:,.0f}'.format(outstanding) }}</strong></span>
+            <button type="submit" class="rc-btn rc-btn-primary">Save payment</button>
+        </div>
+    </form>
+</details>
+{%- endmacro %}
