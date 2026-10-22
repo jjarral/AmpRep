@@ -102,15 +102,21 @@ function axNavigationIsOpen() {
         : !document.body.classList.contains('ax-nav-collapsed');
 }
 
+const axNavPref = {
+    get() { try { return localStorage.getItem('ax-nav-collapsed') === '1'; } catch (e) { return false; } },
+    set(collapsed) { try { localStorage.setItem('ax-nav-collapsed', collapsed ? '1' : '0'); } catch (e) {} },
+};
+
 function setNavigationOpen(open, returnFocus = true) {
     const mobile = axIsMobile();
+    if (!mobile) axNavPref.set(!open);
     document.body.classList.toggle('ax-nav-open', mobile && open);
     document.body.classList.toggle('ax-nav-collapsed', !mobile && !open);
     if (axMenuToggle) {
         axMenuToggle.setAttribute('aria-expanded', String(open));
         axMenuToggle.setAttribute('aria-label', open
             ? (mobile ? 'Close navigation menu' : 'Collapse navigation')
-            : (mobile ? 'Open navigation menu' : 'Show navigation'));
+            : (mobile ? 'Open navigation menu' : 'Expand navigation'));
     }
     if (mobile) {
         if (open && axNavFilter) axNavFilter.focus();
@@ -118,13 +124,13 @@ function setNavigationOpen(open, returnFocus = true) {
     }
 }
 
-setNavigationOpen(!axIsMobile(), false);
+setNavigationOpen(!axIsMobile() && !axNavPref.get(), false);
 if (axMenuToggle) axMenuToggle.addEventListener('click', () => setNavigationOpen(!axNavigationIsOpen()));
 if (axNavScrim) axNavScrim.addEventListener('click', () => setNavigationOpen(false));
 let axWasMobile = axIsMobile();
 window.addEventListener('resize', () => {
     const isMobile = axIsMobile();
-    if (isMobile !== axWasMobile) setNavigationOpen(!isMobile, false);
+    if (isMobile !== axWasMobile) setNavigationOpen(!isMobile && !axNavPref.get(), false);
     axWasMobile = isMobile;
 });
 

@@ -267,3 +267,25 @@ body.ax-admin .nav-sidebar .nav-link p { overflow: hidden; white-space: nowrap; 
   .nav-sidebar .nav-link, .nav-treeview .nav-link { min-height: 44px; }
 }
 .nav-sidebar .nav-link { transition-property: color, background-color, border-color; transition-duration: .14s; }
+
+/* Desktop: full menu 224px; the top-left button switches to a 64px icon strip.
+   Pointing at (or tabbing into) the strip opens the full menu over the page. */
+@media (min-width: 900px) {
+  :root { --ax-side-width: 224px; --ax-rail-width: 64px; }
+  body.ax-admin .main-sidebar { transition: width .18s ease, box-shadow .18s ease; }
+  body.ax-admin.ax-nav-collapsed .main-sidebar { transform: none !important; visibility: visible !important; width: var(--ax-rail-width) !important; }
+  body.ax-admin.ax-nav-collapsed .content-wrapper,
+  body.ax-admin.ax-nav-collapsed .main-footer { margin-left: var(--ax-rail-width) !important; }
+  body.ax-admin.ax-nav-collapsed .main-sidebar:hover,
+  body.ax-admin.ax-nav-collapsed .main-sidebar:focus-within { width: var(--ax-side-width) !important; box-shadow: 12px 0 32px rgba(0,0,0,.45) !important; }
+  body.ax-admin.ax-nav-collapsed .main-sidebar:not(:hover):not(:focus-within) .ax-brand-copy,
+  body.ax-admin.ax-nav-collapsed .main-sidebar:not(:hover):not(:focus-within) .ax-nav-search,
+  body.ax-admin.ax-nav-collapsed .main-sidebar:not(:hover):not(:focus-within) .nav-link p,
+  body.ax-admin.ax-nav-collapsed .main-sidebar:not(:hover):not(:focus-within) .nav-treeview { display: none !important; }
+  body.ax-admin.ax-nav-collapsed .main-sidebar:not(:hover):not(:focus-within) .nav-header { height: 0; margin: 7px 6px; padding: 0 !important; overflow: hidden; font-size: 0 !important; }
+  body.ax-admin.ax-nav-collapsed .main-sidebar:not(:hover):not(:focus-within) .sidebar { padding: 0 8px; }
+  body.ax-admin.ax-nav-collapsed .main-sidebar:not(:hover):not(:focus-within) .brand-link { justify-content: center; margin: 10px 8px 0 !important; padding: 6px !important; }
+  body.ax-admin.ax-nav-collapsed .main-sidebar:not(:hover):not(:focus-within) .nav-link { justify-content: center; padding: 4px !important; }
+  body.ax-admin.ax-nav-collapsed .main-sidebar:not(:hover):not(:focus-within) .nav-icon { margin: 0 !important; }
+}
+@media (min-width: 900px) and (prefers-reduced-motion: reduce) { body.ax-admin .main-sidebar { transition: none; } }
