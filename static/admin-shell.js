@@ -152,13 +152,22 @@ if (axNav) {
             const section = sectionLink.parentElement;
             const expanded = section.classList.toggle('menu-open');
             sectionLink.setAttribute('aria-expanded', String(expanded));
+            // Keep the menu short: opening a group closes the others (not while searching).
+            if (expanded && !(axNavFilter && axNavFilter.value.trim())) {
+                axNav.querySelectorAll('.nav-sidebar > li.has-treeview.menu-open').forEach(other => {
+                    if (other === section) return;
+                    other.classList.remove('menu-open');
+                    const link = other.querySelector(':scope > a.nav-link');
+                    if (link) link.setAttribute('aria-expanded', 'false');
+                });
+            }
             return;
         }
         if (event.target.closest('a.nav-link') && axIsMobile()) setNavigationOpen(false, false);
     });
 
     const navItems = Array.from(axNav.querySelectorAll('li.nav-item'));
-    const navHeaders = Array.from(axNav.querySelectorAll(':scope > ul > li.nav-header'));
+    const navHeaders = Array.from(axNav.querySelectorAll('.nav-sidebar > li.nav-header'));
     const emptyMessage = document.createElement('p');
     emptyMessage.className = 'ax-nav-empty';
     emptyMessage.textContent = 'No matching sections.';

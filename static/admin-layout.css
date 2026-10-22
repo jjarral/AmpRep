@@ -234,3 +234,36 @@ body.ax-admin .main-sidebar .sidebar {
   height: auto !important;
   overflow: visible !important;
 }
+
+/* Compact sidebar (2026-10-22): narrower, tighter rows, no duplicate user card. */
+@media (min-width: 900px) { :root { --ax-side-width: 240px; } }
+.brand-link { height: 54px !important; min-height: 54px; margin: 10px 10px 0 !important; padding: 6px 10px !important; gap: 10px; }
+.brand-link .brand-image { width: 34px; height: 34px !important; flex: 0 0 34px; padding: 3px; border-radius: 8px; }
+.brand-link .brand-text { font-size: 1rem; }
+.brand-meta { font-size: .6rem; letter-spacing: .06em; }
+body.ax-admin .main-sidebar .user-panel { display: none !important; }  /* name and role are in the top bar menu */
+body.ax-admin .main-sidebar .sidebar { padding: 0 10px; }
+.ax-nav-search { margin: 10px 0 4px; }
+.ax-nav-search > i { top: 10px; left: 11px; font-size: .8rem; }
+.ax-nav-search input { height: 34px; padding: 0 40px 0 32px; border-radius: 8px; font-size: .84rem; }
+.ax-nav-search .search-hint { top: 7px; right: 8px; padding: 3px 5px; }
+.nav-sidebar .nav-header { margin-top: 8px; padding: 6px 8px 4px !important; font-size: .62rem !important; letter-spacing: .14em !important; }
+.nav-sidebar .nav-header:first-child { margin-top: 2px; }
+.nav-sidebar .nav-link { min-height: 36px; padding: 4px 8px !important; font-size: .9rem !important; border-radius: 7px !important; }
+.nav-sidebar .nav-icon { width: 24px !important; height: 24px; flex: 0 0 24px; margin-right: 8px !important; font-size: .8rem !important; border-radius: 6px; }
+.nav-sidebar .nav-treeview { margin: 1px 0 6px 11px !important; padding: 2px 0 2px 8px !important; }
+.nav-treeview .nav-link { min-height: 30px; padding: 3px 8px !important; font-size: .85rem !important; }
+.nav-treeview .nav-icon { width: 20px !important; height: 20px; flex-basis: 20px; margin-right: 7px !important; font-size: .7rem !important; }
+.nav-sidebar .nav-link .right { font-size: .66rem; }
+/* AdminLTE fixes .nav-link at calc(250px - 1rem); let links fill the narrower menu instead. */
+body.ax-admin .nav-sidebar .nav-item,
+body.ax-admin .nav-sidebar .nav-link { width: auto !important; max-width: 100%; }
+body.ax-admin .nav-sidebar .nav-link p { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+/* Comfortable targets: 40px rows, 34px sub-items; 44px on touch screens. */
+.nav-sidebar .nav-link { min-height: 40px; }
+.nav-treeview .nav-link { min-height: 34px; }
+.nav-sidebar .nav-item { margin: 1px 0; }
+@media (pointer: coarse) {
+  .nav-sidebar .nav-link, .nav-treeview .nav-link { min-height: 44px; }
+}
+.nav-sidebar .nav-link { transition-property: color, background-color, border-color; transition-duration: .14s; }
