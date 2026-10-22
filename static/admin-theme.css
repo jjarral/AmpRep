@@ -561,3 +561,34 @@ body.ax-admin #expense-grid tr:hover td.cell-display:not(.no-hover) { background
 body.ax-admin #expense-grid .row-num { background: transparent !important; color: var(--ax-subtle) !important; }
 body.ax-admin .timeline-marker { border-color: var(--ax-surface) !important; }
 body.ax-admin .timeline-marker:not(.active) { background: #2b3a3b !important; }
+
+/* Bootstrap's coloured table rows (table-success, table-info, ...) are pastel
+   backgrounds made for light pages; on the dark admin they hid the text. Used as
+   section and total rows on the financial statements and asset register. */
+body.ax-admin .table .table-success, body.ax-admin .table .table-success > td, body.ax-admin .table .table-success > th,
+body.ax-admin .table .table-info, body.ax-admin .table .table-info > td, body.ax-admin .table .table-info > th,
+body.ax-admin .table .table-warning, body.ax-admin .table .table-warning > td, body.ax-admin .table .table-warning > th,
+body.ax-admin .table .table-danger, body.ax-admin .table .table-danger > td, body.ax-admin .table .table-danger > th,
+body.ax-admin .table .table-primary, body.ax-admin .table .table-primary > td, body.ax-admin .table .table-primary > th,
+body.ax-admin .table .table-secondary, body.ax-admin .table .table-secondary > td, body.ax-admin .table .table-secondary > th,
+body.ax-admin .table .table-active, body.ax-admin .table .table-active > td, body.ax-admin .table .table-active > th,
+body.ax-admin .table .table-light, body.ax-admin .table .table-light > td, body.ax-admin .table .table-light > th {
+  background-color: rgba(255,255,255,.035) !important; color: var(--ax-heading) !important; border-color: var(--ax-line) !important; font-weight: 650;
+}
+body.ax-admin .table .table-success > td:first-child, body.ax-admin .table .table-success > th:first-child { box-shadow: inset 3px 0 0 var(--ax-green); }
+body.ax-admin .table .table-info > td:first-child, body.ax-admin .table .table-info > th:first-child,
+body.ax-admin .table .table-primary > td:first-child, body.ax-admin .table .table-primary > th:first-child { box-shadow: inset 3px 0 0 var(--ax-cyan); }
+body.ax-admin .table .table-warning > td:first-child, body.ax-admin .table .table-warning > th:first-child { box-shadow: inset 3px 0 0 var(--ax-gold); }
+body.ax-admin .table .table-danger > td:first-child, body.ax-admin .table .table-danger > th:first-child { box-shadow: inset 3px 0 0 var(--ax-red); }
+body.ax-admin .table .table-success { background-color: rgba(130,213,169,.06) !important; }
+body.ax-admin .table .table-info, body.ax-admin .table .table-primary { background-color: rgba(121,215,207,.06) !important; }
+body.ax-admin .table .table-warning { background-color: rgba(212,177,95,.07) !important; }
+body.ax-admin .table .table-danger { background-color: rgba(240,155,134,.06) !important; }
+body.ax-admin .table .table-dark, body.ax-admin .table .table-dark > td, body.ax-admin .table .table-dark > th, body.ax-admin .table thead.thead-dark th { background-color: #172124 !important; color: var(--ax-heading) !important; border-color: var(--ax-border) !important; }
+/* Light header/footer rows (thead-light) and AdminLTE's white timeline cards. */
+body.ax-admin .table .thead-light th, body.ax-admin .table thead.thead-light th, body.ax-admin .table tfoot.thead-light th { background-color: #172124 !important; color: var(--ax-heading) !important; border-color: var(--ax-border) !important; }
+body.ax-admin .timeline::before { background: var(--ax-border) !important; }
+body.ax-admin .timeline > div > .timeline-item { border: 1px solid var(--ax-border); border-radius: 10px; background: var(--ax-surface) !important; color: var(--ax-copy) !important; box-shadow: none !important; }
+body.ax-admin .timeline > div > .timeline-item > .timeline-header { border-bottom-color: var(--ax-line) !important; color: var(--ax-heading) !important; }
+body.ax-admin .timeline > div > .timeline-item > .time { color: var(--ax-muted) !important; }
+body.ax-admin .timeline > .time-label > span { border-radius: 6px; background: var(--ax-gold-soft) !important; color: var(--ax-gold-bright) !important; }
