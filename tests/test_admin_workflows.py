@@ -24,6 +24,7 @@ class AdminWorkflowTests(unittest.TestCase):
         self.app.register_blueprint(main_bp)
         self.app.register_blueprint(email_verification_bp)
         self.app.jinja_env.globals['inquiry_email_context'] = form_context
+        self.app.jinja_env.globals.update(datetime=datetime, timedelta=timedelta)  # as create_app's inject_globals
         self.context = self.app.app_context()
         self.context.push()
         db.create_all()
@@ -173,6 +174,27 @@ class AdminWorkflowTests(unittest.TestCase):
         r = self.client.get(f'/customers/delete/{customer.id}')
         self.assertEqual(r.status_code, 405)
         self.assertIsNotNone(db.session.get(Customer, customer.id))
+
+    # --- search engines -------------------------------------------------------------
+    def test_robots_txt_allows_site_and_points_to_sitemap(self):
+        r = self.client.get('/robots.txt')
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.content_type.startswith('text/plain'))
+        body = r.get_data(as_text=True)
+        self.assertIn('Sitemap: https://www.ampoulex.com/sitemap.xml', body)
+        self.assertIn('Disallow: /dashboard', body)
+        self.assertNotIn('Disallow: /\n', body)
+
+    def test_sitemap_lists_homepage(self):
+        r = self.client.get('/sitemap.xml')
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('xml', r.content_type)
+        self.assertIn(b'<loc>https://www.ampoulex.com/</loc>', r.data)
+
+    def test_search_console_tag_only_when_configured(self):
+        self.assertNotIn(b'google-site-verification', self.client.get('/').data)
+        with patch.dict('os.environ', {'GOOGLE_SITE_VERIFICATION': 'abc123token'}):
+            self.assertIn(b'<meta name="google-site-verification" content="abc123token">', self.client.get('/').data)
 
     def test_customer_bulk_upload_page_opens(self):
         self.assertEqual(self.client.get('/customers/bulk-upload').status_code, 200)

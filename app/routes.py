@@ -565,6 +565,48 @@ def check_and_create_stock_alerts():
 # AUTHENTICATION
 # ============================================================================
 
+# ============================================================================
+# SEARCH ENGINES: robots.txt, sitemap.xml, Search Console verification
+# ============================================================================
+
+SITE_URL = 'https://www.ampoulex.com'
+# Admin and internal areas search engines should skip (they all need a login anyway).
+ROBOTS_DISALLOW = ['/login', '/logout', '/dashboard', '/admin', '/api/', '/orders', '/receivables',
+                   '/customers', '/inquiries', '/products', '/production', '/accounting', '/financials',
+                   '/payroll', '/employees', '/expenses', '/suppliers', '/purchase-orders', '/qc',
+                   '/painting/', '/reports', '/settings', '/tax', '/assets', '/warehouses', '/hr']
+
+
+@main_bp.app_context_processor
+def inject_search_console_token():
+    """Google Search Console HTML-tag verification. Set GOOGLE_SITE_VERIFICATION in Vercel to the
+    token Search Console shows (the content="..." value); the homepage then carries the meta tag."""
+    return {'google_site_verification': (os.environ.get('GOOGLE_SITE_VERIFICATION') or '').strip()}
+
+
+@main_bp.route('/robots.txt')
+def robots_txt():
+    lines = ['User-agent: *', 'Allow: /']
+    lines += [f'Disallow: {path}' for path in ROBOTS_DISALLOW]
+    lines += ['', f'Sitemap: {SITE_URL}/sitemap.xml', '']
+    response = current_app.response_class('\n'.join(lines), mimetype='text/plain')
+    response.headers['Cache-Control'] = 'public, max-age=3600'
+    return response
+
+
+@main_bp.route('/sitemap.xml')
+def sitemap_xml():
+    # One public page: /catalogue and /inquiry only jump to sections of the homepage.
+    lastmod = datetime.utcnow().date().isoformat()
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+           f'  <url><loc>{SITE_URL}/</loc><lastmod>{lastmod}</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>\n'
+           '</urlset>\n')
+    response = current_app.response_class(xml, mimetype='application/xml')
+    response.headers['Cache-Control'] = 'public, max-age=3600'
+    return response
+
+
 @main_bp.route('/', methods=['GET', 'POST'])
 def index():
     """Render the public catalogue and inquiry form."""
