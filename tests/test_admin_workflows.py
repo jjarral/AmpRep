@@ -196,6 +196,28 @@ class AdminWorkflowTests(unittest.TestCase):
         with patch.dict('os.environ', {'GOOGLE_SITE_VERIFICATION': 'abc123token'}):
             self.assertIn(b'<meta name="google-site-verification" content="abc123token">', self.client.get('/').data)
 
+    # --- security headers (AttestCheck findings) -------------------------------------
+    def test_security_headers_on_public_and_admin_pages(self):
+        for path in ('/', '/dashboard', '/login'):
+            r = self.client.get(path)
+            h = r.headers
+            self.assertEqual(h.get('X-Content-Type-Options'), 'nosniff', path)
+            self.assertEqual(h.get('X-Frame-Options'), 'SAMEORIGIN', path)
+            self.assertEqual(h.get('Referrer-Policy'), 'strict-origin-when-cross-origin', path)
+            csp = h.get('Content-Security-Policy', '')
+            for directive in ("default-src 'self'", "frame-ancestors 'self'", "object-src 'none'", "base-uri 'self'"):
+                self.assertIn(directive, csp, path)
+            self.assertIn('camera=()', h.get('Permissions-Policy', ''), path)
+
+    def test_security_txt_published(self):
+        r = self.client.get('/.well-known/security.txt')
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.content_type.startswith('text/plain'))
+        body = r.get_data(as_text=True)
+        self.assertIn('Contact: mailto:', body)
+        self.assertRegex(body, r'Expires: \d{4}-\d{2}-\d{2}T')
+        self.assertIn('Canonical: https://www.ampoulex.com/.well-known/security.txt', body)
+
     def test_customer_bulk_upload_page_opens(self):
         self.assertEqual(self.client.get('/customers/bulk-upload').status_code, 200)
 

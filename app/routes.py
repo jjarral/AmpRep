@@ -584,6 +584,57 @@ def inject_search_console_token():
     return {'google_site_verification': (os.environ.get('GOOGLE_SITE_VERIFICATION') or '').strip()}
 
 
+# Browser security headers on every response. The policy lists exactly the outside
+# sources the pages use (script/style CDNs and Google Fonts). Inline scripts and styles
+# are still allowed because many admin templates use them; removing them would let the
+# policy drop 'unsafe-inline' later.
+CONTENT_SECURITY_POLICY = '; '.join([
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.socket.io",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com",
+    "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net",
+    "img-src 'self' data: blob: https:",
+    "connect-src 'self' wss: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com",
+    "media-src 'self' blob:",
+    "frame-src 'self'",
+    "frame-ancestors 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "upgrade-insecure-requests",
+])
+SECURITY_HEADERS = {
+    'Content-Security-Policy': CONTENT_SECURITY_POLICY,
+    'X-Frame-Options': 'SAMEORIGIN',
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
+}
+
+
+@main_bp.after_app_request
+def add_security_headers(response):
+    for name, value in SECURITY_HEADERS.items():
+        response.headers.setdefault(name, value)
+    return response
+
+
+@main_bp.route('/.well-known/security.txt')
+def security_txt():
+    """RFC 9116 vulnerability-disclosure contact. Expires is kept a year ahead automatically."""
+    expires = (datetime.utcnow() + timedelta(days=365)).replace(microsecond=0).isoformat() + 'Z'
+    body = '\n'.join([
+        'Contact: mailto:info@ampoulex.com',
+        f'Expires: {expires}',
+        'Preferred-Languages: en',
+        f'Canonical: {SITE_URL}/.well-known/security.txt',
+        '',
+    ])
+    response = current_app.response_class(body, mimetype='text/plain')
+    response.headers['Cache-Control'] = 'public, max-age=86400'
+    return response
+
+
 @main_bp.route('/robots.txt')
 def robots_txt():
     lines = ['User-agent: *', 'Allow: /']
